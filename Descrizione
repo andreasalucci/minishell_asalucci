@@ -1,0 +1,8 @@
+Per Compilare:
+
+cc *.c */*.c
+
+
+
+Mancano i built-in pwd ed echo;
+con valgrind da' errori (non heap block ma errors), mi hanno detto che vanno fatti dei suppression files

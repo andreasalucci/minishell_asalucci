@@ -1,4 +1,4 @@
-#include "minishell.h"
+#include "../minishell.h"
 
 t_env	*create_env_node(char *key, char *value, int exportable)
 {
@@ -36,7 +36,7 @@ int	add_env(t_env **env, char *key, char *value, int exportable)
 	return (1);
 }
 
-int	update_env(t_env **env, char *key, char *value)
+int	update_env(t_env **env, const char *key, const char *value)
 {
 	t_env	*curr;
 	char	*new_val;
@@ -57,6 +57,16 @@ int	update_env(t_env **env, char *key, char *value)
 	}
 	free(new_val);
 	return (0);
+}
+
+void	update_env_var(t_env **env, const char *key, const char *value)
+{
+	if (!env || !key)
+		return ;
+	if (env_exists(*env, key))
+		update_env(env, key, value);
+	else
+		add_env(env, (char *)key, (char *)value, 1);
 }
 
 int	env_exists(t_env *env, const char *key)
