@@ -4,4 +4,4 @@ cc *.c */*.c
 
 
 
-Dovremo usare Read_line per leggere la linea di comando, e dovremo creare dei suppression files perche leaka e non dobbiamo correggerne i leak.
+Dovremo usare  readline  per leggere la linea di comando, e dovremo creare dei suppression files perche leaka e non dobbiamo correggerne i leak.
