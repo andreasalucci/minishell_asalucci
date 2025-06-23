@@ -43,25 +43,25 @@ int	unset_env(t_env **env, char *key)
 	return (0);
 }
 
-int	builtin_unset(char **args, t_env **env)
+int builtin_unset(char **args, t_env **env)
 {
-	int	i;
-	int	status;
+    int i;
+    int status;
 
-	i = 1;
-	status = 0;
-	while (args[i])
-	{
-		if (!is_valid_identifier(args[i]))
-		{
-			write(2, "unset: `", 8);
-			write(2, args[i], ft_strlen(args[i]));
-			write(2, "': not a valid identifier\n", 27);
-			status = 1;
-		}
-		else if (!unset_env(env, args[i]))
-			free_env(*env);
-		i++;
-	}
-	return (status);
+    i = 1;
+    status = 0;
+    while (args[i])
+    {
+        if (!is_valid_identifier(args[i]))
+        {
+            write(2, "unset: `", 8);
+            write(2, args[i], ft_strlen(args[i]));
+            write(2, "': not a valid identifier\n", 27);
+            status = 1;
+        }
+        else
+            unset_env(env, args[i]);
+        i++;
+    }
+    return (status);
 }
