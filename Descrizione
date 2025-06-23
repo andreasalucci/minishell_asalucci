@@ -5,4 +5,4 @@ cc *.c */*.c
 
 
 Mancano i built-in pwd ed echo;
-con valgrind da' errori (non heap block ma errors), mi hanno detto che vanno fatti dei suppression files
+Dovremo usare Read_line per leggere la linea di comando, e dovremo creare dei suppression files perche leaka e non dobbiamo correggerne i leak.
