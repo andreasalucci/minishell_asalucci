@@ -1,3 +1,5 @@
+#include <stdio.h>
+#include <stdlib.h>
 #include <unistd.h>
 #include "libft/libft.h"
 
@@ -31,3 +33,6 @@ int	update_env(t_env **env, const char *key, const char *value);
 void	update_env_var(t_env **env, const char *key, const char *value);
 int	env_exists(t_env *env, const char *key);
 void	insert_sorted(t_env **sorted, t_env *new_node);
+int builtin_pwd(void);
+int is_option_n(const char *str);
+int builtin_echo(int argc, char **argv);

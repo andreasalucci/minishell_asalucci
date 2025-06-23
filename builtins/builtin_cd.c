@@ -1,7 +1,4 @@
 #include "../minishell.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
 
 int	builtin_cd(char **args, t_env **env)
 {

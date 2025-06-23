@@ -55,6 +55,13 @@ int main() {
             builtin_env(env);
         } else if (strcmp(args[0], "unset") == 0) {
             builtin_unset(args, &env);
+		} else if (strcmp(args[0], "pwd") == 0) {
+			builtin_pwd();
+		} else if (strcmp(args[0], "echo") == 0) {
+			int i = 0;
+			while (args[i])
+				i++;
+			builtin_echo(i, args);
         } else {
             printf("Unknown command: %s\n", args[0]);
         }
