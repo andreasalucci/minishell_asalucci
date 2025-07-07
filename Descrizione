@@ -1,7 +1,0 @@
-Per Compilare:
-
-cc *.c */*.c
-
-
-
-Dovremo usare  readline  per leggere la linea di comando, e dovremo creare dei suppression files perche leaka e non dobbiamo correggerne i leak.

@@ -1,23 +1,25 @@
-
 #include "minishell.h"
+#include "libft/libft.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
+#ifndef MAX_INPUT
 #define MAX_INPUT 1024
+#endif
 
 // Funzione di parsing semplice: divide una stringa in argomenti separati da spazio
-char **parse_input(char *input) {
-    char **args = malloc(sizeof(char *) * 64);
-    int i = 0;
-    char *token = strtok(input, " \t\r\n");
-    while (token != NULL) {
-        args[i++] = strdup(token);
-        token = strtok(NULL, " \t\r\n");
-    }
-    args[i] = NULL;
-    return args;
-}
+// char **parse_input(char *input) {
+//     char **args = malloc(sizeof(char *) * 64);
+//     int i = 0;
+//     char *token = strtok(input, " \t\r\n");
+//     while (token != NULL) {
+//         args[i++] = strdup(token);
+//         token = strtok(NULL, " \t\r\n");
+//     }
+//     args[i] = NULL;
+//     return args;
+// }
 
 // Inizializzazione ambiente minimo
 t_env *init_env() {
@@ -27,49 +29,76 @@ t_env *init_env() {
     return env;
 }
 
-int main() {
-    char input[MAX_INPUT];
-    char **args;
-    t_env *env = init_env();
+int main()//int argc, char *argv[], char **envp)
+{
+	// (void)argc;
+	// (void)argv;
+	// (void)envp;
+	char *input;
+	t_t *token;
+	t_env *env = init_env();
+	t_command *cmds;
 
-    printf("Shell Built-in Test - type 'exit' to quit\n");
-    while (1) {
-        printf(">> ");
-        if (!fgets(input, MAX_INPUT, stdin))
+
+    // printf("Shell Built-in Test - type 'exit' to quit\n");
+
+	while(1)
+	{
+		input = readline("minishell$ ");
+		if (!input)
+		{
+			ft_printf("exit\n");
+			break ;
+		}
+		if (strncmp(input, "exit", 4) == 0) ////// Forse anche con Ctrl C freeare come fa in fondo V V V
             break;
+		if (*input != '\0')
+			add_history(input);
+		token = tokens(input);
+		if (token)
+		{
+    		parse(token);
+			
+			cmds = parse_commands(token);
+			if (!cmds)
+				return 0;
+			printf("(cmds->argv[0]:: %s)\n", cmds->argv[0]);
+			// if (!fgets(input, MAX_INPUT, stdin))
+			// 	break;
+			// if (strncmp(input, "exit", 4) == 0) ////// Forse anche con Ctrl C freeare come fa in fondo V V V
+			// 	break;
+			if (cmds->argv[0] == NULL) {
+				free(cmds->argv);
+				continue;
+			}
+			
+			if (strcmp(cmds->argv[0], "cd") == 0) {
+				builtin_cd(cmds->argv, &env);
+			} else if (strcmp(cmds->argv[0], "export") == 0) {
+				builtin_export(cmds->argv, &env);
+			} else if (strcmp(cmds->argv[0], "env") == 0) {
+				builtin_env(env);
+			} else if (strcmp(cmds->argv[0], "unset") == 0) {
+				builtin_unset(cmds->argv, &env);
+			} else if (strcmp(cmds->argv[0], "pwd") == 0) {
+				builtin_pwd();
+			} else if (strcmp(cmds->argv[0], "echo") == 0) {
+				int i = 0;
+				while (cmds->argv[i])
+				{
+					i++;
+					builtin_echo(i, cmds->argv);
+				}
+			} else {
+				printf("Unknown command: %s\n", cmds->argv[0]);
+			}
+			for (int i = 0; cmds->argv[i]; i++)
+				free(cmds->argv[i]);
+			free(cmds->argv);
 
-        if (strncmp(input, "exit", 4) == 0) ////// Forse anche con Ctrl C freeare come fa in fondo V V V
-            break;
-
-        args = parse_input(input);
-        if (args[0] == NULL) {
-            free(args);
-            continue;
-        }
-
-        if (strcmp(args[0], "cd") == 0) {
-            builtin_cd(args, &env);
-        } else if (strcmp(args[0], "export") == 0) {
-            builtin_export(args, &env);
-        } else if (strcmp(args[0], "env") == 0) {
-            builtin_env(env);
-        } else if (strcmp(args[0], "unset") == 0) {
-            builtin_unset(args, &env);
-		} else if (strcmp(args[0], "pwd") == 0) {
-			builtin_pwd();
-		} else if (strcmp(args[0], "echo") == 0) {
-			int i = 0;
-			while (args[i])
-				i++;
-			builtin_echo(i, args);
-        } else {
-            printf("Unknown command: %s\n", args[0]);
-        }
-
-        for (int i = 0; args[i]; i++) free(args[i]);
-        free(args);
-    }
-
+		}
+		free(input);
+	}
     free_env(env);
     return 0;
 }
