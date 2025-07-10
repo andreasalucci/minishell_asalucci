@@ -90,11 +90,11 @@ void redir_out(t_command *cmd, t_t *token)
 {
 	if (token->next && token->next->type == TOKEN_WORD)
 	{
-		cmd->infile = ft_strdup(token->next->value);
+		cmd->outfile = ft_strdup(token->next->value);
 		if (token->type == TOKEN_REDIR_OUT)
-			cmd->redir_in = 1;
+			cmd->redir_out = 1;
 		else
-			cmd->redir_in = 2;
+			cmd->redir_out = 2;
 	}
 	else
 	{

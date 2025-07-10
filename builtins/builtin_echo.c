@@ -16,21 +16,30 @@ int is_option_n(const char *str)
     return (1);
 }
 
-int builtin_echo(int argc, char **argv)
+int builtin_echo(t_command *cmd)
 {
-    int i = 1;
+    int c = 1;
+	int i = 1;
     int newline = 1;
+	int first = 1;
 
-    while (i < argc && is_option_n(argv[i]))
+    while (cmd->argv[i] && is_option_n(cmd->argv[i]))
     {
         newline = 0;
         i++;
     }
-    while (i < argc)
+	while (cmd->argv[c])
+        c++;
+    while (i < c)
     {
-        printf("%s", argv[i]);
-        if (i + 1 < argc)
-            printf(" ");
+		if ((!(cmd->outfile) || ft_strcmp(cmd->argv[i], cmd->outfile)) &&
+    		(!(cmd->infile) || ft_strcmp(cmd->argv[i], cmd->infile)))
+        {
+			if (!first)
+				printf(" ");
+			printf("%s", cmd->argv[i]);
+			first = 0;
+		}
         i++;
     }
     if (newline)

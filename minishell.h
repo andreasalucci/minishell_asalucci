@@ -14,6 +14,8 @@
 #include <sys/wait.h>
 //#include <string.h>
 
+extern int g_exit_status;
+
 typedef enum token_type
 {
 	METACHAR,
@@ -110,7 +112,7 @@ int	env_exists(t_env *env, const char *key);
 void	insert_sorted(t_env **sorted, t_env *new_node);
 int builtin_pwd(void);
 int is_option_n(const char *str);
-int builtin_echo(int argc, char **argv);
+int builtin_echo(t_command *cmd);
 
 void apply_redirections(t_command *cmd);
 void apply_redir_in1(t_command *cmd);
@@ -120,11 +122,17 @@ void apply_redir_out2(t_command *cmd);
 char *mini_getline(const char *prompt);
 void create_heredoc_open(const char *delimiter);
 void create_heredoc_effective(const char *delimiter, int fd, char *line);
-void handle_child_process(t_command *cmd, int prev_fd, int pipe_fd[], char **envp);
+void handle_child_process(t_command *cmd, int prev_fd, int pipe_fd[], t_env *env);
 void handle_parent_process(int *prev_fd, int pipe_fd[]);
 void setup_pipe(t_command *cmd, int pipe_fd[]);
 void fork_process(pid_t *pid);
 void wait_for_children(void);
-void exec_command_list(t_command *cmd_list, char **envp);
+void exec_command_list(t_command *cmd_list, t_env *env);
+char *get_command_path(char *cmd, t_env *env);
+char	**convert_env_list_to_array(t_env *env);
+bool is_builtin(t_command *cmd);
+//void	exec_single_simple_command(t_command *cmds, t_env **env);
+void	exec_builtin(t_command *cmds, t_env **env);
+void	exec_single_non_builtin(t_command *cmds, t_env **env);
 
 # endif

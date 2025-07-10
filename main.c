@@ -51,18 +51,18 @@ char	**convert_env_list_to_array(t_env *env)
     return envp;
 }
 
-// bool is_builtin(t_command *cmd)
-// {
-//     if (!cmd || !cmd->argv || !cmd->argv[0])
-//         return false;
-//     return (strcmp(cmd->argv[0], "cd") == 0
-//          || strcmp(cmd->argv[0], "export") == 0
-//          || strcmp(cmd->argv[0], "unset") == 0
-//          || strcmp(cmd->argv[0], "exit") == 0
-//          || strcmp(cmd->argv[0], "echo") == 0
-//          || strcmp(cmd->argv[0], "env") == 0
-//          || strcmp(cmd->argv[0], "pwd") == 0);
-// }
+bool is_builtin(t_command *cmd)
+{
+    if (!cmd || !cmd->argv || !cmd->argv[0])
+        return false;
+    return (strcmp(cmd->argv[0], "cd") == 0
+         || strcmp(cmd->argv[0], "export") == 0
+         || strcmp(cmd->argv[0], "unset") == 0
+         || strcmp(cmd->argv[0], "exit") == 0
+         || strcmp(cmd->argv[0], "echo") == 0
+         || strcmp(cmd->argv[0], "env") == 0
+         || strcmp(cmd->argv[0], "pwd") == 0);
+}
 
 bool	has_pipe_or_redir(t_command *cmd)
 {
@@ -108,23 +108,19 @@ char *get_command_path(char *cmd, t_env *env)
     return NULL;
 }
 
-
 void free_env_array(char **envp)
 {
     int i = 0;
 
-    // Scorri l'array di stringhe e libera ogni stringa
     while (envp[i] != NULL)
     {
         free(envp[i]);
         i++;
     }
-
-    // Alla fine, libera l'array stesso
     free(envp);
 }
 
-void	exec_single_simple_command(t_command *cmds, t_env **env)
+void	exec_builtin(t_command *cmds, t_env **env)
 {
     if (ft_strcmp(cmds->argv[0], "cd") == 0)
         builtin_cd(cmds->argv, env);
@@ -137,27 +133,34 @@ void	exec_single_simple_command(t_command *cmds, t_env **env)
     else if (ft_strcmp(cmds->argv[0], "pwd") == 0)
         builtin_pwd();
     else if (ft_strcmp(cmds->argv[0], "echo") == 0)
-    {
-        int i = 0;
-        while (cmds->argv[i])
-            i++;
-        builtin_echo(i, cmds->argv);
-    }
-    else
-    {
-        char *cmd_path = get_command_path(cmds->argv[0], *env);
-        if (cmd_path)
-        {
-            char **envp = convert_env_list_to_array(*env);
-            execve(cmd_path, cmds->argv, envp);
-            perror("execve");
-            free_env_array(envp);
-            free(cmd_path);
-            exit(EXIT_FAILURE); // execve ha fallito
-        }
-        else
-            printf("Command not found: %s\n", cmds->argv[0]);
-    }
+        builtin_echo(cmds);
+}
+
+void	exec_single_non_builtin(t_command *cmds, t_env **env)
+{
+	char *cmd_path;
+	
+	cmd_path = get_command_path(cmds->argv[0], *env);
+	if (cmd_path)
+	{
+		pid_t pid = fork();
+		if (pid == 0) // siamo nel figlio
+		{
+			char **envp = convert_env_list_to_array(*env);
+			execve(cmd_path, cmds->argv, envp);
+			perror("execve");
+			free_env_array(envp);
+			free(cmd_path);
+			exit(EXIT_FAILURE);            // importante: usciamo dal figlio!
+		}
+		else if (pid > 0) // processo padre
+			waitpid(pid, NULL, 0);         // aspettiamo il figlio
+		else
+			perror("fork");
+		free(cmd_path); // libero nel padre, solo il path
+	}
+	else
+		printf("Command not found: %s\n", cmds->argv[0]);
 }
 
 int	main()
@@ -166,6 +169,9 @@ int	main()
 	t_t *token;
 	t_env *env = init_env();
 	t_command *cmds;
+	//int g_exit_status;
+
+	//g_exit_status = 0;
 
     // printf("Shell Built-in Test - type 'exit' to quit\n");
 
@@ -187,12 +193,18 @@ int	main()
 			if (!cmds)
 				continue;
 			if (!has_pipe_or_redir(cmds))
-				exec_single_simple_command(cmds, &env);
+			{
+				if(is_builtin(cmds))
+					exec_builtin(cmds, &env);
+				else
+					exec_single_non_builtin(cmds, &env);
+				continue;
+			}
 			else
 			{
-				char **envp = convert_env_list_to_array(env);
-				exec_command_list(cmds, envp);  // gestisce pipe, fork, redir
-				free_env_array(envp);
+				//char **envp = convert_env_list_to_array(env);
+				exec_command_list(cmds, env);  // gestisce pipe, fork, redir
+				//free_env_array(envp);
 			}
 			free_command(cmds);  // cleanup eventuale
 		}
