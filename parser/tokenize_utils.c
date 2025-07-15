@@ -1,33 +1,59 @@
 #include "../minishell.h"
 #include "../libft/libft.h"
 
-void	quotes(t_t *t)
+void quotes(t_t *t)
 {
-	if ((t->input[t->pos] == '\'' && !t->double_quote) && (t->start == t->input
-		|| t->input[t->pos -1] != '\\'))
-	{
-		t->single_quote = !t->single_quote;
-		t->pos++;
-	}
-	else if ((t->input[t->pos] == '\"' && !t->single_quote) && (t->start == t->input
-		|| t->input[t->pos -1] != '\\'))
-	{
-		t->double_quote = !t->double_quote;
-		t->pos++;
-	}
+    if ((t->input[t->pos] == '\'' && !t->double_quote) && (t->start == t->input || t->input[t->pos - 1] != '\\'))
+    {
+        t->single_quote = !t->single_quote;
+        t->anchor_pos = t->pos + 1;  // Salta la virgoletta iniziale
+        t->pos++;
+    }
+    else if ((t->input[t->pos] == '\"' && !t->single_quote) && (t->start == t->input || t->input[t->pos - 1] != '\\'))
+    {
+        t->double_quote = !t->double_quote;
+        t->anchor_pos = t->pos + 1;  // Salta la virgoletta iniziale
+        t->pos++;
+    }
 }
+
+// void	quotes(t_t *t)
+// {
+// 	if ((t->input[t->pos] == '\'' && !t->double_quote) && (t->start == t->input
+// 		|| t->input[t->pos -1] != '\\'))
+// 	{
+// 		t->single_quote = !t->single_quote;
+// 		t->pos++;
+// 	}
+// 	else if ((t->input[t->pos] == '\"' && !t->single_quote) && (t->start == t->input
+// 		|| t->input[t->pos -1] != '\\'))
+// 	{
+// 		t->double_quote = !t->double_quote;
+// 		t->pos++;
+// 	}
+// }
 
 void	metacharacters(t_t *t, t_t **token_list)
 {
 	
 	if (t->input[t->pos])
 	{
+		
 		if (t->input[t->pos] == ' ' || t->input[t->pos] == '|')
 			check_pipes(t, token_list);
 		else if (t->input[t->pos] == '<' && t->input[t->pos +1] != '<')
-			add_token(t, token_list);			
-		else if (t->input[t->pos] == '>' && t->input[t->pos +1] != '>')
+		{
+			if (t->pos == t->anchor_pos)
+				t->pos++;
 			add_token(t, token_list);
+		}
+				
+		else if (t->input[t->pos] == '>' && t->input[t->pos +1] != '>')
+		{
+			if (t->pos == t->anchor_pos)
+				t->pos++;
+			add_token(t, token_list);
+		}
 		else if (t->input[t->pos] == '<' && t->input[t->pos +1] == '<'
 		&& t->input[t->pos +2] != '<' )
 			{
@@ -45,37 +71,68 @@ void	metacharacters(t_t *t, t_t **token_list)
 		else
 			triple_meta(t, token_list);
 		t->pos++;
-		
 	}
 }
 
-void	open_quotes(t_t *t, t_t **token_list)
+void open_quotes(t_t *t, t_t **token_list)
 {
-	if (t->single_quote || t->double_quote)
-		while (t->input[t->pos])
-		{
-			if (t->single_quote && t->input[t->pos] == '\''&& t->input[t->pos -1] != '\\')
-			{
-				t->single_quote = !t->single_quote;
-				t->anchor_pos++;
-				add_token(t, token_list);
-				t->pos += 2;
-				t->anchor_pos = t->pos;
-				return ;
-			}
-			else if (t->double_quote && t->input[t->pos] == '\"'&& t->input[t->pos -1] != '\\')
-			{
-				t->double_quote = !t->double_quote;
-				t->anchor_pos++;
-				add_token(t, token_list);
-				t->pos += 2;
-				t->anchor_pos = t->pos;
-				return ;
-			}
-			t->pos++;
-		}
-	t->pos++;
+    if (t->single_quote || t->double_quote)
+    {
+        while (t->input[t->pos])
+        {
+            if (t->single_quote && t->input[t->pos] == '\'' && t->input[t->pos - 1] != '\\')
+            {
+                t->single_quote = !t->single_quote;
+                if (t->pos > t->anchor_pos) {
+                    add_token(t, token_list);
+                }
+                t->anchor_pos = t->pos + 1;  // Salta la virgoletta finale
+                t->pos++;
+                return;
+            }
+            else if (t->double_quote && t->input[t->pos] == '\"' && t->input[t->pos - 1] != '\\')
+            {
+                t->double_quote = !t->double_quote;
+                if (t->pos > t->anchor_pos) {
+                    add_token(t, token_list);
+                }
+                t->anchor_pos = t->pos + 1;  // Salta la virgoletta finale
+                t->pos++;
+                return;
+            }
+            t->pos++;
+        }
+    }
+    t->pos++;
 }
+
+// void	open_quotes(t_t *t, t_t **token_list)
+// {
+// 	if (t->single_quote || t->double_quote)
+// 		while (t->input[t->pos])
+// 		{
+// 			if (t->single_quote && t->input[t->pos] == '\''&& t->input[t->pos -1] != '\\')
+// 			{
+// 				t->single_quote = !t->single_quote;
+// 				t->anchor_pos++;
+// 				add_token(t, token_list);
+// 				t->pos += 2;
+// 				t->anchor_pos = t->pos;
+// 				return ;
+// 			}
+// 			else if (t->double_quote && t->input[t->pos] == '\"'&& t->input[t->pos -1] != '\\')
+// 			{
+// 				t->double_quote = !t->double_quote;
+// 				t->anchor_pos++;
+// 				add_token(t, token_list);
+// 				t->pos += 2;
+// 				t->anchor_pos = t->pos;
+// 				return ;
+// 			}
+// 			t->pos++;
+// 		}
+// 	t->pos++;
+// }
 
 void add_token(t_t *t, t_t **token_list)
 {
@@ -86,13 +143,14 @@ void add_token(t_t *t, t_t **token_list)
 	int check_memory;
 	while (t->input[t->anchor_pos] == ' ' && t->anchor_pos < t->pos)
 		t->anchor_pos++;
+	if(t->anchor_pos == t->pos && (t->input[t->pos] == '<' || t->input[t->pos] == '>'))
+		return ;
 	len = t->pos - t->anchor_pos;
-	if (len == 0 && t->input[t->anchor_pos] == ' ')
+	if (len == 0 || t->input[t->anchor_pos] == ' ')
 	{
 		t->anchor_pos++;
 		return;
 	}
-	
 	check_memory = alloc_new_token(&new_token, len);
 	if (check_memory == 0)
 		return ;
