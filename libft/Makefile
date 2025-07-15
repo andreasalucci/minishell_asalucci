@@ -12,7 +12,7 @@ SRC = dtoa_fu.c ft_atoi.c list_of_numbers.c \
 	ft_strncmp.c ft_strnstr.c ft_strrchr.c ft_strtrim.c \
 	ft_substr.c ft_tolower.c ft_toupper.c get_next_line.c \
 	get_next_line_utils.c list_utilities.c list_utilities_2.c \
-	print_ext_hexa.c swap_int.c ft_strcmp.c
+	print_ext_hexa.c swap_int.c ft_strcmp.c ft_strcpy.c
 
 OBJ = $(SRC:.c=.o)
 

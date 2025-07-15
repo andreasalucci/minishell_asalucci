@@ -80,19 +80,19 @@ void apply_redir_out2(t_command *cmd)
 
 
 // Puoi sostituire questa con una funzione tipo readline()
-char *mini_getline(const char *prompt)
-{
-	char *line = NULL;
-	size_t len = 0;
+// char *mini_getline(const char *prompt)
+// {
+// 	char *line = NULL;
+// 	size_t len = 0;
 
-	write(STDOUT_FILENO, prompt, strlen(prompt));
-	if (getline(&line, &len, stdin) == -1)
-	{
-		free(line);
-		return NULL;
-	}
-	return line;
-}
+// 	write(STDOUT_FILENO, prompt, ft_strlen(prompt));
+// 	if (getline(&line, &len, stdin) == -1)
+// 	{
+// 		free(line);
+// 		return NULL;
+// 	}
+// 	return line;
+// }
 
 void create_heredoc_open(const char *delimiter)
 {
@@ -114,7 +114,7 @@ void create_heredoc_effective(const char *delimiter, int fd, char *line)
 {
 	while (1)
 	{
-		line = mini_getline("> ");
+		line = readline("> ");
 		if (!line)
 		{
 			close(fd);
@@ -129,7 +129,7 @@ void create_heredoc_effective(const char *delimiter, int fd, char *line)
 			free(line);
 			break;
 		}
-		write(fd, line, strlen(line));
+		write(fd, line, ft_strlen(line));
 		write(fd, "\n", 1);
 		free(line);
 	}

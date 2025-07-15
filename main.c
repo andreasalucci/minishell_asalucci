@@ -16,15 +16,15 @@ t_env *init_env()
 
 char *ft_strjoin_3(const char *s1, const char *s2, const char *s3)
 {
-    size_t len1 = strlen(s1);
-    size_t len2 = strlen(s2);
-    size_t len3 = strlen(s3);
+    size_t len1 = ft_strlen(s1);
+    size_t len2 = ft_strlen(s2);
+    size_t len3 = ft_strlen(s3);
     char *result = malloc(len1 + len2 + len3 + 1);
     if (!result)
         return NULL;
-    strcpy(result, s1);
-    strcat(result, s2);
-    strcat(result, s3);
+    ft_strcpy(result, s1);
+    ft_strlcat(result, s2, len1 + len2 + len3 + 1);
+    ft_strlcat(result, s3, len1 + len2 + len3 + 1);
     return result;
 }
 
@@ -56,12 +56,12 @@ bool is_builtin(t_command *cmd)
     if (!cmd || !cmd->argv || !cmd->argv[0])
         return false;
     return (strcmp(cmd->argv[0], "cd") == 0
-         || strcmp(cmd->argv[0], "export") == 0
-         || strcmp(cmd->argv[0], "unset") == 0
-         || strcmp(cmd->argv[0], "exit") == 0
-         || strcmp(cmd->argv[0], "echo") == 0
-         || strcmp(cmd->argv[0], "env") == 0
-         || strcmp(cmd->argv[0], "pwd") == 0);
+         || ft_strcmp(cmd->argv[0], "export") == 0
+         || ft_strcmp(cmd->argv[0], "unset") == 0
+         || ft_strcmp(cmd->argv[0], "exit") == 0
+         || ft_strcmp(cmd->argv[0], "echo") == 0
+         || ft_strcmp(cmd->argv[0], "env") == 0
+         || ft_strcmp(cmd->argv[0], "pwd") == 0);
 }
 
 bool	has_pipe_or_redir(t_command *cmd)

@@ -59,6 +59,7 @@ char			*cut_string(char *s, char cut_from_char);
 char			*f_constrn(char *constr);
 char			*get_next_line(int fd);
 int				ft_strcmp(const char *s1, const char *s2);
+char 			*ft_strcpy(char *dest, const char *src);
 
 char			*ft_itoa(int n);
 size_t			print_char_fu(char a, size_t i, size_t *r);
