@@ -1,9 +1,6 @@
 #include "../minishell.h"
 #include "../libft/libft.h"
 
-
-
-
 void apply_redirections(t_command *cmd)
 {
 	if (cmd->infile && cmd->redir_in == 1)
@@ -71,28 +68,6 @@ void apply_redir_out2(t_command *cmd)
 	dup2(fd, STDOUT_FILENO);
 	close(fd);
 }
-
-
-
-
-
-
-
-
-// Puoi sostituire questa con una funzione tipo readline()
-// char *mini_getline(const char *prompt)
-// {
-// 	char *line = NULL;
-// 	size_t len = 0;
-
-// 	write(STDOUT_FILENO, prompt, ft_strlen(prompt));
-// 	if (getline(&line, &len, stdin) == -1)
-// 	{
-// 		free(line);
-// 		return NULL;
-// 	}
-// 	return line;
-// }
 
 void create_heredoc_open(const char *delimiter)
 {
@@ -211,12 +186,12 @@ void wait_for_children(void)
     while (wait(NULL) > 0);
 }
 
-void exec_command_list(t_command *cmd_list, t_env *env)
+void	exec_command_list(t_command *cmd_list, t_env *env)
 {
-    t_command   *cmd = cmd_list;
-    int         pipe_fd[2];
-    int         prev_fd = -1;
-    pid_t       pid;
+    t_command	*cmd = cmd_list;
+    int			pipe_fd[2];
+    int			prev_fd = -1;
+    pid_t		pid;
 
     while (cmd)
     {
