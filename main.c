@@ -16,10 +16,14 @@ t_env *init_env()
 
 char *ft_strjoin_3(const char *s1, const char *s2, const char *s3)
 {
-    size_t len1 = ft_strlen(s1);
-    size_t len2 = ft_strlen(s2);
-    size_t len3 = ft_strlen(s3);
+    size_t len1;
+    size_t len2;
+    size_t len3;
     char *result = malloc(len1 + len2 + len3 + 1);
+
+	len1 = ft_strlen(s1);
+	len2 = ft_strlen(s2);
+	len3 = ft_strlen(s3);
     if (!result)
         return NULL;
     ft_strcpy(result, s1);
@@ -32,15 +36,15 @@ char	**convert_env_list_to_array(t_env *env)
 {
     int count = 0;
     t_env *tmp = env;
+	int i = 0;
+	char **envp = malloc((count + 1) * sizeof(char *));
+	
     while (tmp)
     {
         count++;
         tmp = tmp->next;
     }
-
-    char **envp = malloc((count + 1) * sizeof(char *));
     tmp = env;
-    int i = 0;
     while (tmp)
     {
         envp[i] = ft_strjoin_3(tmp->key, "=", tmp->value); // ad esempio "PATH=/usr/bin"
@@ -139,14 +143,14 @@ void	exec_builtin(t_command *cmds, t_env **env)
 void	exec_single_non_builtin(t_command *cmds, t_env **env)
 {
 	char *cmd_path;
-	
+	char **envp = convert_env_list_to_array(*env);
+
 	cmd_path = get_command_path(cmds->argv[0], *env);
 	if (cmd_path)
 	{
 		pid_t pid = fork();
 		if (pid == 0) // siamo nel figlio
 		{
-			char **envp = convert_env_list_to_array(*env);
 			execve(cmd_path, cmds->argv, envp);
 			perror("execve");
 			free_env_array(envp);
