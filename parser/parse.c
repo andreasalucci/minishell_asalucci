@@ -10,7 +10,7 @@ void	parse(t_t *token)
 	cmd_list = parse_commands(token);
 	if (!cmd_list)
 		return ;
-	// print_commands(cmd_list);
+	print_commands(cmd_list);
 }
 
 void free_command_list(t_command *cmd)
@@ -69,40 +69,40 @@ void free_command(t_command *cmd)
 
 // funzione di prova da cancellare alla fine
 
-// void print_commands(t_command *cmd)
-// {
-//     int i = 0;
-//     int index = 1;
+void print_commands(t_command *cmd)
+{
+    int i = 0;
+    int index = 1;
 
-//     while (cmd)
-//     {
-//         printf("🔹 Comando #%d:\n", index++);
+    while (cmd)
+    {
+        printf("🔹 Comando #%d:\n", index++);
 
-//         // Mostrar argumentos
-//         printf("  argv: ");
-//         if (cmd->argv)
-//         {
-//             while (cmd->argv[i])
-//             {
-//                 printf("\"%s\" ", cmd->argv[i]);
-//                 i++;
-//             }
-//         }
-//         else
-//             printf("(vacío)");
-//         printf("\n");
+        // Mostrar argumentos
+        printf("  argv: ");
+        if (cmd->argv)
+        {
+            while (cmd->argv[i])
+            {
+                printf("\"%s\" ", cmd->argv[i]);
+                i++;
+            }
+        }
+        else
+            printf("(vacío)");
+        printf("\n");
 
-//         // Entrada
-//         if (cmd->infile)
-//             printf("  infile: \"%s\" (modo: %d)\n", cmd->infile, cmd->redir_in);
+        // Entrada
+        if (cmd->infile)
+            printf("  infile: \"%s\" (modo: %d)\n", cmd->infile, cmd->redir_in);
 
-//         // Salida
-//         if (cmd->outfile)
-//             printf("  outfile: \"%s\" (modo: %d)\n", cmd->outfile, cmd->redir_out);
+        // Salida
+        if (cmd->outfile)
+            printf("  outfile: \"%s\" (modo: %d)\n", cmd->outfile, cmd->redir_out);
 
-//         printf("  ───────────────\n");
+        printf("  ───────────────\n");
 
-//         cmd = cmd->next;
-//         i = 0;
-//     }
-// }
+        cmd = cmd->next;
+        i = 0;
+    }
+}

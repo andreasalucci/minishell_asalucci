@@ -3,18 +3,23 @@
 
 void quotes(t_t *t)
 {
-    if ((t->input[t->pos] == '\'' && !t->double_quote) && (t->start == t->input || t->input[t->pos - 1] != '\\'))
-    {
-        t->single_quote = !t->single_quote;
-        t->anchor_pos = t->pos + 1;  // Salta la virgoletta iniziale
-        t->pos++;
-    }
-    else if ((t->input[t->pos] == '\"' && !t->single_quote) && (t->start == t->input || t->input[t->pos - 1] != '\\'))
-    {
-        t->double_quote = !t->double_quote;
-        t->anchor_pos = t->pos + 1;  // Salta la virgoletta iniziale
-        t->pos++;
-    }
+	if ((t->input[t->pos] == '\'' && !t->double_quote) && (t->start == t->input || t->input[t->pos - 1] != '\\'))
+	{
+		t->single_quote = !t->single_quote;
+		if (t->input[t->anchor_pos] == ' ')
+			t->anchor_pos++;
+		t->quote = t->pos; // marca la virgoletta
+		t->pos++;
+	}
+	else if ((t->input[t->pos] == '\"' && !t->single_quote) && (t->start == t->input || t->input[t->pos - 1] != '\\'))
+	{
+		
+		t->double_quote = !t->double_quote;
+		if (t->input[t->anchor_pos] == ' ')
+			t->anchor_pos++;
+		t->quote = t->pos; // marca la virgoletta
+		t->pos++;
+	}
 }
 
 // void	quotes(t_t *t)
@@ -76,34 +81,66 @@ void	metacharacters(t_t *t, t_t **token_list)
 
 void open_quotes(t_t *t, t_t **token_list)
 {
-    if (t->single_quote || t->double_quote)
-    {
-        while (t->input[t->pos])
-        {
-            if (t->single_quote && t->input[t->pos] == '\'' && t->input[t->pos - 1] != '\\')
-            {
-                t->single_quote = !t->single_quote;
-                if (t->pos > t->anchor_pos) {
-                    add_token(t, token_list);
-                }
-                t->anchor_pos = t->pos + 1;  // Salta la virgoletta finale
-                t->pos++;
-                return;
-            }
-            else if (t->double_quote && t->input[t->pos] == '\"' && t->input[t->pos - 1] != '\\')
-            {
-                t->double_quote = !t->double_quote;
-                if (t->pos > t->anchor_pos) {
-                    add_token(t, token_list);
-                }
-                t->anchor_pos = t->pos + 1;  // Salta la virgoletta finale
-                t->pos++;
-                return;
-            }
-            t->pos++;
-        }
-    }
-    t->pos++;
+	char	*begin_quote;
+	char	*after_quote;
+	char	*end_str;
+	if (t->single_quote || t->double_quote)
+	{
+		
+		while (t->input[t->pos])
+		{
+			if (t->single_quote && t->input[t->pos] == '\'' && t->input[t->pos - 1] != '\\')
+			{
+				t->single_quote = !t->single_quote;
+				if (t->pos > t->anchor_pos) 
+				{
+					if (t->quote != t->anchor_pos -1) // per che non entre in comandi tipo -"vmaos"-
+					{
+						begin_quote = malloc((t->quote - t->anchor_pos) +1);
+						ft_strlcpy(begin_quote, t->input + t->anchor_pos, (t->quote - t->anchor_pos) +1);
+						after_quote = malloc((t->pos - t->quote));
+						ft_strlcpy(after_quote, t->input + (t->quote +1), t->pos - t->quote);
+						end_str =ft_strjoin(begin_quote, after_quote);
+						add_custom_token(end_str, TOKEN_WORD, token_list);
+					}
+					else
+						add_token(t, token_list);
+				}
+				t->anchor_pos = t->pos + 1;  // Salta la virgoletta finale
+				t->pos++;
+				return;
+			}
+			else if (t->double_quote && t->input[t->pos] == '\"' && t->input[t->pos - 1] != '\\')
+			{
+				t->double_quote = !t->double_quote;
+				if (t->pos > t->anchor_pos) 
+				{
+					
+					if (t->quote != t->anchor_pos - 1) // per che non entre in comandi tipo -"vmaos"-
+					{
+						
+						begin_quote = malloc((t->quote - t->anchor_pos) +1);
+						ft_strlcpy(begin_quote, t->input + t->anchor_pos, (t->quote - t->anchor_pos) +1);
+						after_quote = malloc((t->pos - t->quote));
+						ft_strlcpy(after_quote, t->input + (t->quote +1), t->pos - t->quote);
+						end_str =ft_strjoin(begin_quote, after_quote);
+						add_custom_token(end_str, TOKEN_WORD, token_list);
+					}
+					else
+					{
+						
+						add_token(t, token_list);
+					}
+						
+				}
+				t->anchor_pos = t->pos + 1;  // Salta la virgoletta finale
+				t->pos++;
+				return;
+			}
+			t->pos++;
+		}
+	}
+	t->pos++;
 }
 
 // void	open_quotes(t_t *t, t_t **token_list)
@@ -174,11 +211,11 @@ void add_token_2(t_t *new_token, t_t **token_list)
 {
 	new_token->next = NULL;
 	if (*token_list == NULL) {
-        *token_list = new_token;
-    } else {
-        t_t *last = *token_list;
-        while (last->next != NULL)
-            last = last->next;
-        last->next = new_token;
-    }
+		*token_list = new_token;
+	} else {
+		t_t *last = *token_list;
+		while (last->next != NULL)
+			last = last->next;
+		last->next = new_token;
+	}
 }

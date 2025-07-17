@@ -44,6 +44,7 @@ typedef struct s_token
 	size_t			pos;
 	size_t			anchor_pos;
 	bool			error;
+	size_t			quote;
 } t_t;
 
 typedef struct s_command 

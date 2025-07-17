@@ -1,4 +1,36 @@
 #include "../minishell.h"
+/*
+int	is_valid_identifier_export(const char *str)
+{
+	int	i;
+
+	i = 0;
+	if (!str || (!ft_isalpha(str[0]) && str[0] != '_'))
+		return (0);
+	while (str[i] && (str[i] != '=' || str[i] != '+'))
+	{
+		if (!ft_isalnum(str[i]) && str[i] != '_')
+			return (0);
+		i++;
+	}
+	return (1);
+}
+
+int	is_valid_identifier_unset(const char *str)
+{
+	int	i;
+
+	i = 0;
+	if (!str || (!ft_isalpha(str[0]) && str[0] != '_'))
+		return (0);
+	while (str[i] && str[i] != '=')
+	{
+		if (!ft_isalnum(str[i]) && str[i] != '_')
+			return (0);
+		i++;
+	}
+	return (1);
+}*/
 
 int	is_valid_identifier(const char *str)
 {
@@ -9,7 +41,8 @@ int	is_valid_identifier(const char *str)
 		return (0);
 	while (str[i] && str[i] != '=')
 	{
-		if (!ft_isalnum(str[i]) && str[i] != '_')
+		//if ((!ft_isalnum(str[i]) && (str[i] != '_' || (str[i] == '+' && str[i + 1] != '='))))
+		if (!(ft_isalnum(str[i]) || str[i] == '_' || (str[i] == '+' && str[i + 1] == '=')))
 			return (0);
 		i++;
 	}

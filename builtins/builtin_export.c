@@ -25,14 +25,37 @@ void	handle_key_value_pair(char *arg, t_env **env)
 	char	*equal_pos;
 	char	*key;
 	char	*value;
+	char	*old_value;
+	char	*new_value_part;
 
 	equal_pos = ft_strchr(arg, '=');
-	key = ft_substr(arg, 0, equal_pos - arg);
-	value = ft_strdup(equal_pos + 1);
-	if (env_exists(*env, key))
-		update_env(env, key, value);
+	if (!equal_pos)
+		return;
+	if (equal_pos > arg && *(equal_pos - 1) == '+')
+	{
+		equal_pos--;
+		key = ft_substr(arg, 0, equal_pos - arg);
+		new_value_part = ft_strdup(equal_pos + 2);
+		old_value = get_env_value(*env, key);
+		if (old_value)
+			value = ft_strjoin(old_value, new_value_part);
+		else
+			value = ft_strdup(new_value_part);
+		if (env_exists(*env, key))
+			update_env(env, key, value);
+		else
+			add_env(env, key, value, 1);
+		free(new_value_part);
+	}
 	else
-		add_env(env, key, value, 1);
+	{
+		key = ft_substr(arg, 0, equal_pos - arg);
+		value = ft_strdup(equal_pos + 1);
+		if (env_exists(*env, key))
+			update_env(env, key, value);
+		else
+			add_env(env, key, value, 1);
+	}
 	free(key);
 	free(value);
 }
