@@ -5,6 +5,8 @@
 #define MAX_INPUT 1024
 #endif
 
+int g_exit_status = 0;
+
 t_env *init_env()
 {
     t_env *env = NULL;
@@ -127,6 +129,8 @@ void free_env_array(char **envp)
 
 void	exec_builtin(t_command *cmds, t_env **env)
 {
+	//char *status_str = ft_itoa(g_exit_status);
+
     if (ft_strcmp(cmds->argv[0], "cd") == 0)
         builtin_cd(cmds->argv, env);
     else if (ft_strcmp(cmds->argv[0], "export") == 0)
@@ -137,14 +141,42 @@ void	exec_builtin(t_command *cmds, t_env **env)
         builtin_unset(cmds->argv, env);
     else if (ft_strcmp(cmds->argv[0], "pwd") == 0)
         builtin_pwd();
-    else if (ft_strcmp(cmds->argv[0], "echo") == 0)
+    else if (ft_strcmp(cmds->argv[0], "echo") == 0)// && !(cmds->argv[1] && ft_strcmp(cmds->argv[1], "$?") == 0))
         builtin_echo(cmds);
+	// else if (ft_strcmp(cmds->argv[0], "echo") == 0 && cmds->argv[1] && ft_strcmp(cmds->argv[1], "$?") == 0)
+	// {
+	// 	printf("%s\n", status_str);
+	// 	free(status_str);
+	// 	g_exit_status = 0;
+	// }
 }
+
+// char *expand_exit_status(char *input) // devi fare la fuznione generale per le $
+// {
+//     char *pos = ft_strstr(input, "$?");
+//     if (!pos)
+//         return ft_strdup(input);  // nessuna espansione necessaria
+
+//     char *before = ft_substr(input, 0, pos - input);
+//     char *after = ft_strdup(pos + 2);
+//     char *status_str = ft_itoa(g_exit_status);
+
+//     char *temp = ft_strjoin(before, status_str);
+//     char *expanded = ft_strjoin(temp, after);
+
+//     free(before);
+//     free(after);
+//     free(temp);
+//     free(status_str);
+
+//     return expanded;
+// }
 
 void	exec_single_non_builtin(t_command *cmds, t_env **env)
 {
 	char *cmd_path;
 	char **envp = convert_env_list_to_array(*env);
+	int status;
 
 	cmd_path = get_command_path(cmds->argv[0], *env);
 	if (cmd_path)
@@ -159,7 +191,13 @@ void	exec_single_non_builtin(t_command *cmds, t_env **env)
 			exit(EXIT_FAILURE);            // importante: usciamo dal figlio!
 		}
 		else if (pid > 0) // processo padre
-			waitpid(pid, NULL, 0);         // aspettiamo il figlio
+		{
+			waitpid(pid, NULL, 0); // aspettiamo il figlio
+			if (WIFEXITED(status))
+				g_exit_status = WEXITSTATUS(status);
+			else if (WIFSIGNALED(status))
+				g_exit_status = 128 + WTERMSIG(status);
+		}
 		else
 			perror("fork");
 		free(cmd_path); // libero nel padre, solo il path
@@ -174,9 +212,6 @@ int	main()
 	t_t *token;
 	t_env *env = init_env();
 	t_command *cmds;
-	//int g_exit_status;
-
-	//g_exit_status = 0;
 
     // printf("Shell Built-in Test - type 'exit' to quit\n");
 

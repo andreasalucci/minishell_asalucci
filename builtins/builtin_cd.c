@@ -15,6 +15,7 @@ int	builtin_cd(char **args, t_env **env)
 	{
 		perror("cd");
 		free(oldpwd);
+		g_exit_status = 1;
 		return (1);
 	}
 	if (oldpwd)
@@ -22,5 +23,6 @@ int	builtin_cd(char **args, t_env **env)
 	if (getcwd(cwd, sizeof(cwd)))
 		update_env_var(env, "PWD", cwd);
 	free(oldpwd);
+	g_exit_status = 0;
 	return (0);
 }

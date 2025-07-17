@@ -62,5 +62,6 @@ int builtin_unset(char **args, t_env **env)
             unset_env(env, args[i]);
         i++;
     }
+	g_exit_status = 0;
     return (status);
 }

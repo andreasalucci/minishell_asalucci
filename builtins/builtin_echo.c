@@ -42,7 +42,8 @@ int builtin_echo(t_command *cmd)
 		}
         i++;
     }
-    if (newline)
-        printf("\n");
+	if (newline)
+		printf("\n");
+	g_exit_status = 0;
     return (0);
 }

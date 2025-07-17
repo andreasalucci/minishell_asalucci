@@ -183,7 +183,16 @@ void fork_process(pid_t *pid)
 
 void wait_for_children(void)
 {
-    while (wait(NULL) > 0);
+	int status;
+	pid_t pid;
+
+	while ((pid = wait(&status)) > 0)
+	{
+		if (WIFEXITED(status))
+			g_exit_status = WEXITSTATUS(status);
+		else if (WIFSIGNALED(status))
+			g_exit_status = 128 + WTERMSIG(status);
+	}
 }
 
 void	exec_command_list(t_command *cmd_list, t_env *env)
