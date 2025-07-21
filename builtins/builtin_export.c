@@ -6,9 +6,13 @@ int	handle_no_args(t_env *env)
 
 	sorted = copy_env_list_sorted(env);
 	if (!sorted)
+	{
+		//g_exit_status = 1;
 		return (1);
+	}
 	print_export(sorted);
 	free_env(sorted);
+	//g_exit_status = 0;
 	return (0);
 }
 
@@ -17,6 +21,7 @@ int	handle_invalid_identifier(char *arg)
 	ft_putstr_fd("minishell: export: `", 2);
 	ft_putstr_fd(arg, 2);
 	ft_putstr_fd("': not a valid identifier\n", 2);
+	g_exit_status = 1;
 	return (1);
 }
 
@@ -83,5 +88,6 @@ int	builtin_export(char **args, t_env **env)
 		process_export_arg(args[i], env);
 		i++;
 	}
+	//printf(" %d \n", g_exit_status);
 	return (0);
 }

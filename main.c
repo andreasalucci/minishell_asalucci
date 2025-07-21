@@ -151,26 +151,26 @@ void	exec_builtin(t_command *cmds, t_env **env)
 	// }
 }
 
-// char *expand_exit_status(char *input) // devi fare la fuznione generale per le $
-// {
-//     char *pos = ft_strstr(input, "$?");
-//     if (!pos)
-//         return ft_strdup(input);  // nessuna espansione necessaria
+char *expand_exit_status(char *input) // devi fare la fuznione generale per le $
+{
+    char *pos = strstr(input, "$?"); /////////////////////////////////////INVALID FUNC
+    if (!pos)
+        return ft_strdup(input);  // nessuna espansione necessaria
 
-//     char *before = ft_substr(input, 0, pos - input);
-//     char *after = ft_strdup(pos + 2);
-//     char *status_str = ft_itoa(g_exit_status);
+    char *before = ft_substr(input, 0, pos - input);
+    char *after = ft_strdup(pos + 2);
+    char *status_str = ft_itoa(g_exit_status);
 
-//     char *temp = ft_strjoin(before, status_str);
-//     char *expanded = ft_strjoin(temp, after);
+    char *temp = ft_strjoin(before, status_str);
+    char *expanded = ft_strjoin(temp, after);
 
-//     free(before);
-//     free(after);
-//     free(temp);
-//     free(status_str);
+    free(before);
+    free(after);
+    free(temp);
+    free(status_str);
 
-//     return expanded;
-// }
+    return expanded;
+}
 
 void	exec_single_non_builtin(t_command *cmds, t_env **env)
 {
@@ -225,6 +225,21 @@ int	main()
 		}
 		if (*input)
 			add_history(input);
+		input = expand_exit_status(input); // trasformo gia qui ogni $?, cosa da cambiare 
+											/*		Test  15: ❌ echo "exit_code ->$? user ->$USER home -> $HOME" 
+											mini output = (exit_code ->0 user ->$USER home -> $HOME)
+											bash output = (exit_code ->0 user ->asalucci home -> /home/asalucci)
+											Test  16: ❌ echo 'exit_code ->$? user ->$USER home -> $HOME' 
+											mini output = (exit_code ->0 user ->$USER home -> $HOME)
+											bash output = (exit_code ->$? user ->$USER home -> $HOME)
+											Test  17: ✅ echo "$" 
+											Test  18: ✅ echo '$' 
+											Test  19: ❌ echo $ 
+											mini output = ()
+											bash output = ($)
+											Test  20: ✅ echo $? 
+											Test  21: ✅ echo $?HELLO */
+
 		token = tokens(input);
 		if (token)
 		{
