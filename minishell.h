@@ -143,5 +143,6 @@ bool is_builtin(t_command *cmd);
 //void	exec_single_simple_command(t_command *cmds, t_env **env);
 void	exec_builtin(t_command *cmds, t_env **env);
 void	exec_single_non_builtin(t_command *cmds, t_env **env);
+void	builtin_exit(char **args);
 
 # endif

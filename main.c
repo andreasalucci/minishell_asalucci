@@ -143,6 +143,8 @@ void	exec_builtin(t_command *cmds, t_env **env)
         builtin_pwd();
     else if (ft_strcmp(cmds->argv[0], "echo") == 0)// && !(cmds->argv[1] && ft_strcmp(cmds->argv[1], "$?") == 0))
         builtin_echo(cmds);
+	else if (ft_strcmp(cmds->argv[0], "exit") == 0)
+		builtin_exit(cmds->argv);
 	// else if (ft_strcmp(cmds->argv[0], "echo") == 0 && cmds->argv[1] && ft_strcmp(cmds->argv[1], "$?") == 0)
 	// {
 	// 	printf("%s\n", status_str);
@@ -235,7 +237,7 @@ int	main()
 	while (1)
 	{
 		input = readline("minishell$ ");
-		if (!input || strncmp(input, "exit", 4) == 0)
+		if (!input)
 		{
 			printf("exit\n");
 			break;
