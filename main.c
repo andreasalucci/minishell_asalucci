@@ -156,6 +156,7 @@ void	exec_builtin(t_command *cmds, t_env **env)
 char *expand_exit_status(char *input) // devi fare la fuznione generale per le $
 {
     char *pos = strstr(input, "$?"); /////////////////////////////////////INVALID FUNC
+
     if (!pos)
         return ft_strdup(input);  // nessuna espansione necessaria
 
