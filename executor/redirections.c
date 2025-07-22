@@ -5,8 +5,6 @@ void apply_redirections(t_command *cmd)
 {
 	if (cmd->infile && cmd->redir_in == 1)
 		apply_redir_in1(cmd);
-	if (cmd->infile && cmd->redir_in == 2)
-		apply_redir_in2();
 	if (cmd->outfile && cmd->redir_out == 1)
 		apply_redir_out1(cmd);
 	if (cmd->outfile && cmd->redir_out == 2)
@@ -27,19 +25,19 @@ void apply_redir_in1(t_command *cmd)
 	close(fd);
 }
 
-void apply_redir_in2(void)
-{
-	int fd;
+// void apply_redir_in2(void)
+// {
+// 	int fd;
 	
-	fd = open(".heredoc_tmp", O_RDONLY);
-	if (fd < 0)
-	{
-		perror(".heredoc_tmp");
-		exit(EXIT_FAILURE);
-	}
-	dup2(fd, STDIN_FILENO);
-	close(fd);
-}
+// 	fd = open(".heredoc_tmp", O_RDONLY);
+// 	if (fd < 0)
+// 	{
+// 		perror(".heredoc_tmp");
+// 		exit(EXIT_FAILURE);
+// 	}
+// 	dup2(fd, STDIN_FILENO);
+// 	close(fd);
+// }
 
 void apply_redir_out1(t_command *cmd)
 {
@@ -71,34 +69,47 @@ void apply_redir_out2(t_command *cmd)
 
 void create_heredoc_open(const char *delimiter)
 {
-	int		fd;
-	char	*line;
+	pid_t pid;
+	int fd;
 
-	line = "\0";
-	fd = open(".heredoc_tmp", O_CREAT | O_WRONLY | O_TRUNC, 0644);
-	if (fd < 0)
+	pid = fork();
+	if (pid == -1)
 	{
-		perror("heredoc open");
+		perror("fork");
 		exit(EXIT_FAILURE);
 	}
-	create_heredoc_effective(delimiter, fd, line);
-	close(fd);
+	if (pid == 0)
+	{
+		signal(SIGINT, SIG_DFL);     // Lascia comportamento di default
+		fd = open(".heredoc_tmp", O_CREAT | O_WRONLY | O_TRUNC, 0644);
+		if (fd < 0)
+		{
+			perror("heredoc open");
+			exit(EXIT_FAILURE);
+		}
+		create_heredoc_effective(delimiter, fd);
+		close(fd);
+		exit(EXIT_SUCCESS);
+	}
+	else
+	{
+		int status;
+		waitpid(pid, &status, 0);
+		if (WIFSIGNALED(status))
+			g_exit_status = 130; // standard per Ctrl+C
+	}
 }
 
-void create_heredoc_effective(const char *delimiter, int fd, char *line)
+void create_heredoc_effective(const char *delimiter, int fd)
 {
+	char *line;
+
 	while (1)
 	{
 		line = readline("> ");
 		if (!line)
-		{
-			close(fd);
-			exit(EXIT_FAILURE); //attenzione a leak, non ci sono perche nessun malloc ma..
-		}
-		// Rimuovi newline finale da line
-		char *newline = ft_strchr(line, '\n');
-		if (newline)
-			*newline = '\0';
+			break;
+
 		if (ft_strcmp(line, delimiter) == 0)
 		{
 			free(line);
@@ -211,8 +222,12 @@ void	exec_command_list(t_command *cmd_list, t_env *env)
         setup_pipe(cmd, pipe_fd);
         fork_process(&pid);
         if (pid == 0)
+		{
+			signal(SIGINT, SIG_DFL);
+			signal(SIGQUIT, SIG_DFL);
             handle_child_process(cmd, prev_fd, pipe_fd, env);
-        else
+		}
+		else
             handle_parent_process(&prev_fd, pipe_fd);
         cmd = cmd->next;
     }

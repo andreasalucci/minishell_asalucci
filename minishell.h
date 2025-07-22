@@ -13,7 +13,8 @@
 #include <fcntl.h>
 #include <sys/wait.h>
 //#include <string.h>
-#include <sys/wait.h>
+
+#include <signal.h>
 
 extern int g_exit_status;
 
@@ -84,6 +85,9 @@ void    	check_pipes_2(t_t *t, t_t **token_list, size_t start, char *word);
 void		add_custom_token(char *value, int type, t_t **token_list);
 void		is_var(t_t *t, t_t **token_list);
 void		is_var_2(t_t *t, t_t **token_list);
+void		free_quotes(char *str1, char *str2, char *str3);
+void		check_var(t_t *t);
+void		new_input(t_t *t, char *exp_var, int count, int dollar);
 
 typedef struct s_env
 {
@@ -126,7 +130,7 @@ void apply_redir_out1(t_command *cmd);
 void apply_redir_out2(t_command *cmd);
 char *mini_getline(const char *prompt);
 void create_heredoc_open(const char *delimiter);
-void create_heredoc_effective(const char *delimiter, int fd, char *line);
+void create_heredoc_effective(const char *delimiter, int fd);
 void handle_child_process(t_command *cmd, int prev_fd, int pipe_fd[], t_env *env);
 void handle_parent_process(int *prev_fd, int pipe_fd[]);
 void setup_pipe(t_command *cmd, int pipe_fd[]);
