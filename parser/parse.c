@@ -4,9 +4,10 @@
 void	parse(t_t *token)
 {
 	t_command *cmd_list;
-
+   
 	cmd_list = NULL;
 	token->error = false;
+     
 	cmd_list = parse_commands(token);
 	if (!cmd_list)
 		return ;

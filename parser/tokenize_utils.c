@@ -22,22 +22,6 @@ void quotes(t_t *t)
 	}
 }
 
-// void	quotes(t_t *t)
-// {
-// 	if ((t->input[t->pos] == '\'' && !t->double_quote) && (t->start == t->input
-// 		|| t->input[t->pos -1] != '\\'))
-// 	{
-// 		t->single_quote = !t->single_quote;
-// 		t->pos++;
-// 	}
-// 	else if ((t->input[t->pos] == '\"' && !t->single_quote) && (t->start == t->input
-// 		|| t->input[t->pos -1] != '\\'))
-// 	{
-// 		t->double_quote = !t->double_quote;
-// 		t->pos++;
-// 	}
-// }
-
 void	metacharacters(t_t *t, t_t **token_list)
 {
 	
@@ -156,34 +140,6 @@ void open_quotes(t_t *t, t_t **token_list)
 	t->pos++;
 }
 
-// void	open_quotes(t_t *t, t_t **token_list)
-// {
-// 	if (t->single_quote || t->double_quote)
-// 		while (t->input[t->pos])
-// 		{
-// 			if (t->single_quote && t->input[t->pos] == '\''&& t->input[t->pos -1] != '\\')
-// 			{
-// 				t->single_quote = !t->single_quote;
-// 				t->anchor_pos++;
-// 				add_token(t, token_list);
-// 				t->pos += 2;
-// 				t->anchor_pos = t->pos;
-// 				return ;
-// 			}
-// 			else if (t->double_quote && t->input[t->pos] == '\"'&& t->input[t->pos -1] != '\\')
-// 			{
-// 				t->double_quote = !t->double_quote;
-// 				t->anchor_pos++;
-// 				add_token(t, token_list);
-// 				t->pos += 2;
-// 				t->anchor_pos = t->pos;
-// 				return ;
-// 			}
-// 			t->pos++;
-// 		}
-// 	t->pos++;
-// }
-
 void add_token(t_t *t, t_t **token_list)
 {
 	if (t->pos > ft_strlen(t->input))
@@ -204,6 +160,7 @@ void add_token(t_t *t, t_t **token_list)
 	check_memory = alloc_new_token(&new_token, len);
 	if (check_memory == 0)
 		return ;
+	
 	ft_strlcpy(new_token->value, t->start + t->anchor_pos, len +1);
 	t->anchor_pos = t->pos;	// (il +1 è per non ripettere l'ultimo carattere) in qualche momento funcionava adesso non piu, tolto.
 	if (ft_strchr(("|<>"), new_token->value[0]))
@@ -211,12 +168,11 @@ void add_token(t_t *t, t_t **token_list)
 		new_token->type = METACHAR;
 		new_token->error = false;
 	}
-		
 	else
 	{
 		new_token->type = TOKEN_WORD;
 		new_token->error = false;
-	}
+	} 
 	add_token_2(new_token, token_list);
 }
 

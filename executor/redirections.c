@@ -151,7 +151,14 @@ void handle_child_process(t_command *cmd, int prev_fd, int pipe_fd[], t_env *env
 	else
 	{
 		execve(cmd_path, cmd->argv, convert_env_list_to_array(env));
+				// o simple perror("execve");
 		perror("execve");
+		if (errno == EACCES || errno == EISDIR)
+			exit(126);
+		else if (errno == ENOENT)
+			exit(127);
+		else
+			exit(1);
 		free(cmd_path);
 		exit(EXIT_FAILURE);
 	}

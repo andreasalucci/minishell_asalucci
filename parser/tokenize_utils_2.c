@@ -67,6 +67,8 @@ void	is_var(t_t *t, t_t **token_list)
 	char	*var_temp;
 	char	*var;
 	char	*var_word;
+	if (expand_exit_status(t))
+		return;
 	if (t->input[t->anchor_pos] == ' ')
 		t->anchor_pos++;
     if (t->input[t->anchor_pos] == '$')

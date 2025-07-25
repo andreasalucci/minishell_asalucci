@@ -15,6 +15,7 @@
 //#include <string.h>
 
 #include <signal.h>
+#include <errno.h>
 
 extern int g_exit_status;
 
@@ -91,6 +92,7 @@ void		is_var_2(t_t *t, t_t **token_list);
 void		free_quotes(char *str1, char *str2, char *str3);
 void		check_var(t_t *t);
 void		new_input(t_t *t, char *exp_var, int count, int dollar);
+bool		expand_exit_status(t_t *t);
 
 typedef struct s_env
 {
@@ -147,5 +149,6 @@ bool is_builtin(t_command *cmd);
 void	exec_builtin(t_command *cmds, t_env **env);
 void	exec_single_non_builtin(t_command *cmds, t_env **env);
 void	builtin_exit(char **args);
+
 
 # endif

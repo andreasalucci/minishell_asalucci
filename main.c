@@ -40,13 +40,14 @@ char	**convert_env_list_to_array(t_env *env)
     int count = 0;
     t_env *tmp = env;
 	int i = 0;
-	char **envp = malloc((count + 1) * sizeof(char *));
+	char **envp;
 	
     while (tmp)
     {
         count++;
         tmp = tmp->next;
     }
+    envp = malloc((count + 1) * sizeof(char *));
     tmp = env;
     while (tmp)
     {
@@ -153,26 +154,26 @@ void	exec_builtin(t_command *cmds, t_env **env)
 	// }
 }
 
-char *expand_exit_status(char *input) // devi fare la fuznione generale per le $
+bool   expand_exit_status(t_t *t) // devi fare la fuznione generale per le $
 {
-    char *pos = ft_strnstr(input, "$?", ft_strlen(input));
-
-    if (!pos)
-        return ft_strdup(input);  // nessuna espansione necessaria
-
-    char *before = ft_substr(input, 0, pos - input);
-    char *after = ft_strdup(pos + 2);
-    char *status_str = ft_itoa(g_exit_status);
-
-    char *temp = ft_strjoin(before, status_str);
-    char *expanded = ft_strjoin(temp, after);
-
-    free(before);
-    free(after);
-    free(temp);
-    free(status_str);
-
-    return expanded;
+    char *pos = NULL;
+    pos = ft_strnstr(t->input + t->anchor_pos, "$?", (t->pos - t->anchor_pos) +2);
+    if (pos)
+    {
+        char *before = ft_substr(t->input, 0, pos - t->input);
+        char *after = ft_strdup(pos +2);
+        char *status_str = ft_itoa(g_exit_status);
+        char *temp = ft_strjoin(before, status_str);
+        free(t->input);
+        t->input = ft_strjoin(temp, after);
+        free(before);
+        free(after);
+        free(temp);
+        free(status_str);
+        return (1);
+    }
+    else
+        return (0);
 }
 
 void	exec_single_non_builtin(t_command *cmds, t_env **env)
@@ -188,8 +189,16 @@ void	exec_single_non_builtin(t_command *cmds, t_env **env)
 		if (pid == 0) // siamo nel figlio
 		{
 			execve(cmd_path, cmds->argv, envp);
+			// o simple perror("execve");
 			perror("execve");
-			free_env_array(envp);
+			if (errno == EACCES || errno == EISDIR)
+				exit(126);
+			else if (errno == ENOENT)
+				exit(127);
+			else
+				exit(1);
+            if (envp)
+			    free_env_array(envp);
 			free(cmd_path);
 			exit(EXIT_FAILURE);            // importante: usciamo dal figlio!
 		}
@@ -245,25 +254,26 @@ int	main()
 		}
 		if (*input)
 			add_history(input);
-		input = expand_exit_status(input); // trasformo gia qui ogni $?, cosa da cambiare 
-											/*		Test  15: ❌ echo "exit_code ->$? user ->$USER home -> $HOME" 
-											mini output = (exit_code ->0 user ->$USER home -> $HOME)
-											bash output = (exit_code ->0 user ->asalucci home -> /home/asalucci)
-											Test  16: ❌ echo 'exit_code ->$? user ->$USER home -> $HOME' 
-											mini output = (exit_code ->0 user ->$USER home -> $HOME)
-											bash output = (exit_code ->$? user ->$USER home -> $HOME)
-											Test  17: ✅ echo "$" 
-											Test  18: ✅ echo '$' 
-											Test  19: ❌ echo $ 
-											mini output = ()
-											bash output = ($)
-											Test  20: ✅ echo $? 
-											Test  21: ✅ echo $?HELLO */
+		// input = expand_exit_status(input); // trasformo gia qui ogni $?, cosa da cambiare 
+		// 									/*		Test  15: ❌ echo "exit_code ->$? user ->$USER home -> $HOME" 
+		// 									mini output = (exit_code ->0 user ->$USER home -> $HOME)
+		// 									bash output = (exit_code ->0 user ->asalucci home -> /home/asalucci)
+		// 									Test  16: ❌ echo 'exit_code ->$? user ->$USER home -> $HOME' 
+		// 									mini output = (exit_code ->0 user ->$USER home -> $HOME)
+		// 									bash output = (exit_code ->$? user ->$USER home -> $HOME)
+		// 									Test  17: ✅ echo "$" 
+		// 									Test  18: ✅ echo '$' 
+		// 									Test  19: ❌ echo $ 
+		// 									mini output = ()
+		// 									bash output = ($)
+		// 									Test  20: ✅ echo $? 
+		// 									Test  21: ✅ echo $?HELLO */
 
 		token = tokens(input);
 		if (token)
 		{
 			parse(token);
+            
 			cmds = parse_commands(token);
 			if (!cmds)
 				continue;
