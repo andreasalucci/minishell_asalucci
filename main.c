@@ -155,7 +155,7 @@ void	exec_builtin(t_command *cmds, t_env **env)
 
 char *expand_exit_status(char *input) // devi fare la fuznione generale per le $
 {
-    char *pos = strstr(input, "$?"); /////////////////////////////////////INVALID FUNC
+    char *pos = ft_strnstr(input, "$?", ft_strlen(input));
 
     if (!pos)
         return ft_strdup(input);  // nessuna espansione necessaria
@@ -195,7 +195,7 @@ void	exec_single_non_builtin(t_command *cmds, t_env **env)
 		}
 		else if (pid > 0) // processo padre
 		{
-			waitpid(pid, NULL, 0); // aspettiamo il figlio
+			waitpid(pid, &status, 0); // aspettiamo il figlio
 			if (WIFEXITED(status))
 				g_exit_status = WEXITSTATUS(status);
 			else if (WIFSIGNALED(status))

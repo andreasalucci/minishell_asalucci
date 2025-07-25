@@ -71,6 +71,7 @@ void create_heredoc_open(const char *delimiter)
 {
 	pid_t pid;
 	int fd;
+	int status;
 
 	pid = fork();
 	if (pid == -1)
@@ -93,7 +94,6 @@ void create_heredoc_open(const char *delimiter)
 	}
 	else
 	{
-		int status;
 		waitpid(pid, &status, 0);
 		if (WIFSIGNALED(status))
 			g_exit_status = 130; // standard per Ctrl+C
