@@ -99,10 +99,15 @@ void open_quotes(t_t *t, t_t **token_list)
 					{
 						begin_quote = malloc((t->quote - t->anchor_pos) +1);
 						ft_strlcpy(begin_quote, t->input + t->anchor_pos, (t->quote - t->anchor_pos) +1);
-						after_quote = malloc((t->pos - t->quote));
+						after_quote = malloc((t->pos - t->quote) +1);
 						ft_strlcpy(after_quote, t->input + (t->quote +1), t->pos - t->quote);
 						end_str = ft_strjoin(begin_quote, after_quote);
-						add_custom_token(end_str, TOKEN_WORD, token_list);
+						if (t->input[t->pos +1] && t->input[t->pos +1] != ' ')
+						{
+							add_custom_token(end_str, TOKEN_QUOTE, token_list);
+						}
+						else
+							add_custom_token(end_str, TOKEN_WORD, token_list);
 						free_quotes(begin_quote, after_quote, end_str);
 					}
 					else
@@ -123,10 +128,15 @@ void open_quotes(t_t *t, t_t **token_list)
 						
 						begin_quote = malloc((t->quote - t->anchor_pos) +1);
 						ft_strlcpy(begin_quote, t->input + t->anchor_pos, (t->quote - t->anchor_pos) +1);
-						after_quote = malloc((t->pos - t->quote));
+						after_quote = malloc((t->pos - t->quote) +1);
 						ft_strlcpy(after_quote, t->input + (t->quote +1), t->pos - t->quote);
 						end_str =ft_strjoin(begin_quote, after_quote);
-						add_custom_token(end_str, TOKEN_WORD, token_list);
+						if (t->input[t->pos +1] && t->input[t->pos +1] != ' ')
+						{
+							add_custom_token(end_str, TOKEN_QUOTE, token_list);
+						}
+						else
+							add_custom_token(end_str, TOKEN_WORD, token_list);
 						free_quotes(begin_quote, after_quote, end_str);
 					}
 					else

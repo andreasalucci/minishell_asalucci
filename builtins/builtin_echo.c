@@ -35,7 +35,7 @@ int builtin_echo(t_command *cmd)
 		if ((!(cmd->outfile) || ft_strcmp(cmd->argv[i], cmd->outfile)) &&
     		(!(cmd->infile) || ft_strcmp(cmd->argv[i], cmd->infile)))
         {
-			if (!first)
+			if (!first && cmd->token_quote == 0)
 				printf(" ");
 			printf("%s", cmd->argv[i]);
 			first = 0;

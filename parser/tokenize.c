@@ -14,6 +14,7 @@ void	initStruct(t_t *t)
 	t->anchor_pos = 0;
 	t->error = false;
 	t->quote = 0;
+	t->token_quote = 0;
 }
 
 t_t	*tokens(char *input)

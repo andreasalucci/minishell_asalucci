@@ -18,7 +18,7 @@ t_command	*parse_commands(t_t *token)
 		}
 		if (token->type == TOKEN_WORD || token->type == TOKEN_VAR)
 		{
-			add_argument(current, token->value);
+			add_argument(current, token->value, token->token_quote);
 		}
 		
 		else
@@ -48,7 +48,7 @@ void	parse_commands_2(t_command **current, t_command **head, t_t *token)
 	
 }
 
-void	add_argument(t_command *cmd, char *arg)
+void	add_argument(t_command *cmd, char *arg, int token_quote)
 {
 	int	count;
 	char **new_argv;
@@ -70,6 +70,8 @@ void	add_argument(t_command *cmd, char *arg)
 	new_argv[count +1] = NULL;	// richiesto da execve
 	free(cmd->argv);
 	cmd->argv = new_argv;
+	if (token_quote == 1)
+		cmd->token_quote = 1;
 }
 
 void redir_in(t_command *cmd, t_t *token)	
@@ -85,7 +87,7 @@ void redir_in(t_command *cmd, t_t *token)
 	}
 	else
 	{
-		printf("minishell: syntax error near unexpected token\n"); 
+		ft_printf("minishell: syntax error near unexpected token\n"); 
 		token->error = true;
 	}
 }
@@ -102,7 +104,7 @@ void redir_out(t_command *cmd, t_t *token)
 	}
 	else
 	{
-		printf("minishell: syntax error near unexpected token\n");
+		ft_printf("minishell: syntax error near unexpected token\n");
 		token->error = true;
 	}
 }
