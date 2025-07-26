@@ -189,14 +189,7 @@ void	exec_single_non_builtin(t_command *cmds, t_env **env)
 		if (pid == 0) // siamo nel figlio
 		{
 			execve(cmd_path, cmds->argv, envp);
-			// o simple perror("execve");
 			perror("execve");
-			if (errno == EACCES || errno == EISDIR)
-				exit(126);
-			else if (errno == ENOENT)
-				exit(127);
-			else
-				exit(1);
             if (envp)
 			    free_env_array(envp);
 			free(cmd_path);
@@ -215,7 +208,12 @@ void	exec_single_non_builtin(t_command *cmds, t_env **env)
 		free(cmd_path); // libero nel padre, solo il path
 	}
 	else
-		printf("Command not found: %s\n", cmds->argv[0]);
+	{
+		ft_putstr_fd("Command not found: ", 2);
+		ft_putstr_fd(cmds->argv[0], 2);
+		ft_putstr_fd("\n", 2);
+		g_exit_status = 127;
+	}
 }
 
 void sigint_handler(int signum)

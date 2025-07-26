@@ -15,7 +15,6 @@
 //#include <string.h>
 
 #include <signal.h>
-#include <errno.h>
 
 extern int g_exit_status;
 

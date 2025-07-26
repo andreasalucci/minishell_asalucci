@@ -123,8 +123,6 @@ void create_heredoc_effective(const char *delimiter, int fd)
 
 void handle_child_process(t_command *cmd, int prev_fd, int pipe_fd[], t_env *env)//char **envp)
 {
-	int g_exit_status = 0;
-
     if (prev_fd != -1)
     {
         dup2(prev_fd, STDIN_FILENO);
@@ -140,27 +138,24 @@ void handle_child_process(t_command *cmd, int prev_fd, int pipe_fd[], t_env *env
     char *cmd_path = get_command_path(cmd->argv[0], env);
 	if (!cmd_path)
 	{
-		fprintf(stderr, "Command not found: %s\n", cmd->argv[0]);
-		exit(EXIT_FAILURE);
+		ft_putstr_fd("Command not found: ", 2);
+		ft_putstr_fd(cmd->argv[0], 2);
+		ft_putstr_fd("\n", 2);
+		g_exit_status = 127;
+		exit(g_exit_status);
 	}
 	if (is_builtin(cmd))
 	{
-		exec_builtin(cmd, &env); // se sei in un figlio, esci dopo
+		free(cmd_path);
+		exec_builtin(cmd, &env);
 		exit(g_exit_status);
 	}
 	else
 	{
 		execve(cmd_path, cmd->argv, convert_env_list_to_array(env));
-				// o simple perror("execve");
 		perror("execve");
-		if (errno == EACCES || errno == EISDIR)
-			exit(126);
-		else if (errno == ENOENT)
-			exit(127);
-		else
-			exit(1);
 		free(cmd_path);
-		exit(EXIT_FAILURE);
+		exit(126);
 	}
 }
 

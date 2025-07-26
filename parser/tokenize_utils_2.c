@@ -129,7 +129,9 @@ void    is_var_2(t_t *t, t_t **token_list)
 	}
 	end_var = ft_strjoin(prefix, var_token);
 	add_custom_token(end_var, TOKEN_VAR, token_list);
-	printf("%s: command not found\n", end_var);
+	ft_putstr_fd(end_var, 2);
+	ft_putstr_fd(": command not found\n", 2);
+	g_exit_status = 127;
 	t->error = true;
 	free(var);
 	free(end_var);
