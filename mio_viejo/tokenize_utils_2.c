@@ -29,8 +29,6 @@ void check_pipes_2(t_t *t, t_t **token_list, size_t start, char *word)
     }
 }
 
-
-
 void    add_custom_token(char *value, int type, t_t **token_list)
 {
 	t_t *new_token;
@@ -117,7 +115,8 @@ void    is_var_2(t_t *t, t_t **token_list)
 	}
 	end_var = ft_strjoin(prefix, var_token);
 	add_custom_token(end_var, TOKEN_VAR, token_list);
-	ft_printf("%s: command not found\n", end_var);
+	ft_putstr_fd(end_var, 2);
+	ft_putstr_fd(": command not found\n", 2);
 	t->error = true;
 	free(var);
 	free(end_var);

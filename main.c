@@ -209,9 +209,8 @@ void	exec_single_non_builtin(t_command *cmds, t_env **env)
 	}
 	else
 	{
-		ft_putstr_fd("Command not found: ", 2);
 		ft_putstr_fd(cmds->argv[0], 2);
-		ft_putstr_fd("\n", 2);
+		ft_putstr_fd(": command not found\n", 2);
 		g_exit_status = 127;
 	}
 }

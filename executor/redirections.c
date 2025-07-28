@@ -138,9 +138,8 @@ void handle_child_process(t_command *cmd, int prev_fd, int pipe_fd[], t_env *env
     char *cmd_path = get_command_path(cmd->argv[0], env);
 	if (!cmd_path)
 	{
-		ft_putstr_fd("Command not found: ", 2);
 		ft_putstr_fd(cmd->argv[0], 2);
-		ft_putstr_fd("\n", 2);
+		ft_putstr_fd(": command not found\n", 2);
 		g_exit_status = 127;
 		exit(g_exit_status);
 	}
