@@ -134,7 +134,7 @@ void apply_redir_out1(t_command *cmd);
 void apply_redir_out2(t_command *cmd);
 char *mini_getline(const char *prompt);
 void create_heredoc_open(const char *delimiter);
-void create_heredoc_effective(const char *delimiter, int fd);
+void create_heredoc_effective(const char *delimiter);
 void handle_child_process(t_command *cmd, int prev_fd, int pipe_fd[], t_env *env);
 void handle_parent_process(int *prev_fd, int pipe_fd[]);
 void setup_pipe(t_command *cmd, int pipe_fd[]);

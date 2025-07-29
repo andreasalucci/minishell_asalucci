@@ -157,7 +157,7 @@ void	exec_builtin(t_command *cmds, t_env **env)
 bool   expand_exit_status(t_t *t) // devi fare la fuznione generale per le $
 {
     char *pos = NULL;
-    pos = ft_strnstr(t->input + t->anchor_pos, "$?", (t->pos - t->anchor_pos) +2);
+    pos = ft_strnstr(t->input + t->anchor_pos, "$?", ft_strlen(t->input + t->anchor_pos));
     if (pos)
     {
         char *before = ft_substr(t->input, 0, pos - t->input);

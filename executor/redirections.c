@@ -67,42 +67,17 @@ void apply_redir_out2(t_command *cmd)
 	close(fd);
 }
 
-void create_heredoc_open(const char *delimiter)
-{
-	pid_t pid;
-	int fd;
-	int status;
+int g_heredoc_interrupted = 0;
 
-	pid = fork();
-	if (pid == -1)
-	{
-		perror("fork");
-		exit(EXIT_FAILURE);
-	}
-	if (pid == 0)
-	{
-		signal(SIGINT, SIG_DFL);     // Lascia comportamento di default
-		fd = open(".heredoc_tmp", O_CREAT | O_WRONLY | O_TRUNC, 0644);
-		if (fd < 0)
-		{
-			perror("heredoc open");
-			exit(EXIT_FAILURE);
-		}
-		create_heredoc_effective(delimiter, fd);
-		close(fd);
-		exit(EXIT_SUCCESS);
-	}
-	else
-	{
-		waitpid(pid, &status, 0);
-		if (WIFSIGNALED(status))
-			g_exit_status = 130; // standard per Ctrl+C
-	}
-}
-
-void create_heredoc_effective(const char *delimiter, int fd)
+void	create_heredoc_effective(const char *delimiter)
 {
-	char *line;
+	int		fd;
+	char	*line;
+
+	signal(SIGINT, SIG_DFL);  // permetti a Ctrl+C di interrompere il processo
+	fd = open(".heredoc_tmp", O_WRONLY | O_CREAT | O_TRUNC, 0644);
+	if (fd < 0)
+		exit(1);
 
 	while (1)
 	{
@@ -110,14 +85,44 @@ void create_heredoc_effective(const char *delimiter, int fd)
 		if (!line)
 			break;
 
-		if (ft_strcmp(line, delimiter) == 0)
+		if (!delimiter || ft_strcmp(line, delimiter) == 0)
 		{
 			free(line);
 			break;
 		}
-		write(fd, line, ft_strlen(line));
-		write(fd, "\n", 1);
+
+		ft_putendl_fd(line, fd);
 		free(line);
+	}
+
+	close(fd);
+	exit(0);
+}
+
+void	create_heredoc_open(const char *delimiter)
+{
+	pid_t	pid;
+	int		status;
+
+	signal(SIGINT, SIG_IGN);  // ignora SIGINT nel padre durante heredoc
+	pid = fork();
+	if (pid < 0)
+	{
+		perror("fork");
+		return;
+	}
+	if (pid == 0)
+		create_heredoc_effective(delimiter);
+
+	waitpid(pid, &status, 0);
+	signal(SIGINT, SIG_DFL);  // ripristina default nel padre
+
+	if (WIFSIGNALED(status) && WTERMSIG(status) == SIGINT)
+	{
+		g_exit_status = 130;
+		g_heredoc_interrupted = 1;  // segnala interruzione heredoc
+		printf("\n");
+		unlink(".heredoc_tmp");     // pulizia
 	}
 }
 
@@ -218,6 +223,13 @@ void	exec_command_list(t_command *cmd_list, t_env *env)
     {
         if (cmd->redir_in == 2)
             create_heredoc_open(cmd->infile);
+		{
+			if (g_heredoc_interrupted)
+			{
+				g_heredoc_interrupted = 0;
+				return; // evita esecuzione se heredoc è stato interrotto da Ctrl+C
+			}
+		}
         pipe_fd[0] = -1;
         pipe_fd[1] = -1;
         setup_pipe(cmd, pipe_fd);
