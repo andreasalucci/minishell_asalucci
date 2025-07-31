@@ -92,7 +92,7 @@ char *get_command_path(char *cmd, t_env *env)
     char    **paths;
     char    *candidate;
     int     i;
-    // Se il comando contiene uno slash, è già un path esplicito
+
     if (ft_strchr(cmd, '/'))
         return ft_strdup(cmd);
     path_var = get_env_value(env, "PATH");
@@ -105,14 +105,11 @@ char *get_command_path(char *cmd, t_env *env)
     while (paths[i])
     {
         candidate = ft_strjoin(paths[i], "/");
-        candidate = ft_strjoin_free(candidate, cmd); // funzione che libera il primo argomento
+        candidate = ft_strjoin_free(candidate, cmd);
         if (access(candidate, X_OK) == 0)
-            //free_split(paths);
             return candidate;
-        //free(candidate);
         i++;
     }
-    //free_split(paths);
     return NULL;
 }
 
@@ -130,8 +127,6 @@ void free_env_array(char **envp)
 
 void	exec_builtin(t_command *cmds, t_env **env)
 {
-	//char *status_str = ft_itoa(g_exit_status);
-
     if (ft_strcmp(cmds->argv[0], "cd") == 0)
         builtin_cd(cmds->argv, env);
     else if (ft_strcmp(cmds->argv[0], "export") == 0)
@@ -146,12 +141,6 @@ void	exec_builtin(t_command *cmds, t_env **env)
         builtin_echo(cmds);
 	else if (ft_strcmp(cmds->argv[0], "exit") == 0)
 		builtin_exit(cmds->argv);
-	// else if (ft_strcmp(cmds->argv[0], "echo") == 0 && cmds->argv[1] && ft_strcmp(cmds->argv[1], "$?") == 0)
-	// {
-	// 	printf("%s\n", status_str);
-	// 	free(status_str);
-	// 	g_exit_status = 0;
-	// }
 }
 
 bool   expand_exit_status(t_t *t) // devi fare la fuznione generale per le $
@@ -218,11 +207,11 @@ void	exec_single_non_builtin(t_command *cmds, t_env **env)
 void sigint_handler(int signum)
 {
     (void)signum;
-    g_exit_status = 130;  // convenzione bash
+
+    g_exit_status = 130;
     write(1, "\n", 1);
-    rl_on_new_line();
     rl_replace_line("", 0);
-    rl_redisplay();
+    rl_on_new_line();
 }
 
 void setup_shell_signals(void)
@@ -231,16 +220,23 @@ void setup_shell_signals(void)
     signal(SIGQUIT, SIG_IGN);        // Ctrl+barra
 }
 
-int	main()
+
+
+int	hasnt_pipe_or_redir(t_command *cmds, t_env *env)
 {
-	char *input;
-	t_t *token;
-	t_env *env = init_env();
-	t_command *cmds;
+	if (!has_pipe_or_redir(cmds))
+	{
+		if(is_builtin(cmds))
+			exec_builtin(cmds, &env);
+		else
+			exec_single_non_builtin(cmds, &env);
+		return (1);
+	}
+	return (0);
+}
 
-    // printf("Shell Built-in Test - type 'exit' to quit\n");
-
-	setup_shell_signals();
+void	input_cycle(char *input, t_t *token, t_env *env, t_command *cmds)
+{
 	while (1)
 	{
 		input = readline("minishell$ ");
@@ -251,47 +247,36 @@ int	main()
 		}
 		if (*input)
 			add_history(input);
-		// input = expand_exit_status(input); // trasformo gia qui ogni $?, cosa da cambiare 
-		// 									/*		Test  15: ❌ echo "exit_code ->$? user ->$USER home -> $HOME" 
-		// 									mini output = (exit_code ->0 user ->$USER home -> $HOME)
-		// 									bash output = (exit_code ->0 user ->asalucci home -> /home/asalucci)
-		// 									Test  16: ❌ echo 'exit_code ->$? user ->$USER home -> $HOME' 
-		// 									mini output = (exit_code ->0 user ->$USER home -> $HOME)
-		// 									bash output = (exit_code ->$? user ->$USER home -> $HOME)
-		// 									Test  17: ✅ echo "$" 
-		// 									Test  18: ✅ echo '$' 
-		// 									Test  19: ❌ echo $ 
-		// 									mini output = ()
-		// 									bash output = ($)
-		// 									Test  20: ✅ echo $? 
-		// 									Test  21: ✅ echo $?HELLO */
-
 		token = tokens(input);
 		if (token)
 		{
 			parse(token);
-            
 			cmds = parse_commands(token);
 			if (!cmds)
 				continue;
-			if (!has_pipe_or_redir(cmds))
-			{
-				if(is_builtin(cmds))
-					exec_builtin(cmds, &env);
-				else
-					exec_single_non_builtin(cmds, &env);
+			if (hasnt_pipe_or_redir(cmds, env))
 				continue;
-			}
 			else
-			{
-				//char **envp = convert_env_list_to_array(env);
-				exec_command_list(cmds, env);  // gestisce pipe, fork, redir
-				//free_env_array(envp);
-			}
+				exec_command_list(cmds, env);
 			free_command(cmds);  // cleanup eventuale
 		}
 		free(input);
 	}
+}
+
+int	main()
+{
+	char		*input;
+	t_t			*token;
+	t_env		*env;
+	t_command	*cmds;
+
+	input = NULL;
+	token = NULL;
+	cmds = NULL;
+	env = init_env();
+	setup_shell_signals();
+	input_cycle(input, token, env, cmds);
     free_env(env);
-    return 0;
+    return (0);
 }

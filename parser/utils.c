@@ -14,7 +14,8 @@ void    check_var(t_t *t)
 		{
 			expand_exit_status(t);
 		}
-		
+		else if (t->input[count] == '$' && t->input[count +1] == '"')
+			return ;
 		else if (t->input[count] == '$' && t->input[count +1] != ' ')
 		{
 			count++;
@@ -28,6 +29,7 @@ void    check_var(t_t *t)
 			new_input(t, exp_var, count, dollar);
 		}
 		count++;
+		
 	}	
 }
 

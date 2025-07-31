@@ -67,12 +67,20 @@ void	is_var(t_t *t, t_t **token_list)
 	char	*var_temp;
 	char	*var;
 	char	*var_word;
+	
 	if (expand_exit_status(t))
 		return;
 	if (t->input[t->anchor_pos] == ' ')
 		t->anchor_pos++;
     if (t->input[t->anchor_pos] == '$')
 	{
+		if (!t->input[t->anchor_pos +1] || t->input[t->anchor_pos +1] == ' ')
+		{
+			add_custom_token("$", TOKEN_WORD, token_list);
+			t->anchor_pos++;
+			t->pos = t->anchor_pos;
+			return;
+		}
 		if (t->pos == t->anchor_pos)
 			t->pos++;
 		while (t->input[t->pos] && (ft_isalnum(t->input[t->pos]) || t->input[t->pos] == '_'))
@@ -103,7 +111,7 @@ void    is_var_2(t_t *t, t_t **token_list)
 	char	*var;
 	char	*var_token;
 	char	*end_var;
-
+	
 	dolar = t->pos;
 	prefix = malloc(t->pos - t->anchor_pos +1);
 	ft_strlcpy(prefix, t->input, (t->pos - t->anchor_pos) +1);
