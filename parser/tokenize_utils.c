@@ -32,8 +32,10 @@ void	metacharacters(t_t *t, t_t **token_list)
 			check_pipes(t, token_list);
 		else if (t->input[t->pos] == '<' && t->input[t->pos +1] != '<')
 		{
+			//ft_printf("t->input[t->anchor_pos]:: %c, t->input[t->pos]:: %c\n", t->input[t->anchor_pos], t->input[t->pos]); //cancellare dopo i test
 			if (t->pos == t->anchor_pos)
 				t->pos++;
+			//ft_printf("metacharacters t->pos:: %i\n", t->pos);
 			add_token(t, token_list);
 		}
 				
@@ -142,6 +144,7 @@ void open_quotes(t_t *t, t_t **token_list)
 
 void add_token(t_t *t, t_t **token_list)
 {
+	//ft_printf("t->anchor_pos:: %i, t->pos 1:: %i\n", t->anchor_pos, t->pos);
 	if (t->pos > ft_strlen(t->input))
 		return ;
 	size_t	len;
@@ -149,8 +152,16 @@ void add_token(t_t *t, t_t **token_list)
 	int check_memory;
 	while (t->input[t->anchor_pos] == ' ' && t->anchor_pos < t->pos)
 		t->anchor_pos++;
+	//ft_printf("t->anchor_pos:: %i, t->pos 2:: %i\n", t->anchor_pos, t->pos);
 	if(t->anchor_pos == t->pos && (t->input[t->pos] == '<' || t->input[t->pos] == '>'))
-		return ;
+	{
+		//ft_printf("entro if \n");
+		if (t->input[t->pos +1] == '<' || t->input[t->pos +1] == '>')
+			return ;
+		t->pos++;
+		//ft_printf("entro if \n");
+	}
+		
 	len = t->pos - t->anchor_pos;
 	if (len == 0 || t->input[t->anchor_pos] == ' ')
 	{
@@ -160,7 +171,6 @@ void add_token(t_t *t, t_t **token_list)
 	check_memory = alloc_new_token(&new_token, len);
 	if (check_memory == 0)
 		return ;
-	
 	ft_strlcpy(new_token->value, t->start + t->anchor_pos, len +1);
 	t->anchor_pos = t->pos;	// (il +1 è per non ripettere l'ultimo carattere) in qualche momento funcionava adesso non piu, tolto.
 	if (ft_strchr(("|<>"), new_token->value[0]))

@@ -11,7 +11,7 @@ void	parse(t_t *token)
 	cmd_list = parse_commands(token);
 	if (!cmd_list)
 		return ;
-	// print_commands(cmd_list);
+	//print_commands(cmd_list);
 }
 
 void free_command_list(t_command *cmd)

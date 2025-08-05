@@ -175,18 +175,18 @@ void	exec_single_non_builtin(t_command *cmds, t_env **env)
 	if (cmd_path)
 	{
 		pid_t pid = fork();
-		if (pid == 0) // siamo nel figlio
+		if (pid == 0)
 		{
 			execve(cmd_path, cmds->argv, envp);
 			perror("execve");
             if (envp)
 			    free_env_array(envp);
 			free(cmd_path);
-			exit(EXIT_FAILURE);            // importante: usciamo dal figlio!
+			exit(EXIT_FAILURE);
 		}
-		else if (pid > 0) // processo padre
+		else if (pid > 0)
 		{
-			waitpid(pid, &status, 0); // aspettiamo il figlio
+			waitpid(pid, &status, 0);
 			if (WIFEXITED(status))
 				g_exit_status = WEXITSTATUS(status);
 			else if (WIFSIGNALED(status))
@@ -209,37 +209,56 @@ void sigint_handler(int signum)
     (void)signum;
 
     g_exit_status = 130;
-    write(1, "\n", 1);
-    rl_replace_line("", 0);
-    rl_on_new_line();
+    if (isatty(STDIN_FILENO))
+    {
+        write(STDOUT_FILENO, "\n", 1);
+        if (!rl_done)
+        {
+            rl_replace_line("", 0);
+            rl_on_new_line();
+            rl_redisplay();
+        }
+    }
 }
 
 void setup_shell_signals(void)
 {
-    signal(SIGINT, sigint_handler);  // Ctrl+C
-    signal(SIGQUIT, SIG_IGN);        // Ctrl+barra
+    signal(SIGINT, sigint_handler);
+    signal(SIGQUIT, SIG_IGN);
 }
 
 
 
-int	hasnt_pipe_or_redir(t_command *cmds, t_env *env)
+int	main()
 {
-	if (!has_pipe_or_redir(cmds))
+	char *input;
+	t_t *token;
+	t_env *env = init_env();
+	t_command *cmds;
+	t_global *global;
+
+	global = malloc(sizeof(t_global));
+	if (global == NULL)
 	{
-		if(is_builtin(cmds))
-			exec_builtin(cmds, &env);
-		else
-			exec_single_non_builtin(cmds, &env);
-		return (1);
+		perror("malloc");
+		exit(EXIT_FAILURE);
 	}
-	return (0);
-}
+	global->heredoc_interrupted = 0;
 
-void	input_cycle(char *input, t_t *token, t_env *env, t_command *cmds)
-{
-	while (1)
-	{
-		input = readline("minishell$ ");
+    // printf("Shell Built-in Test - type 'exit' to quit\n");
+
+    setup_shell_signals();
+    while (1)
+    {
+        input = readline("minishell$ ");
+        
+        if (global->heredoc_interrupted)
+        {
+            global->heredoc_interrupted = 0;
+            free(input);
+            continue;
+        }
+		
 		if (!input)
 		{
 			printf("exit\n");
@@ -247,36 +266,48 @@ void	input_cycle(char *input, t_t *token, t_env *env, t_command *cmds)
 		}
 		if (*input)
 			add_history(input);
+		// input = expand_exit_status(input); // trasformo gia qui ogni $?, cosa da cambiare 
+		// 									/*		Test  15: ❌ echo "exit_code ->$? user ->$USER home -> $HOME" 
+		// 									mini output = (exit_code ->0 user ->$USER home -> $HOME)
+		// 									bash output = (exit_code ->0 user ->asalucci home -> /home/asalucci)
+		// 									Test  16: ❌ echo 'exit_code ->$? user ->$USER home -> $HOME' 
+		// 									mini output = (exit_code ->0 user ->$USER home -> $HOME)
+		// 									bash output = (exit_code ->$? user ->$USER home -> $HOME)
+		// 									Test  17: ✅ echo "$" 
+		// 									Test  18: ✅ echo '$' 
+		// 									Test  19: ❌ echo $ 
+		// 									mini output = ()
+		// 									bash output = ($)
+		// 									Test  20: ✅ echo $? 
+		// 									Test  21: ✅ echo $?HELLO */
+
 		token = tokens(input);
 		if (token)
 		{
 			parse(token);
+            
 			cmds = parse_commands(token);
 			if (!cmds)
 				continue;
-			if (hasnt_pipe_or_redir(cmds, env))
+			if (!has_pipe_or_redir(cmds))
+			{
+				if(is_builtin(cmds))
+					exec_builtin(cmds, &env);
+				else
+					exec_single_non_builtin(cmds, &env);
 				continue;
+			}
 			else
-				exec_command_list(cmds, env);
+			{
+				//char **envp = convert_env_list_to_array(env);
+				exec_command_list(cmds, env, global);  // gestisce pipe, fork, redir
+				//free_env_array(envp);
+			}
 			free_command(cmds);  // cleanup eventuale
 		}
 		free(input);
 	}
-}
-
-int	main()
-{
-	char		*input;
-	t_t			*token;
-	t_env		*env;
-	t_command	*cmds;
-
-	input = NULL;
-	token = NULL;
-	cmds = NULL;
-	env = init_env();
-	setup_shell_signals();
-	input_cycle(input, token, env, cmds);
     free_env(env);
-    return (0);
+	free(global);
+    return 0;
 }

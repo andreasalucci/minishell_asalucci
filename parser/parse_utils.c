@@ -5,7 +5,9 @@ t_command	*parse_commands(t_t *token)
 {
 	t_command *head;
 	t_command *current;
-
+	t_t *prev_token;
+	
+	prev_token = NULL;
 	head = NULL;
 	current = NULL;
 	while(token && !token->error)
@@ -16,7 +18,8 @@ t_command	*parse_commands(t_t *token)
 			current = malloc(sizeof(t_command));
 			ft_bzero(current, sizeof(t_command));
 		}
-		if (token->type == TOKEN_WORD || token->type == TOKEN_VAR)
+		if ((token->type == TOKEN_WORD || token->type == TOKEN_VAR) &&
+        (!prev_token || prev_token->type != TOKEN_REDIR_IN))
 		{
 			add_argument(current, token->value, token->token_quote);
 		}
@@ -25,6 +28,7 @@ t_command	*parse_commands(t_t *token)
 			parse_commands_2(&current, &head, token);
 		if (check_errorNclose(&head, current, token->error))
 			return (NULL);
+		prev_token = token;
 		token = token->next;
 	}
 	if (current && (!token || !token->error))
