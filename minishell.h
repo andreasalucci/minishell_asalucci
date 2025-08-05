@@ -16,7 +16,12 @@
 
 #include <signal.h>
 
+
+
+#include <errno.h>  // Per errno e ECHILD
+
 extern int g_exit_status;
+// extern int g_in_readline;
 
 typedef enum token_type
 {
@@ -60,6 +65,11 @@ typedef struct s_command
 	int					token_quote;
     struct s_command	*next;
 } t_command;
+
+typedef struct global 
+{
+	int	heredoc_interrupted;
+} t_global;
 
 t_t	*tokens(char *input);
 void		quotes(t_t *t);
@@ -133,14 +143,14 @@ void apply_redir_in2(void);
 void apply_redir_out1(t_command *cmd);
 void apply_redir_out2(t_command *cmd);
 char *mini_getline(const char *prompt);
-void create_heredoc_open(const char *delimiter);
+void create_heredoc_open(const char *delimiter, t_global *g);
 void create_heredoc_effective(const char *delimiter);
 void handle_child_process(t_command *cmd, int prev_fd, int pipe_fd[], t_env *env);
 void handle_parent_process(int *prev_fd, int pipe_fd[]);
 void setup_pipe(t_command *cmd, int pipe_fd[]);
 void fork_process(pid_t *pid);
 void wait_for_children(void);
-void exec_command_list(t_command *cmd_list, t_env *env);
+void exec_command_list(t_command *cmd_list, t_env *env, t_global *g);
 char *get_command_path(char *cmd, t_env *env);
 char	**convert_env_list_to_array(t_env *env);
 bool is_builtin(t_command *cmd);
@@ -148,6 +158,7 @@ bool is_builtin(t_command *cmd);
 void	exec_builtin(t_command *cmds, t_env **env);
 void	exec_single_non_builtin(t_command *cmds, t_env **env);
 void	builtin_exit(char **args);
+void	sigint_handler(int signum);
 
 
 # endif

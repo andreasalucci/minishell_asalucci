@@ -1,6 +1,13 @@
 #include "../minishell.h"
 #include "../libft/libft.h"
 
+static void heredoc_sigint_handler(int signum)
+{
+    (void)signum;
+    write(STDOUT_FILENO, "\n", 1); //non ^C\n, 3
+    exit(130);
+}
+
 void apply_redirections(t_command *cmd)
 {
 	if (cmd->infile && cmd->redir_in == 1)
@@ -24,20 +31,6 @@ void apply_redir_in1(t_command *cmd)
 	dup2(fd, STDIN_FILENO);
 	close(fd);
 }
-
-// void apply_redir_in2(void)
-// {
-// 	int fd;
-	
-// 	fd = open(".heredoc_tmp", O_RDONLY);
-// 	if (fd < 0)
-// 	{
-// 		perror(".heredoc_tmp");
-// 		exit(EXIT_FAILURE);
-// 	}
-// 	dup2(fd, STDIN_FILENO);
-// 	close(fd);
-// }
 
 void apply_redir_out1(t_command *cmd)
 {
@@ -67,67 +60,70 @@ void apply_redir_out2(t_command *cmd)
 	close(fd);
 }
 
-int g_heredoc_interrupted = 0;
-
-void	create_heredoc_effective(const char *delimiter)
+void create_heredoc_effective(const char *delimiter)
 {
-	int		fd;
-	char	*line;
+    int fd;
+    char *line;
 
-	signal(SIGINT, SIG_DFL);  // permetti a Ctrl+C di interrompere il processo
-	fd = open(".heredoc_tmp", O_WRONLY | O_CREAT | O_TRUNC, 0644);
-	if (fd < 0)
-		exit(1);
-
-	while (1)
-	{
-		line = readline("> ");
-		if (!line)
-			break;
-
-		if (!delimiter || ft_strcmp(line, delimiter) == 0)
-		{
-			free(line);
-			break;
-		}
-
-		ft_putendl_fd(line, fd);
-		free(line);
-	}
-
-	close(fd);
-	exit(0);
+    fd = open(".heredoc_tmp", O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if (fd < 0)
+        exit(1);
+    signal(SIGINT, heredoc_sigint_handler);
+    while (1)
+    {
+        line = readline("> ");
+        if (!line)
+        {
+            write(STDOUT_FILENO, "\n", 1);
+            break;
+        }
+        if (ft_strcmp(line, delimiter) == 0)
+        {
+            free(line);
+            break;
+        }
+        ft_putendl_fd(line, fd);
+        free(line);
+    }
+    close(fd);
+    exit(0);
 }
 
-void	create_heredoc_open(const char *delimiter)
+void create_heredoc_open(const char *delimiter, t_global *g)
 {
-	pid_t	pid;
-	int		status;
+    pid_t pid;
+    int status;
 
-	signal(SIGINT, SIG_IGN);  // ignora SIGINT nel padre durante heredoc
-	pid = fork();
-	if (pid < 0)
-	{
-		perror("fork");
-		return;
-	}
-	if (pid == 0)
-		create_heredoc_effective(delimiter);
-
-	waitpid(pid, &status, 0);
-	signal(SIGINT, SIG_DFL);  // ripristina default nel padre
-
-	if (WIFSIGNALED(status) && WTERMSIG(status) == SIGINT)
-	{
-		g_exit_status = 130;
-		g_heredoc_interrupted = 1;  // segnala interruzione heredoc
-		printf("\n");
-		unlink(".heredoc_tmp");     // pulizia
-	}
+    signal(SIGINT, SIG_IGN);
+    pid = fork();
+    if (pid < 0)
+    {
+        perror("fork");
+        return;
+    }
+    if (pid == 0)
+        create_heredoc_effective(delimiter);
+    waitpid(pid, &status, 0);
+    signal(SIGINT, sigint_handler);
+    if (WIFEXITED(status) && WEXITSTATUS(status) == 130)
+    {
+        g->heredoc_interrupted = 1;
+        g_exit_status = 130;
+        unlink(".heredoc_tmp");
+    }
+    else if (WIFSIGNALED(status) && WTERMSIG(status) == SIGINT)
+    {
+        g->heredoc_interrupted = 1;
+        g_exit_status = 130;
+        unlink(".heredoc_tmp");
+    }
 }
 
 void handle_child_process(t_command *cmd, int prev_fd, int pipe_fd[], t_env *env)//char **envp)
 {
+    signal(SIGINT, SIG_DFL);
+    signal(SIGQUIT, SIG_DFL);
+    
     if (prev_fd != -1)
     {
         dup2(prev_fd, STDIN_FILENO);
@@ -200,49 +196,74 @@ void fork_process(pid_t *pid)
 
 void wait_for_children(void)
 {
-	int status;
-	pid_t pid;
+    int status;
+    pid_t pid;
 
-	while ((pid = wait(&status)) > 0)
-	{
-		if (WIFEXITED(status))
-			g_exit_status = WEXITSTATUS(status);
-		else if (WIFSIGNALED(status))
-			g_exit_status = 128 + WTERMSIG(status);
-	}
+    while ((pid = wait(&status)) > 0)
+    {
+        if (WIFEXITED(status))
+            g_exit_status = WEXITSTATUS(status);
+        else if (WIFSIGNALED(status))
+            g_exit_status = 128 + WTERMSIG(status);
+    }
+    if (pid == -1 && errno != ECHILD)
+    {
+        perror("waitpid");
+    }
 }
 
-void	exec_command_list(t_command *cmd_list, t_env *env)
+void exec_command_list(t_command *cmd_list, t_env *env, t_global *g)
 {
-    t_command	*cmd = cmd_list;
-    int			pipe_fd[2];
-    int			prev_fd = -1;
-    pid_t		pid;
+    t_command *cmd = cmd_list;
+    int pipe_fd[2];
+    int prev_fd = -1;
+    pid_t pid;
 
     while (cmd)
     {
         if (cmd->redir_in == 2)
-            create_heredoc_open(cmd->infile);
-		{
-			if (g_heredoc_interrupted)
-			{
-				g_heredoc_interrupted = 0;
-				return; // evita esecuzione se heredoc è stato interrotto da Ctrl+C
-			}
-		}
+        {
+            create_heredoc_open(cmd->infile, g);
+            if (g->heredoc_interrupted)
+            {
+                g->heredoc_interrupted = 0;
+                if (prev_fd != -1) 
+                    close(prev_fd);
+                return;
+            }
+        }
         pipe_fd[0] = -1;
         pipe_fd[1] = -1;
-        setup_pipe(cmd, pipe_fd);
-        fork_process(&pid);
+        if (cmd->next && pipe(pipe_fd) == -1)
+        {
+            perror("pipe");
+            if (prev_fd != -1)
+                close(prev_fd);
+            return;
+        }
+        pid = fork();
+        if (pid == -1)
+        {
+            perror("fork");
+            if (prev_fd != -1)
+                close(prev_fd);
+            if (pipe_fd[0] != -1)
+                close(pipe_fd[0]);
+            if (pipe_fd[1] != -1)
+                close(pipe_fd[1]);
+            return;
+        }
         if (pid == 0)
-		{
-			signal(SIGINT, SIG_DFL);
-			signal(SIGQUIT, SIG_DFL);
+        {
+            signal(SIGINT, SIG_DFL);
+            signal(SIGQUIT, SIG_DFL);
             handle_child_process(cmd, prev_fd, pipe_fd, env);
-		}
-		else
+        }
+        else
+        {
             handle_parent_process(&prev_fd, pipe_fd);
-        cmd = cmd->next;
+            cmd = cmd->next;
+        }
     }
     wait_for_children();
 }
