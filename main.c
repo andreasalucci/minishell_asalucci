@@ -10,6 +10,7 @@ int g_exit_status = 0;
 t_env *init_env()
 {
     t_env *env = NULL;
+	
     add_env(&env, "PWD", "/home/user", 1);
     add_env(&env, "HOME", "/home/user", 1);
 	add_env(&env, "PATH", "/bin:/usr/bin", 1);
@@ -63,7 +64,7 @@ bool is_builtin(t_command *cmd)
 {
     if (!cmd || !cmd->argv || !cmd->argv[0])
         return false;
-    return (strcmp(cmd->argv[0], "cd") == 0
+    return (ft_strcmp(cmd->argv[0], "cd") == 0
          || ft_strcmp(cmd->argv[0], "export") == 0
          || ft_strcmp(cmd->argv[0], "unset") == 0
          || ft_strcmp(cmd->argv[0], "exit") == 0
@@ -82,8 +83,9 @@ bool	has_pipe_or_redir(t_command *cmd)
 char *ft_strjoin_free(char *s1, char *s2)
 {
     char *joined = ft_strjoin(s1, s2);
+
     free(s1);
-    return joined;
+    return (joined);
 }
 
 char *get_command_path(char *cmd, t_env *env)
@@ -145,14 +147,19 @@ void	exec_builtin(t_command *cmds, t_env **env)
 
 bool   expand_exit_status(t_t *t) // devi fare la fuznione generale per le $
 {
-    char *pos = NULL;
+    char	*pos;//= NULL ?
+	char	*before;
+	char	*after;
+	char	*status_str;
+	char	*temp;
+
     pos = ft_strnstr(t->input + t->anchor_pos, "$?", ft_strlen(t->input + t->anchor_pos));
     if (pos)
     {
-        char *before = ft_substr(t->input, 0, pos - t->input);
-        char *after = ft_strdup(pos +2);
-        char *status_str = ft_itoa(g_exit_status);
-        char *temp = ft_strjoin(before, status_str);
+        before = ft_substr(t->input, 0, pos - t->input);
+        after = ft_strdup(pos +2);
+        status_str = ft_itoa(g_exit_status);
+        temp = ft_strjoin(before, status_str);
         free(t->input);
         t->input = ft_strjoin(temp, after);
         free(before);
@@ -165,36 +172,44 @@ bool   expand_exit_status(t_t *t) // devi fare la fuznione generale per le $
         return (0);
 }
 
+void	exec_and_wait(t_command *cmds, char *cmd_path, char **envp)
+{
+	int status;
+	pid_t pid;
+	
+	pid = fork();
+	if (pid == 0)
+	{
+		execve(cmd_path, cmds->argv, envp);
+		perror("execve");
+		if (envp)
+			free_env_array(envp);
+		free(cmd_path);
+		exit(EXIT_FAILURE);
+	}
+	else if (pid > 0)
+	{
+		waitpid(pid, &status, 0);
+		if (WIFEXITED(status))
+			g_exit_status = WEXITSTATUS(status);
+		else if (WIFSIGNALED(status))
+			g_exit_status = 128 + WTERMSIG(status);
+	}
+	else
+		perror("fork");
+	free(cmd_path); // libero nel padre, solo il path
+}
+
 void	exec_single_non_builtin(t_command *cmds, t_env **env)
 {
 	char *cmd_path;
-	char **envp = convert_env_list_to_array(*env);
-	int status;
+	char **envp;
 
+	envp = convert_env_list_to_array(*env);
 	cmd_path = get_command_path(cmds->argv[0], *env);
 	if (cmd_path)
 	{
-		pid_t pid = fork();
-		if (pid == 0)
-		{
-			execve(cmd_path, cmds->argv, envp);
-			perror("execve");
-            if (envp)
-			    free_env_array(envp);
-			free(cmd_path);
-			exit(EXIT_FAILURE);
-		}
-		else if (pid > 0)
-		{
-			waitpid(pid, &status, 0);
-			if (WIFEXITED(status))
-				g_exit_status = WEXITSTATUS(status);
-			else if (WIFSIGNALED(status))
-				g_exit_status = 128 + WTERMSIG(status);
-		}
-		else
-			perror("fork");
-		free(cmd_path); // libero nel padre, solo il path
+		exec_and_wait(cmds, cmd_path, envp);
 	}
 	else
 	{
@@ -266,21 +281,6 @@ int	main()
 		}
 		if (*input)
 			add_history(input);
-		// input = expand_exit_status(input); // trasformo gia qui ogni $?, cosa da cambiare 
-		// 									/*		Test  15: ❌ echo "exit_code ->$? user ->$USER home -> $HOME" 
-		// 									mini output = (exit_code ->0 user ->$USER home -> $HOME)
-		// 									bash output = (exit_code ->0 user ->asalucci home -> /home/asalucci)
-		// 									Test  16: ❌ echo 'exit_code ->$? user ->$USER home -> $HOME' 
-		// 									mini output = (exit_code ->0 user ->$USER home -> $HOME)
-		// 									bash output = (exit_code ->$? user ->$USER home -> $HOME)
-		// 									Test  17: ✅ echo "$" 
-		// 									Test  18: ✅ echo '$' 
-		// 									Test  19: ❌ echo $ 
-		// 									mini output = ()
-		// 									bash output = ($)
-		// 									Test  20: ✅ echo $? 
-		// 									Test  21: ✅ echo $?HELLO */
-
 		token = tokens(input);
 		if (token)
 		{
