@@ -1,14 +1,14 @@
-#include "../minishell.h"
 #include "../libft/libft.h"
+#include "../minishell.h"
 
-static void heredoc_sigint_handler(int signum)
+static void	heredoc_sigint_handler(int signum)
 {
-    (void)signum;
-    write(STDOUT_FILENO, "\n", 1); //non ^C\n, 3
-    exit(130);
+	(void)signum;
+	write(STDOUT_FILENO, "\n", 1);
+	exit(130);
 }
 
-void apply_redirections(t_command *cmd)
+void	apply_redirections(t_command *cmd)
 {
 	if (cmd->infile && cmd->redir_in == 1)
 		apply_redir_in1(cmd);
@@ -18,9 +18,9 @@ void apply_redirections(t_command *cmd)
 		apply_redir_out2(cmd);
 }
 
-void apply_redir_in1(t_command *cmd)
+void	apply_redir_in1(t_command *cmd)
 {
-	int fd;
+	int	fd;
 
 	fd = open(cmd->infile, O_RDONLY);
 	if (fd < 0)
@@ -32,9 +32,9 @@ void apply_redir_in1(t_command *cmd)
 	close(fd);
 }
 
-void apply_redir_out1(t_command *cmd)
+void	apply_redir_out1(t_command *cmd)
 {
-	int fd;
+	int	fd;
 
 	fd = open(cmd->outfile, O_CREAT | O_WRONLY | O_TRUNC, 0644);
 	if (fd < 0)
@@ -46,9 +46,9 @@ void apply_redir_out1(t_command *cmd)
 	close(fd);
 }
 
-void apply_redir_out2(t_command *cmd)
+void	apply_redir_out2(t_command *cmd)
 {
-	int fd;
+	int	fd;
 
 	fd = open(cmd->outfile, O_CREAT | O_WRONLY | O_APPEND, 0644);
 	if (fd < 0)
@@ -60,83 +60,75 @@ void apply_redir_out2(t_command *cmd)
 	close(fd);
 }
 
-void create_heredoc_effective(const char *delimiter)
+void	create_heredoc_effective(const char *delimiter)
 {
-    int fd;
-    char *line;
+	int		fd;
+	char	*line;
 
-    fd = open(".heredoc_tmp", O_WRONLY | O_CREAT | O_TRUNC, 0644);
-    if (fd < 0)
-        exit(1);
-    signal(SIGINT, heredoc_sigint_handler);
-    while (1)
-    {
-        line = readline("> ");
-        if (!line)
-        {
-            write(STDOUT_FILENO, "\n", 1);
-            break;
-        }
-        if (ft_strcmp(line, delimiter) == 0)
-        {
-            free(line);
-            break;
-        }
-        ft_putendl_fd(line, fd);
-        free(line);
-    }
-    close(fd);
-    exit(0);
+	fd = open(".heredoc_tmp", O_WRONLY | O_CREAT | O_TRUNC, 0644);
+	if (fd < 0)
+		exit(1);
+	signal(SIGINT, heredoc_sigint_handler);
+	while (1)
+	{
+		line = readline("> ");
+		if (!line)
+		{
+			write(STDOUT_FILENO, "\n", 1);
+			break ;
+		}
+		if (ft_strcmp(line, delimiter) == 0)
+		{
+			free(line);
+			break ;
+		}
+		ft_putendl_fd(line, fd);
+		free(line);
+	}
+	close(fd);
+	exit(0);
 }
 
-void create_heredoc_open(const char *delimiter, t_global *g)
+void	heredoc_open_interrupted(int status, t_global *g)
 {
-    pid_t pid;
-    int status;
-
-    signal(SIGINT, SIG_IGN);
-    pid = fork();
-    if (pid < 0)
-    {
-        perror("fork");
-        return;
-    }
-    if (pid == 0)
-        create_heredoc_effective(delimiter);
-    waitpid(pid, &status, 0);
-    signal(SIGINT, sigint_handler);
-    if (WIFEXITED(status) && WEXITSTATUS(status) == 130)
-    {
-        g->heredoc_interrupted = 1;
-        g_exit_status = 130;
-        unlink(".heredoc_tmp");
-    }
-    else if (WIFSIGNALED(status) && WTERMSIG(status) == SIGINT)
-    {
-        g->heredoc_interrupted = 1;
-        g_exit_status = 130;
-        unlink(".heredoc_tmp");
-    }
+	if (WIFEXITED(status) && WEXITSTATUS(status) == 130)
+	{
+		g->heredoc_interrupted = 1;
+		g_exit_status = 130;
+		unlink(".heredoc_tmp");
+	}
+	else if (WIFSIGNALED(status) && WTERMSIG(status) == SIGINT)
+	{
+		g->heredoc_interrupted = 1;
+		g_exit_status = 130;
+		unlink(".heredoc_tmp");
+	}
 }
 
-void handle_child_process(t_command *cmd, int prev_fd, int pipe_fd[], t_env *env)//char **envp)
+void	create_heredoc_open(const char *delimiter, t_global *g)
 {
-    signal(SIGINT, SIG_DFL);
-    signal(SIGQUIT, SIG_DFL);
-    
-    if (prev_fd != -1)
-    {
-        dup2(prev_fd, STDIN_FILENO);
-        close(prev_fd);
-    }
-    if (cmd->next)
-    {
-        close(pipe_fd[0]);
-        dup2(pipe_fd[1], STDOUT_FILENO);
-        close(pipe_fd[1]);
-    }
-    apply_redirections(cmd);
-    char *cmd_path = get_command_path(cmd->argv[0], env);
+	pid_t	pid;
+	int		status;
+
+	signal(SIGINT, SIG_IGN);
+	pid = fork();
+	if (pid < 0)
+	{
+		perror("fork");
+		return ;
+	}
+	if (pid == 0)
+		create_heredoc_effective(delimiter);
+	waitpid(pid, &status, 0);
+	signal(SIGINT, sigint_handler);
+	heredoc_open_interrupted(status, g);
+}
+
+void	handle_child_cmd_path(t_command *cmd, t_env *env)
+{
+	char	*cmd_path;
+
+	cmd_path = get_command_path(cmd->argv[0], env);
 	if (!cmd_path)
 	{
 		ft_putstr_fd(cmd->argv[0], 2);
@@ -159,111 +151,156 @@ void handle_child_process(t_command *cmd, int prev_fd, int pipe_fd[], t_env *env
 	}
 }
 
-void handle_parent_process(int *prev_fd, int pipe_fd[])
+void	handle_child_process(t_command *cmd, int prev_fd, int pipe_fd[],
+		t_env *env) // char **envp)
 {
-    if (*prev_fd != -1)
-        close(*prev_fd);
-    if (pipe_fd[1] != -1)
-    {
-        close(pipe_fd[1]);
-        *prev_fd = pipe_fd[0];
-    }
-    else
-    {
-        if (pipe_fd[0] != -1)
-            close(pipe_fd[0]);
-    }
+	signal(SIGINT, SIG_DFL);
+	signal(SIGQUIT, SIG_DFL);
+	if (prev_fd != -1)
+	{
+		dup2(prev_fd, STDIN_FILENO);
+		close(prev_fd);
+	}
+	if (cmd->next)
+	{
+		close(pipe_fd[0]);
+		dup2(pipe_fd[1], STDOUT_FILENO);
+		close(pipe_fd[1]);
+	}
+	apply_redirections(cmd);
+	handle_child_cmd_path(cmd, env);
 }
 
-void setup_pipe(t_command *cmd, int pipe_fd[])
+void	handle_parent_process(int *prev_fd, int pipe_fd[])
 {
-    if (cmd->next && pipe(pipe_fd) == -1)
-    {
-        perror("pipe");
-        exit(EXIT_FAILURE);
-    }
+	if (*prev_fd != -1)
+		close(*prev_fd);
+	if (pipe_fd[1] != -1)
+	{
+		close(pipe_fd[1]);
+		*prev_fd = pipe_fd[0];
+	}
+	else
+	{
+		if (pipe_fd[0] != -1)
+			close(pipe_fd[0]);
+	}
 }
 
-void fork_process(pid_t *pid)
+void	setup_pipe(t_command *cmd, int pipe_fd[])
 {
-    *pid = fork();
-    if (*pid == -1)
-    {
-        perror("fork");
-        exit(EXIT_FAILURE);
-    }
+	if (cmd->next && pipe(pipe_fd) == -1)
+	{
+		perror("pipe");
+		exit(EXIT_FAILURE);
+	}
 }
 
-void wait_for_children(void)
+void	fork_process(pid_t *pid)
 {
-    int status;
-    pid_t pid;
-
-    while ((pid = wait(&status)) > 0)
-    {
-        if (WIFEXITED(status))
-            g_exit_status = WEXITSTATUS(status);
-        else if (WIFSIGNALED(status))
-            g_exit_status = 128 + WTERMSIG(status);
-    }
-    if (pid == -1 && errno != ECHILD)
-    {
-        perror("waitpid");
-    }
+	*pid = fork();
+	if (*pid == -1)
+	{
+		perror("fork");
+		exit(EXIT_FAILURE);
+	}
 }
 
-void exec_command_list(t_command *cmd_list, t_env *env, t_global *g)
+void	wait_for_children(void)
 {
-    t_command *cmd = cmd_list;
-    int pipe_fd[2];
-    int prev_fd = -1;
-    pid_t pid;
+	int		status;
+	pid_t	pid;
 
-    while (cmd)
-    {
-        if (cmd->redir_in == 2)
-        {
-            create_heredoc_open(cmd->infile, g);
-            if (g->heredoc_interrupted)
-            {
-                g->heredoc_interrupted = 0;
-                if (prev_fd != -1) 
-                    close(prev_fd);
-                return;
-            }
-        }
-        pipe_fd[0] = -1;
-        pipe_fd[1] = -1;
-        if (cmd->next && pipe(pipe_fd) == -1)
-        {
-            perror("pipe");
-            if (prev_fd != -1)
-                close(prev_fd);
-            return;
-        }
-        pid = fork();
-        if (pid == -1)
-        {
-            perror("fork");
-            if (prev_fd != -1)
-                close(prev_fd);
-            if (pipe_fd[0] != -1)
-                close(pipe_fd[0]);
-            if (pipe_fd[1] != -1)
-                close(pipe_fd[1]);
-            return;
-        }
-        if (pid == 0)
-        {
-            signal(SIGINT, SIG_DFL);
-            signal(SIGQUIT, SIG_DFL);
-            handle_child_process(cmd, prev_fd, pipe_fd, env);
-        }
-        else
-        {
-            handle_parent_process(&prev_fd, pipe_fd);
-            cmd = cmd->next;
-        }
-    }
-    wait_for_children();
+	pid = wait(&status);
+	while (pid > 0)
+	{
+		if (WIFEXITED(status))
+			g_exit_status = WEXITSTATUS(status);
+		else if (WIFSIGNALED(status))
+			g_exit_status = 128 + WTERMSIG(status);
+		pid = wait(&status);
+	}
+	if (pid == -1 && errno != ECHILD)
+	{
+		perror("waitpid");
+	}
+}
+
+int	is_cmd_redir_in_2(t_command *cmd, int prev_fd, t_global *g)
+{
+	if (cmd->redir_in == 2)
+	{
+		create_heredoc_open(cmd->infile, g);
+		if (g->heredoc_interrupted)
+		{
+			g->heredoc_interrupted = 0;
+			if (prev_fd != -1)
+				close(prev_fd);
+			return (1);
+		}
+	}
+	return (0);
+}
+
+void	failed_pipe_with_next_cmd(t_command *cmd, int prev_fd, int *pipe_fd)
+{
+	if (cmd->next && pipe(pipe_fd) == -1)
+	{
+		perror("pipe");
+		if (prev_fd != -1)
+			close(prev_fd);
+		return ;
+	}
+}
+
+void	if_pid_minus_one(pid_t pid, int prev_fd, int *pipe_fd)
+{
+	if (pid == -1)
+	{
+		perror("fork");
+		if (prev_fd != -1)
+			close(prev_fd);
+		if (pipe_fd[0] != -1)
+			close(pipe_fd[0]);
+		if (pipe_fd[1] != -1)
+			close(pipe_fd[1]);
+		return ;
+	}
+}
+
+void	sigdfl_handle_child_process(t_command *cmd, int prev_fd, int *pipe_fd,
+		t_env *env)
+{
+	signal(SIGINT, SIG_DFL);
+	signal(SIGQUIT, SIG_DFL);
+	handle_child_process(cmd, prev_fd, pipe_fd, env);
+}
+
+void	exec_command_list(t_command *cmd_list, t_env *env, t_global *g)
+{
+	t_command	*cmd;
+	int			pipe_fd[2];
+	int			prev_fd;
+	pid_t		pid;
+
+	cmd = cmd_list;
+	prev_fd = -1;
+	while (cmd)
+	{
+		if (is_cmd_redir_in_2(cmd, prev_fd, g))
+			return ;
+		pipe_fd[0] = -1;
+		pipe_fd[1] = -1;
+		failed_pipe_with_next_cmd(cmd, prev_fd, pipe_fd);
+		pid = fork();
+		if_pid_minus_one(pid, prev_fd, pipe_fd);
+		if (pid == 0)
+			sigdfl_handle_child_process(cmd, prev_fd, pipe_fd, env);
+		else
+		{
+			handle_parent_process(&prev_fd, pipe_fd);
+			cmd = cmd->next;
+		}
+	}
+	wait_for_children();
 }

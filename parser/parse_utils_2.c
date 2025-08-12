@@ -42,7 +42,7 @@ char *extract_quoted_string(const char *src, int *i)
 
     char *result = malloc(len + 1);
     if (!result) return NULL;
-    strncpy(result, src + start, len);
+    strncpy(result, src + start, len); ///////////////////////////////////////
     result[len] = '\0';
 
     if (src[*i] == quote) // salta la virgoletta finale

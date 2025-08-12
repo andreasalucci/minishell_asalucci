@@ -7,12 +7,11 @@ int	handle_no_args(t_env *env)
 	sorted = copy_env_list_sorted(env);
 	if (!sorted)
 	{
-		//g_exit_status = 1;
+		// g_exit_status = 1;
 		return (1);
 	}
 	print_export(sorted);
 	free_env(sorted);
-	//g_exit_status = 0;
 	return (0);
 }
 
@@ -27,42 +26,25 @@ int	handle_invalid_identifier(char *arg)
 
 void	handle_key_value_pair(char *arg, t_env **env)
 {
-	char	*equal_pos;
-	char	*key;
-	char	*value;
-	char	*old_value;
-	char	*new_value_part;
+	char		*equal_pos;
+	t_key_value	data;
 
 	equal_pos = ft_strchr(arg, '=');
+	data.key = NULL;
+	data.value = NULL;
+	data.new_value_part = NULL;
+	data.old_value = NULL;
 	if (!equal_pos)
-		return;
+		return ;
 	if (equal_pos > arg && *(equal_pos - 1) == '+')
 	{
-		equal_pos--;
-		key = ft_substr(arg, 0, equal_pos - arg);
-		new_value_part = ft_strdup(equal_pos + 2);
-		old_value = get_env_value(*env, key);
-		if (old_value)
-			value = ft_strjoin(old_value, new_value_part);
-		else
-			value = ft_strdup(new_value_part);
-		if (env_exists(*env, key))
-			update_env(env, key, value);
-		else
-			add_env(env, key, value, 1);
-		free(new_value_part);
+		init_key_value(&data, arg, equal_pos, 1);
+		handle_append_case(&data, env);
 	}
 	else
-	{
-		key = ft_substr(arg, 0, equal_pos - arg);
-		value = ft_strdup(equal_pos + 1);
-		if (env_exists(*env, key))
-			update_env(env, key, value);
-		else
-			add_env(env, key, value, 1);
-	}
-	free(key);
-	free(value);
+		init_key_value(&data, arg, equal_pos, 0);
+	update_or_add_env(&data, env);
+	cleanup_key_value(&data);
 }
 
 int	process_export_arg(char *arg, t_env **env)
@@ -88,6 +70,5 @@ int	builtin_export(char **args, t_env **env)
 		process_export_arg(args[i], env);
 		i++;
 	}
-	//printf(" %d \n", g_exit_status);
 	return (0);
 }

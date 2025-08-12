@@ -71,6 +71,13 @@ typedef struct global
 	int	heredoc_interrupted;
 } t_global;
 
+typedef struct s_key_value {
+    char    *key;
+    char    *value;
+    char    *new_value_part;
+    char    *old_value;
+} t_key_value;
+
 t_t	*tokens(char *input);
 void		quotes(t_t *t);
 void		metacharacters(t_t *t, t_t **token_list);
@@ -159,6 +166,11 @@ void	exec_builtin(t_command *cmds, t_env **env);
 void	exec_single_non_builtin(t_command *cmds, t_env **env);
 void	builtin_exit(char **args);
 void	sigint_handler(int signum);
+
+void init_key_value(t_key_value *data, char *arg, char *equal_pos, int is_append);
+void handle_append_case(t_key_value *data, t_env **env);
+void update_or_add_env(t_key_value *data, t_env **env);
+void cleanup_key_value(t_key_value *data);
 
 
 # endif
