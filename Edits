@@ -1,5 +1,1 @@
 main.c
-redirections.c
-builtins
-
-cambiato in parse_utils_2 un strncpy in ft_strncpy FARE FUNZIONE

@@ -1,5 +1,5 @@
-#include "../minishell.h"
-#include "../libft/libft.h"
+#include "minishell.h"
+#include "libft.h"
 
 void	initStruct(t_t *t)
 {
@@ -13,9 +13,6 @@ void	initStruct(t_t *t)
 	t->pos = 0;
 	t->anchor_pos = 0;
 	t->error = false;
-	t->quote = 0;
-	t->token_quote = 0;
-	t->continue_var = false;
 }
 
 t_t	*tokens(char *input)
@@ -30,30 +27,23 @@ t_t	*tokens(char *input)
 
 	while(t.input[t.pos] && !t.error)
 	{
+		
 		quotes(&t);
 		if (t.single_quote || t.double_quote)
 			open_quotes(&t, &token_list);
-		if (t.continue_var)
-		{
-			t.continue_var = !t.continue_var;
-			continue;
-		}
-		if(t.input[t.pos])
-		{
+		if(t.input[t.pos]){
 			if (t.input[t.pos] == '$')
 				is_var(&t, &token_list);
-			metacharacters(&t, &token_list);
-		}
+			metacharacters(&t, &token_list);}
 		if (!t.input[t.pos] && t.pos != t.anchor_pos)
 			add_token(&t, &token_list);
 	}
 	if (t.single_quote || t.double_quote || t.error)
 	{
 		if (t.single_quote || t.double_quote)
-			printf("minishell: syntax error near unexpected EOF\n");
+			ft_printf("minishell: syntax error near unexpected EOF\n");
 		return (0);
 	}
-
 	 return (set_metachar_type(&token_list));
 }
 t_t	*set_metachar_type(t_t **token_list)
@@ -84,6 +74,7 @@ t_t	*set_metachar_type(t_t **token_list)
 			
 		}
 		temp = temp->next;
+		
 	}
 	return (*token_list);
 }
@@ -93,7 +84,7 @@ void	triple_meta(t_t *t, t_t **token_list)
 	{
 		if (t->input[t->pos + 1] == '<' && t->input[t->pos + 2] == '<')
 		{
-			printf("minishell: syntax error near unexpected token\n");
+			ft_printf("minishell: syntax error near unexpected token\n");
 			t->pos += 2;
 			t->error = true;
 			add_token(t, token_list);
@@ -105,7 +96,7 @@ void	triple_meta(t_t *t, t_t **token_list)
 	{
 		if (t->input[t->pos + 1] == '>' && t->input[t->pos + 2] == '>')
 		{
-			printf("minishell: syntax error near unexpected token\n");
+			ft_printf("minishell: syntax error near unexpected token\n");
 			t->pos += 2;
 			t->error = true;
 			add_token(t, token_list);
