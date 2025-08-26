@@ -50,30 +50,8 @@ typedef struct s_token
 	size_t			quote;
 	int				token_quote;
 	bool			continue_var;
+	bool            to_remove; 
 } t_t;
-
-typedef struct s_command 
-{
-    char				**argv;        
-    char				*infile;       
-    char				*outfile;      
-    int					redir_in;      
-    int					redir_out;
-	int					token_quote;
-    struct s_command	*next;
-} t_command;
-
-typedef struct global 
-{
-	int	heredoc_interrupted;
-} t_global;
-
-typedef struct s_key_value {
-    char    *key;
-    char    *value;
-    char    *new_value_part;
-    char    *old_value;
-} t_key_value;
 
 typedef enum e_redir_type
 {
@@ -89,6 +67,30 @@ typedef struct s_redir
     char         *filename;
     struct s_redir *next;
 }   t_redir;
+
+typedef struct s_command 
+{
+    char				**argv;
+    char				*infile;
+    char				*outfile;
+	t_redir				*redirs;
+    // int					redir_in;
+    // int					redir_out;
+	int					token_quote;
+    struct s_command	*next;
+} t_command;
+
+typedef struct global 
+{
+	int	heredoc_interrupted;
+} t_global;
+
+typedef struct s_key_value {
+    char    *key;
+    char    *value;
+    char    *new_value_part;
+    char    *old_value;
+} t_key_value;
 
 t_t	*tokens(char *input);
 void		quotes(t_t *t);
@@ -157,10 +159,9 @@ int is_option_n(const char *str);
 int builtin_echo(t_command *cmd);
 
 void apply_redirections(t_command *cmd);
-void apply_redir_in1(t_command *cmd);
-void apply_redir_in2(void);
-void apply_redir_out1(t_command *cmd);
-void apply_redir_out2(t_command *cmd);
+void apply_redir_in1(t_redir *r);
+void apply_redir_out1(t_redir *r);
+void apply_redir_out2(t_redir *r);
 char *mini_getline(const char *prompt);
 void create_heredoc_open(const char *delimiter, t_global *g);
 void create_heredoc_effective(const char *delimiter);

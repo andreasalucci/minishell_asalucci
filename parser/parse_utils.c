@@ -78,38 +78,94 @@ void	add_argument(t_command *cmd, char *arg, int token_quote)
 		cmd->token_quote = 1;
 }
 
-void redir_in(t_command *cmd, t_t *token)	
+
+void add_redir(t_command *cmd, int type, const char *filename)
 {
-	
-	if (token->next && token->next->type == TOKEN_WORD)
-	{
-		cmd->infile = ft_strdup(token->next->value);
-		if (token->type == TOKEN_REDIR_IN)
-			cmd->redir_in = 1;
-		else
-			cmd->redir_in = 2;
-	}
-	else
-	{
-		ft_printf("minishell: syntax error near unexpected token\n"); 
-		token->error = true;
-	}
+    t_redir *new = malloc(sizeof(t_redir));
+    t_redir *tmp;
+
+    if (!new)
+        return; // gestisci errore malloc
+    new->type = type;
+    new->filename = ft_strdup(filename);
+    new->next = NULL;
+
+    if (!cmd->redirs)
+        cmd->redirs = new;
+    else
+    {
+        tmp = cmd->redirs;
+        while (tmp->next)
+            tmp = tmp->next;
+        tmp->next = new;
+    }
+}
+
+void redir_in(t_command *cmd, t_t *token)
+{
+    if (token->next && token->next->type == TOKEN_WORD)
+    {
+        add_redir(cmd, REDIR_IN, ft_strdup(token->next->value));
+
+        // Escludi dal vettore argv
+        token->to_remove = true;        // "<"
+        token->next->to_remove = true;  // filename
+    }
+    else
+    {
+        ft_printf("minishell: syntax error near unexpected token\n");
+        token->error = true;
+    }
 }
 
 void redir_out(t_command *cmd, t_t *token)
 {
-	if (token->next && token->next->type == TOKEN_WORD)
-	{
-		cmd->outfile = ft_strdup(token->next->value);
-		if (token->type == TOKEN_REDIR_OUT)
-			cmd->redir_out = 1;
-		else
-			cmd->redir_out = 2;
-	}
-	else
-	{
-		ft_printf("minishell: syntax error near unexpected token\n");
-		token->error = true;
-	}
+    if (token->next && token->next->type == TOKEN_WORD)
+    {
+        add_redir(cmd, REDIR_OUT, ft_strdup(token->next->value));
+
+        // Escludi dal vettore argv
+        token->to_remove = true;        // ">"
+        token->next->to_remove = true;  // filename
+    }
+    else
+    {
+        ft_printf("minishell: syntax error near unexpected token\n");
+        token->error = true;
+    }
+}
+
+void redir_append(t_command *cmd, t_t *token)
+{
+    if (token->next && token->next->type == TOKEN_WORD)
+    {
+        add_redir(cmd, REDIR_APPEND, ft_strdup(token->next->value));
+
+        // Escludi dal vettore argv
+        token->to_remove = true;        // ">>"
+        token->next->to_remove = true;  // filename
+    }
+    else
+    {
+        ft_printf("minishell: syntax error near unexpected token\n");
+        token->error = true;
+    }
+}
+
+void redir_heredoc(t_command *cmd, t_t *token)
+{
+    if (token->next && token->next->type == TOKEN_WORD)
+    {
+        add_redir(cmd, REDIR_HEREDOC, ft_strdup(token->next->value));
+
+        // Escludi dal vettore argv
+        token->to_remove = true;        // "<<"
+        token->next->to_remove = true;  // delimiter
+    }
+    else
+    {
+        ft_printf("minishell: syntax error near unexpected token\n");
+        token->error = true;
+    }
 }
 

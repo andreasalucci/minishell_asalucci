@@ -17,43 +17,27 @@ int	is_option_n(const char *str)
 	return (1);
 }
 
-void	writing_while_cycle(t_command *cmd, int first, int i, int c)
+int builtin_echo(t_command *cmd)
 {
-	while (i < c)
-	{
-		if ((!(cmd->outfile) || ft_strcmp(cmd->argv[i], cmd->outfile))
-			&& (!(cmd->infile) || ft_strcmp(cmd->argv[i], cmd->infile)))
-		{
-			if (!first && cmd->token_quote == 0)
-				printf(" ");
-			printf("%s", cmd->argv[i]);
-			first = 0;
-		}
-		i++;
-	}
-}
-
-int	builtin_echo(t_command *cmd)
-{
-	int	c;
-	int	i;
-	int	newline;
-	int	first;
-
-	c = 1;
+    int i;
+    int newline;
+	
 	i = 1;
 	newline = 1;
-	first = 1;
-	while (cmd->argv[i] && is_option_n(cmd->argv[i]))
-	{
-		newline = 0;
+    while (cmd->argv[i] && is_option_n(cmd->argv[i]))
+    {
+        newline = 0;
+        i++;
+    }
+    while (cmd->argv[i])
+    {
+        printf("%s", cmd->argv[i]);
+        if (cmd->argv[i + 1])
+            printf(" ");
 		i++;
-	}
-	while (cmd->argv[c])
-		c++;
-	writing_while_cycle(cmd, first, i, c);
-	if (newline)
-		printf("\n");
-	g_exit_status = 0;
-	return (0);
+    }
+    if (newline)
+        printf("\n");
+    g_exit_status = 0;
+    return (0);
 }

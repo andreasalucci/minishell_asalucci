@@ -72,17 +72,19 @@ void free_command(t_command *cmd)
 
 void print_commands(t_command *cmd)
 {
-    int i = 0;
+    int i;
     int index = 1;
+    t_redir *r;
 
     while (cmd)
     {
         printf("🔹 Comando #%d:\n", index++);
 
-        // Mostrar argumentos
+        // Argomenti
         printf("  argv: ");
         if (cmd->argv)
         {
+            i = 0;
             while (cmd->argv[i])
             {
                 printf("\"%s\" ", cmd->argv[i]);
@@ -90,20 +92,32 @@ void print_commands(t_command *cmd)
             }
         }
         else
-            printf("(vacío)");
+            printf("(vuoto)");
         printf("\n");
 
-        // Entrada
-        if (cmd->infile)
-            printf("  infile: \"%s\" (modo: %d)\n", cmd->infile, cmd->redir_in);
-
-        // Salida
-        if (cmd->outfile)
-            printf("  outfile: \"%s\" (modo: %d)\n", cmd->outfile, cmd->redir_out);
+        // Redirezioni
+        if (cmd->redirs)
+        {
+            printf("  redirs:\n");
+            r = cmd->redirs;
+            while (r)
+            {
+                if (r->type == REDIR_IN)
+                    printf("    <  \"%s\"\n", r->filename);
+                else if (r->type == REDIR_OUT)
+                    printf("    >  \"%s\"\n", r->filename);
+                else if (r->type == REDIR_APPEND)
+                    printf("    >> \"%s\"\n", r->filename);
+                else if (r->type == REDIR_HEREDOC)
+                    printf("    << \"%s\"\n", r->filename);
+                r = r->next;
+            }
+        }
+        else
+            printf("  redirs: (nessuna)\n");
 
         printf("  ───────────────\n");
 
         cmd = cmd->next;
-        i = 0;
     }
 }

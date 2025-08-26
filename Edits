@@ -1,1 +1,6 @@
 main.c
+parse.c
+parse_utils.c
+redirections.c
+minishell.h
+builtin_echo.c

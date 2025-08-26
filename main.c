@@ -77,7 +77,7 @@ bool	is_builtin(t_command *cmd)
 
 bool	has_pipe_or_redir(t_command *cmd)
 {
-	return (cmd->next != NULL || cmd->redir_in != 0 || cmd->redir_out != 0);
+    return (cmd->next != NULL || cmd->redirs != NULL);
 }
 
 char	*ft_strjoin_free(char *s1, char *s2)

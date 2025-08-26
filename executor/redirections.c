@@ -8,57 +8,93 @@ static void	heredoc_sigint_handler(int signum)
 	exit(130);
 }
 
-void	apply_redirections(t_command *cmd)
+void apply_redirections(t_command *cmd)
 {
-	if (cmd->infile && cmd->redir_in == 1)
-		apply_redir_in1(cmd);
-	if (cmd->outfile && cmd->redir_out == 1)
-		apply_redir_out1(cmd);
-	if (cmd->outfile && cmd->redir_out == 2)
-		apply_redir_out2(cmd);
+    t_redir *r;
+
+	r = cmd->redirs;
+    while (r)
+    {
+        if (r->type == REDIR_IN)
+			apply_redir_in1(r);
+        else if (r->type == REDIR_OUT)
+			apply_redir_out1(r);
+        else if (r->type == REDIR_APPEND)
+			apply_redir_out2(r);
+        // else if (r->type == REDIR_HEREDOC)
+		// 	apply_redir_heredoc(r, g);
+        r = r->next;
+    }
 }
 
-void	apply_redir_in1(t_command *cmd)
+void	apply_redir_in1(t_redir *r)
 {
 	int	fd;
 
-	fd = open(cmd->infile, O_RDONLY);
+	fd = open(r->filename, O_RDONLY);
 	if (fd < 0)
 	{
-		perror(cmd->infile);
+		perror(r->filename);
 		exit(EXIT_FAILURE);
 	}
 	dup2(fd, STDIN_FILENO);
 	close(fd);
 }
 
-void	apply_redir_out1(t_command *cmd)
+void	apply_redir_out1(t_redir *r)
 {
 	int	fd;
 
-	fd = open(cmd->outfile, O_CREAT | O_WRONLY | O_TRUNC, 0644);
+	fd = open(r->filename, O_CREAT | O_WRONLY | O_TRUNC, 0644);
 	if (fd < 0)
 	{
-		perror(cmd->outfile);
+		perror(r->filename);
 		exit(EXIT_FAILURE);
 	}
-	dup2(fd, STDOUT_FILENO);
-	close(fd);
+	if (r->next && (r->next->type == REDIR_OUT || r->next->type == REDIR_APPEND))
+		close(fd);
+	else
+	{
+		dup2(fd, STDOUT_FILENO);
+		close(fd);
+	}
 }
 
-void	apply_redir_out2(t_command *cmd)
+void	apply_redir_out2(t_redir *r)
 {
 	int	fd;
 
-	fd = open(cmd->outfile, O_CREAT | O_WRONLY | O_APPEND, 0644);
+	fd = open(r->filename, O_WRONLY | O_CREAT | O_APPEND, 0644);
 	if (fd < 0)
 	{
-		perror(cmd->outfile);
+		perror(r->filename);
 		exit(EXIT_FAILURE);
 	}
-	dup2(fd, STDOUT_FILENO);
-	close(fd);
+	if (r->next && (r->next->type == REDIR_OUT || r->next->type == REDIR_APPEND))
+		close(fd);
+	else
+	{
+		dup2(fd, STDOUT_FILENO);
+		close(fd);
+	}
 }
+
+// void apply_redir_heredoc(t_redir *r, t_global *g)
+// {
+//     int fd;
+
+//     create_heredoc_open(r->filename, g);
+//     if (g->heredoc_interrupted)
+//         exit(130);
+//     fd = open(".heredoc_tmp", O_RDONLY);
+//     if (fd < 0)
+//     {
+//         perror("heredoc");
+//         exit(EXIT_FAILURE);
+//     }
+//     dup2(fd, STDIN_FILENO);
+//     close(fd);
+// }
 
 void	create_heredoc_effective(const char *delimiter)
 {
@@ -228,16 +264,23 @@ void	wait_for_children(void)
 
 int	is_cmd_redir_in_2(t_command *cmd, int prev_fd, t_global *g)
 {
-	if (cmd->redir_in == 2)
+	t_redir	*r;
+
+	r = cmd->redirs;
+	while (r)
 	{
-		create_heredoc_open(cmd->infile, g);
-		if (g->heredoc_interrupted)
+		if (r->type == REDIR_HEREDOC)
 		{
-			g->heredoc_interrupted = 0;
-			if (prev_fd != -1)
-				close(prev_fd);
-			return (1);
+			create_heredoc_open(r->filename, g);
+			if (g->heredoc_interrupted)
+			{
+				g->heredoc_interrupted = 0;
+				if (prev_fd != -1)
+					close(prev_fd);
+				return (1);
+			}
 		}
+		r = r->next;
 	}
 	return (0);
 }
