@@ -71,6 +71,7 @@ typedef struct s_redir
 typedef struct s_command 
 {
     char				**argv;
+	bool				*arg_is_redir;
     char				*infile;
     char				*outfile;
 	t_redir				*redirs;
@@ -105,7 +106,7 @@ t_t			*set_metachar_type(t_t **token_list);
 void		parse(t_t *token);
 t_command	*parse_commands(t_t *token);
 void		parse_commands_2(t_command **current, t_command **head, t_t *token);
-void		add_argument(t_command *cmd, char *arg, int token_quote);
+void		add_argument(t_command *cmd, char *arg, int token_quote, bool from_redir);
 void 		redir_in(t_command *cmd, t_t *token);
 void		redir_out(t_command *cmd, t_t *token);
 void		add_pipe(t_command **head, t_command *new_node);
@@ -184,5 +185,10 @@ void	init_key_value(t_key_value *data, char *arg, char *equal_pos, int is_append
 void	handle_append_case(t_key_value *data, t_env **env);
 void	update_or_add_env(t_key_value *data, t_env **env);
 void	cleanup_key_value(t_key_value *data);
+
+void redir_append(t_command *cmd, t_t *token);
+void	redir_heredoc(t_command *cmd, t_t *token);
+
+void init_shlvl(t_env **env);
 
 # endif

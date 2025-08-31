@@ -52,14 +52,24 @@ void free_token_list(t_t *token)
 void free_command(t_command *cmd)
 {
     int i = 0;
+    t_redir *r;
+	t_redir *tmp;
 
     if (!cmd)
-        return;
+		return;
     if (cmd->argv)
     {
         while (cmd->argv[i])
             free(cmd->argv[i++]);
         free(cmd->argv);
+    }
+    r = cmd->redirs;
+    while (r)
+    {
+        tmp = r->next;
+        free(r->filename);
+        free(r);
+        r = tmp;
     }
     free(cmd->infile);
     free(cmd->outfile);

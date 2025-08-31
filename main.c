@@ -15,7 +15,30 @@ t_env	*init_env(void)
 	add_env(&env, "PWD", "/home/user", 1);
 	add_env(&env, "HOME", "/home/user", 1);
 	add_env(&env, "PATH", "/bin:/usr/bin", 1);
+	//add_env(&env, "SHLVL", "0", 1);
 	return (env);
+}
+
+t_env *copy_env(char **envp)
+{
+    t_env *env = NULL;
+    int i = 0;
+    char *eq;
+
+    while (envp[i])
+    {
+        eq = ft_strchr(envp[i], '=');
+        if (eq)
+        {
+            char *key = ft_substr(envp[i], 0, eq - envp[i]);
+            char *value = ft_strdup(eq + 1);
+            add_env(&env, key, value, 1);
+            free(key);
+            free(value);
+        }
+        i++;
+    }
+    return env;
 }
 
 char	*ft_strjoin_3(const char *s1, const char *s2, const char *s3)
@@ -327,11 +350,18 @@ int main_loop(t_env **env, t_global *global)
     return 0;
 }
 
-int main(void)
+int main(int argc, char **argv, char **envp)
 {
-    t_env       *env = init_env();
+	argc = 0;
+	argc++;
+	argv = NULL;
+	free(argv);
+    //t_env       *env = init_env();
+	t_env *env = copy_env(envp);
     t_global    *global = malloc(sizeof(t_global));
 
+	init_shlvl(&env);
+	
     if (!global)
     {
         perror("malloc");

@@ -31,9 +31,10 @@ int builtin_echo(t_command *cmd)
     }
     while (cmd->argv[i])
     {
-        printf("%s", cmd->argv[i]);
-        if (cmd->argv[i + 1])
-            printf(" ");
+		if (!cmd->arg_is_redir[i])
+			printf("%s", cmd->argv[i]);
+		if (cmd->argv[i + 1] && !cmd->arg_is_redir[i + 1])
+			printf(" ");
 		i++;
     }
     if (newline)
