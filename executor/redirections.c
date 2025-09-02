@@ -294,19 +294,21 @@ void	setup_pipe(t_command *cmd, int pipe_fd[])
 
 
 
-void    wait_for_children(pid_t last_pid)
+void wait_for_children(pid_t last_pid)
 {
-    int     status;
-    pid_t   pid;
+    int status;
+    pid_t pid;
 
     while ((pid = wait(&status)) > 0)
     {
-        if (pid == last_pid)  // solo l'ultimo comando decide l'exit code
+        if (pid == last_pid)
         {
             if (WIFEXITED(status))
                 g_exit_status = WEXITSTATUS(status);
             else if (WIFSIGNALED(status))
                 g_exit_status = 128 + WTERMSIG(status);
+            else
+                g_exit_status = 1; // fallback
         }
     }
     if (pid == -1 && errno != ECHILD)
@@ -396,54 +398,108 @@ void	sigdfl_handle_child_process(t_command *cmd, int prev_fd, int *pipe_fd,
 
 
 
-
-void	exec_command_list(t_command *cmd_list, t_env *env, t_global *g)
+void exec_command_list(t_command *cmd_list, t_env *env, t_global *g)
 {
-	t_command	*cmd;
-	int			pipe_fd[2];
-	int			prev_fd;
-	pid_t		pid;
-	pid_t 		last_pid;
+    t_command *cmd = cmd_list;
+    int prev_fd = -1;
+    int pipe_fd[2];
+    pid_t pid;
+    pid_t last_pid = -1;
 
-	last_pid = -1;
-	cmd = cmd_list;
-	prev_fd = -1;
-	while (cmd)
-	{
-		if (is_cmd_redir_in_2(cmd, prev_fd, g))
-			return ;
-		pipe_fd[0] = -1;
-		pipe_fd[1] = -1;
-		if (cmd->next && pipe(pipe_fd) == -1)
-		{
-			perror("pipe");
-			if (prev_fd != -1) close(prev_fd);
-			return;
-		}
-		pid = fork();
-		if (pid == -1)
-		{
-			perror("fork");
-			if (prev_fd != -1) close(prev_fd);
-			if (pipe_fd[0] != -1) close(pipe_fd[0]);
-			if (pipe_fd[1] != -1) close(pipe_fd[1]);
-			return;
-		}
-		last_pid = pid;  // <- importante per wait_for_children
-		if (pid == 0)
-		{
-			signal(SIGINT, SIG_DFL);
-			signal(SIGQUIT, SIG_DFL);
-			handle_child_process(cmd, prev_fd, pipe_fd, env);
-		}
-		else
-		{
-			handle_parent_process(&prev_fd, pipe_fd);
-			cmd = cmd->next;
-		}
-	}
-	wait_for_children(last_pid);
+    while (cmd)
+    {
+        if (is_cmd_redir_in_2(cmd, prev_fd, g))
+            return;
+        pipe_fd[0] = -1;
+        pipe_fd[1] = -1;
+        if (cmd->next && pipe(pipe_fd) == -1)
+        {
+            perror("pipe");
+            if (prev_fd != -1) close(prev_fd);
+            return;
+        }
+        pid = fork();
+        if (pid == -1)
+        {
+            perror("fork");
+            if (prev_fd != -1) close(prev_fd);
+            if (pipe_fd[0] != -1) close(pipe_fd[0]);
+            if (pipe_fd[1] != -1) close(pipe_fd[1]);
+            return;
+        }
+        last_pid = pid;
+        if (pid == 0)
+        {
+            signal(SIGINT, SIG_DFL);
+            signal(SIGQUIT, SIG_DFL);
+            handle_child_process(cmd, prev_fd, pipe_fd, env);
+            exit(1);
+        }
+        else //genitore
+        {
+            if (prev_fd != -1)
+                close(prev_fd);
+            if (pipe_fd[1] != -1)
+            {
+                close(pipe_fd[1]);
+                prev_fd = pipe_fd[0];
+            }
+            else if (pipe_fd[0] != -1)
+                close(pipe_fd[0]);
+            cmd = cmd->next;
+        }
+    }
+    wait_for_children(last_pid);
 }
+
+
+// void	exec_command_list(t_command *cmd_list, t_env *env, t_global *g)
+// {
+// 	t_command	*cmd;
+// 	int			pipe_fd[2];
+// 	int			prev_fd;
+// 	pid_t		pid;
+// 	pid_t 		last_pid;
+
+// 	last_pid = -1;
+// 	cmd = cmd_list;
+// 	prev_fd = -1;
+// 	while (cmd)
+// 	{
+// 		if (is_cmd_redir_in_2(cmd, prev_fd, g))
+// 			return ;
+// 		pipe_fd[0] = -1;
+// 		pipe_fd[1] = -1;
+// 		if (cmd->next && pipe(pipe_fd) == -1)
+// 		{
+// 			perror("pipe");
+// 			if (prev_fd != -1) close(prev_fd);
+// 			return;
+// 		}
+// 		pid = fork();
+// 		if (pid == -1)
+// 		{
+// 			perror("fork");
+// 			if (prev_fd != -1) close(prev_fd);
+// 			if (pipe_fd[0] != -1) close(pipe_fd[0]);
+// 			if (pipe_fd[1] != -1) close(pipe_fd[1]);
+// 			return;
+// 		}
+// 		last_pid = pid;  // <- importante per wait_for_children
+// 		if (pid == 0)
+// 		{
+// 			signal(SIGINT, SIG_DFL);
+// 			signal(SIGQUIT, SIG_DFL);
+// 			handle_child_process(cmd, prev_fd, pipe_fd, env);
+// 		}
+// 		else
+// 		{
+// 			handle_parent_process(&prev_fd, pipe_fd);
+// 			cmd = cmd->next;
+// 		}
+// 	}
+// 	wait_for_children(last_pid);
+// }
 
 
 
