@@ -15,6 +15,7 @@ void	initStruct(t_t *t)
 	t->error = false;
 	t->quote = 0;
 	t->token_quote = 0;
+	t->continue_var = false;
 }
 
 t_t	*tokens(char *input)
@@ -29,10 +30,14 @@ t_t	*tokens(char *input)
 
 	while(t.input[t.pos] && !t.error)
 	{
-		
 		quotes(&t);
 		if (t.single_quote || t.double_quote)
 			open_quotes(&t, &token_list);
+		if (t.continue_var)
+		{
+			t.continue_var = !t.continue_var;
+			continue;
+		}
 		if(t.input[t.pos])
 		{
 			if (t.input[t.pos] == '$')

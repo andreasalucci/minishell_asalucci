@@ -15,13 +15,9 @@
 //#include <string.h>
 
 #include <signal.h>
-
-
-
 #include <errno.h>  // Per errno e ECHILD
 
 extern int g_exit_status;
-// extern int g_in_readline;
 
 typedef enum token_type
 {
@@ -53,15 +49,34 @@ typedef struct s_token
 	bool			error;
 	size_t			quote;
 	int				token_quote;
+	bool			continue_var;
+	bool            to_remove; 
 } t_t;
+
+typedef enum e_redir_type
+{
+    REDIR_IN,      // <
+    REDIR_OUT,     // >
+    REDIR_APPEND,  // >>
+    REDIR_HEREDOC  // <<
+}   t_redir_type;
+
+typedef struct s_redir
+{
+    t_redir_type type;
+    char         *filename;
+    struct s_redir *next;
+}   t_redir;
 
 typedef struct s_command 
 {
-    char				**argv;        
-    char				*infile;       
-    char				*outfile;      
-    int					redir_in;      
-    int					redir_out;
+    char				**argv;
+	bool				*arg_is_redir;
+    char				*infile;
+    char				*outfile;
+	t_redir				*redirs;
+    // int					redir_in;
+    // int					redir_out;
 	int					token_quote;
     struct s_command	*next;
 } t_command;
@@ -71,20 +86,27 @@ typedef struct global
 	int	heredoc_interrupted;
 } t_global;
 
+typedef struct s_key_value {
+    char    *key;
+    char    *value;
+    char    *new_value_part;
+    char    *old_value;
+} t_key_value;
+
 t_t	*tokens(char *input);
 void		quotes(t_t *t);
 void		metacharacters(t_t *t, t_t **token_list);
 void		open_quotes(t_t *t, t_t **token_list);
 void		add_token(t_t *t, t_t **token_list);
 void		initStruct(t_t *t);
-void		add_token_2(t_t *new_token, t_t **token_list);
+void		add_token_2(t_t *new_token, t_t **token_list, int redir_control,  t_t *t);
 int			alloc_new_token(t_t **new_token, int len);
 void		triple_meta(t_t *t, t_t **token_list);
 t_t			*set_metachar_type(t_t **token_list);
 void		parse(t_t *token);
 t_command	*parse_commands(t_t *token);
 void		parse_commands_2(t_command **current, t_command **head, t_t *token);
-void		add_argument(t_command *cmd, char *arg, int token_quote);
+void		add_argument(t_command *cmd, char *arg, int token_quote, bool from_redir);
 void 		redir_in(t_command *cmd, t_t *token);
 void		redir_out(t_command *cmd, t_t *token);
 void		add_pipe(t_command **head, t_command *new_node);
@@ -138,10 +160,9 @@ int is_option_n(const char *str);
 int builtin_echo(t_command *cmd);
 
 void apply_redirections(t_command *cmd);
-void apply_redir_in1(t_command *cmd);
-void apply_redir_in2(void);
-void apply_redir_out1(t_command *cmd);
-void apply_redir_out2(t_command *cmd);
+void apply_redir_in1(t_redir *r);
+void apply_redir_out1(t_redir *r);
+void apply_redir_out2(t_redir *r);
 char *mini_getline(const char *prompt);
 void create_heredoc_open(const char *delimiter, t_global *g);
 void create_heredoc_effective(const char *delimiter);
@@ -149,7 +170,7 @@ void handle_child_process(t_command *cmd, int prev_fd, int pipe_fd[], t_env *env
 void handle_parent_process(int *prev_fd, int pipe_fd[]);
 void setup_pipe(t_command *cmd, int pipe_fd[]);
 void fork_process(pid_t *pid);
-void wait_for_children(void);
+void wait_for_children(pid_t last_pid);
 void exec_command_list(t_command *cmd_list, t_env *env, t_global *g);
 char *get_command_path(char *cmd, t_env *env);
 char	**convert_env_list_to_array(t_env *env);
@@ -158,7 +179,16 @@ bool is_builtin(t_command *cmd);
 void	exec_builtin(t_command *cmds, t_env **env);
 void	exec_single_non_builtin(t_command *cmds, t_env **env);
 void	builtin_exit(char **args);
-void	sigint_handler(int signum);
 
+void	sigint_handler(int signum);
+void	init_key_value(t_key_value *data, char *arg, char *equal_pos, int is_append);
+void	handle_append_case(t_key_value *data, t_env **env);
+void	update_or_add_env(t_key_value *data, t_env **env);
+void	cleanup_key_value(t_key_value *data);
+
+void redir_append(t_command *cmd, t_t *token);
+void	redir_heredoc(t_command *cmd, t_t *token);
+
+void init_shlvl(t_env **env);
 
 # endif

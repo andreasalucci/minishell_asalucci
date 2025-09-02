@@ -1,110 +1,23 @@
-main.c
 redirections.c
-builtins
-
-cambiato in parse_utils_2 un strncpy in ft_strncpy FARE FUNZIONE
+main.c
 
 
+parse_commands_2()
+free_command()	aggiunta liberazione memoria lista di redirezioni
+t_env *copy_env(char **envp)
+main()
+nuovo file shlvl.c con nuova funzione init_shlvl() dentro
+(un commento in t_env	*init_env(void))
+header
 
 
 
 
+Modifiche PRECEDENTI:
 
-
-Ecco come spezzare la funzione handle_key_value_pair senza superare i 4 argomenti per funzione, usando struct per raggruppare i dati correlati e dividendo la logica in funzioni più piccole:
-
-1. Prima definiamo una struct per i dati della coppia chiave-valore
-c
-typedef struct s_key_value {
-    char    *key;
-    char    *value;
-    char    *new_value_part;
-    char    *old_value;
-} t_key_value;
-2. Poi creiamo le funzioni helper
-c
-void init_key_value(t_key_value *data, char *arg, char *equal_pos, int is_append)
-{
-    if (is_append)
-    {
-        data->key = ft_substr(arg, 0, equal_pos - arg - 1);
-        data->new_value_part = ft_strdup(equal_pos + 1);
-    }
-    else
-    {
-        data->key = ft_substr(arg, 0, equal_pos - arg);
-        data->value = ft_strdup(equal_pos + 1);
-    }
-}
-
-void handle_append_case(t_key_value *data, t_env **env)
-{
-    data->old_value = get_env_value(*env, data->key);
-    if (data->old_value)
-        data->value = ft_strjoin(data->old_value, data->new_value_part);
-    else
-        data->value = ft_strdup(data->new_value_part);
-    
-    free(data->new_value_part);
-}
-
-void update_or_add_env(t_key_value *data, t_env **env)
-{
-    if (env_exists(*env, data->key))
-        update_env(env, data->key, data->value);
-    else
-        add_env(env, data->key, data->value, 1);
-}
-
-void cleanup_key_value(t_key_value *data)
-{
-    free(data->key);
-    free(data->value);
-}
-3. Infine la funzione principale diventa:
-c
-void handle_key_value_pair(char *arg, t_env **env)
-{
-    char        *equal_pos;
-    t_key_value data = {0};
-
-    equal_pos = ft_strchr(arg, '=');
-    if (!equal_pos)
-        return;
-    
-    if (equal_pos > arg && *(equal_pos - 1) == '+')
-    {
-        init_key_value(&data, arg, equal_pos, 1);
-        handle_append_case(&data, env);
-    }
-    else
-    {
-        init_key_value(&data, arg, equal_pos, 0);
-    }
-    
-    update_or_add_env(&data, env);
-    cleanup_key_value(&data);
-}
-Vantaggi di questo approccio:
-Meno argomenti: Nessuna funzione ha più di 4 parametri
-
-Separazione di compiti: Ogni funzione fa una cosa sola
-
-Dati raggruppati: La struct tiene insieme i dati correlati
-
-Più leggibile: La logica è meglio organizzata
-
-Più facile da mantenere: Modifiche isolate in singole funzioni
-
-Struttura del flusso:
-handle_key_value_pair rimane il punto di ingresso principale
-
-init_key_value prepara i dati iniziali
-
-handle_append_case gestisce il caso speciale di concatenamento (+=)
-
-update_or_add_env gestisce l'aggiornamento/env
-
-cleanup_key_value si occupa della pulizia
-
-Ogni funzione è autonoma e lavora sulla struct, evitando di passare troppi parametri.
+in s_command ho aggiunto un vettore di bool "parallelo" a quello degli argomenti. (bool arg_is_redir)
+void    add_argument_alloc(t_command *cmd, char ***new_argv, bool **new_arg_is_redir, int count)
+void    add_argument(t_command *cmd, char *arg, int token_quote, bool from_redir)
+bool is_redir_token(int type)
+t_command   *parse_commands(t_t *token)
+header

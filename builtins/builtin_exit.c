@@ -1,11 +1,11 @@
 #include "../minishell.h"
 
-void builtin_exit(char **args)
+void	builtin_exit(char **args)
 {
-	long code = 0;
+	long	code;
 
+	code = 0;
 	ft_putstr_fd("exit\n", 1);
-
 	if (args[1])
 	{
 		if (!str_is_numeric(args[1]))
@@ -19,7 +19,7 @@ void builtin_exit(char **args)
 		{
 			ft_putstr_fd("minishell: exit: too many arguments\n", 2);
 			g_exit_status = 1;
-			return; // Non esce!
+			return ;
 		}
 		code = ft_atolli(args[1]);
 		exit((unsigned char)code);

@@ -8,57 +8,93 @@ static void	heredoc_sigint_handler(int signum)
 	exit(130);
 }
 
-void	apply_redirections(t_command *cmd)
+void apply_redirections(t_command *cmd)
 {
-	if (cmd->infile && cmd->redir_in == 1)
-		apply_redir_in1(cmd);
-	if (cmd->outfile && cmd->redir_out == 1)
-		apply_redir_out1(cmd);
-	if (cmd->outfile && cmd->redir_out == 2)
-		apply_redir_out2(cmd);
+    t_redir *r;
+
+	r = cmd->redirs;
+    while (r)
+    {
+        if (r->type == REDIR_IN)
+			apply_redir_in1(r);
+        else if (r->type == REDIR_OUT)
+			apply_redir_out1(r);
+        else if (r->type == REDIR_APPEND)
+			apply_redir_out2(r);
+        // else if (r->type == REDIR_HEREDOC)
+		// 	apply_redir_heredoc(r, g);
+        r = r->next;
+    }
 }
 
-void	apply_redir_in1(t_command *cmd)
+void	apply_redir_in1(t_redir *r)
 {
 	int	fd;
 
-	fd = open(cmd->infile, O_RDONLY);
+	fd = open(r->filename, O_RDONLY);
 	if (fd < 0)
 	{
-		perror(cmd->infile);
+		perror(r->filename);
 		exit(EXIT_FAILURE);
 	}
 	dup2(fd, STDIN_FILENO);
 	close(fd);
 }
 
-void	apply_redir_out1(t_command *cmd)
+void	apply_redir_out1(t_redir *r)
 {
 	int	fd;
 
-	fd = open(cmd->outfile, O_CREAT | O_WRONLY | O_TRUNC, 0644);
+	fd = open(r->filename, O_CREAT | O_WRONLY | O_TRUNC, 0644);
 	if (fd < 0)
 	{
-		perror(cmd->outfile);
+		perror(r->filename);
 		exit(EXIT_FAILURE);
 	}
-	dup2(fd, STDOUT_FILENO);
-	close(fd);
+	if (r->next && (r->next->type == REDIR_OUT || r->next->type == REDIR_APPEND))
+		close(fd);
+	else
+	{
+		dup2(fd, STDOUT_FILENO);
+		close(fd);
+	}
 }
 
-void	apply_redir_out2(t_command *cmd)
+void	apply_redir_out2(t_redir *r)
 {
 	int	fd;
 
-	fd = open(cmd->outfile, O_CREAT | O_WRONLY | O_APPEND, 0644);
+	fd = open(r->filename, O_WRONLY | O_CREAT | O_APPEND, 0644);
 	if (fd < 0)
 	{
-		perror(cmd->outfile);
+		perror(r->filename);
 		exit(EXIT_FAILURE);
 	}
-	dup2(fd, STDOUT_FILENO);
-	close(fd);
+	if (r->next && (r->next->type == REDIR_OUT || r->next->type == REDIR_APPEND))
+		close(fd);
+	else
+	{
+		dup2(fd, STDOUT_FILENO);
+		close(fd);
+	}
 }
+
+// void apply_redir_heredoc(t_redir *r, t_global *g)
+// {
+//     int fd;
+
+//     create_heredoc_open(r->filename, g);
+//     if (g->heredoc_interrupted)
+//         exit(130);
+//     fd = open(".heredoc_tmp", O_RDONLY);
+//     if (fd < 0)
+//     {
+//         perror("heredoc");
+//         exit(EXIT_FAILURE);
+//     }
+//     dup2(fd, STDIN_FILENO);
+//     close(fd);
+// }
 
 void	create_heredoc_effective(const char *delimiter)
 {
@@ -124,18 +160,61 @@ void	create_heredoc_open(const char *delimiter, t_global *g)
 	heredoc_open_interrupted(status, g);
 }
 
+void	command_not_found(t_command *cmd)
+{
+	ft_putstr_fd(cmd->argv[0], 2);
+	ft_putstr_fd(": command not found\n", 2);
+	g_exit_status = 127;
+	exit(g_exit_status);
+}
+
+void	filter_args_fill(t_command *cmd, char ***argv_filtered, int count, int *j)
+{
+	int i;
+
+	i = 0;
+	while (i < count)
+	{
+		if (!cmd->arg_is_redir[i])
+			(*argv_filtered)[(*j)++] = cmd->argv[i];
+		i++;
+	}
+}
+
+void	filter_args(t_command *cmd, char ***argv_filtered)
+{
+	int count;
+	int argc_new;
+	int i;
+	int j;
+
+	count = 0;
+	while (cmd->argv[count])
+		count++;
+	argc_new = 0;
+	i = 0;
+	while (i < count)
+	{
+		if (!cmd->arg_is_redir[i])
+			argc_new++;
+		i++;
+	}
+	*argv_filtered = (char **)malloc(sizeof(char *) * (argc_new + 1));
+	if (!*argv_filtered)
+		exit(1);
+	j = 0;
+	filter_args_fill(cmd, argv_filtered, count, &j);
+	(*argv_filtered)[j] = NULL;
+}
+
 void	handle_child_cmd_path(t_command *cmd, t_env *env)
 {
 	char	*cmd_path;
+	char 	**argv_filtered;
 
 	cmd_path = get_command_path(cmd->argv[0], env);
 	if (!cmd_path)
-	{
-		ft_putstr_fd(cmd->argv[0], 2);
-		ft_putstr_fd(": command not found\n", 2);
-		g_exit_status = 127;
-		exit(g_exit_status);
-	}
+		command_not_found(cmd);
 	if (is_builtin(cmd))
 	{
 		free(cmd_path);
@@ -144,8 +223,10 @@ void	handle_child_cmd_path(t_command *cmd, t_env *env)
 	}
 	else
 	{
-		execve(cmd_path, cmd->argv, convert_env_list_to_array(env));
+		filter_args(cmd, &argv_filtered);
+		execve(cmd_path, argv_filtered, convert_env_list_to_array(env));
 		perror("execve");
+		free(argv_filtered);
 		free(cmd_path);
 		exit(126);
 	}
@@ -196,48 +277,84 @@ void	setup_pipe(t_command *cmd, int pipe_fd[])
 	}
 }
 
-void	fork_process(pid_t *pid)
+// void	fork_process(pid_t *pid)
+// {
+// 	*pid = fork();
+// 	if (*pid == -1)
+// 	{
+// 		perror("fork");
+// 		exit(EXIT_FAILURE);
+// 	}
+// }
+
+
+
+
+
+
+
+
+void    wait_for_children(pid_t last_pid)
 {
-	*pid = fork();
-	if (*pid == -1)
-	{
-		perror("fork");
-		exit(EXIT_FAILURE);
-	}
+    int     status;
+    pid_t   pid;
+
+    while ((pid = wait(&status)) > 0)
+    {
+        if (pid == last_pid)  // solo l'ultimo comando decide l'exit code
+        {
+            if (WIFEXITED(status))
+                g_exit_status = WEXITSTATUS(status);
+            else if (WIFSIGNALED(status))
+                g_exit_status = 128 + WTERMSIG(status);
+        }
+    }
+    if (pid == -1 && errno != ECHILD)
+        perror("waitpid");
 }
 
-void	wait_for_children(void)
-{
-	int		status;
-	pid_t	pid;
 
-	pid = wait(&status);
-	while (pid > 0)
-	{
-		if (WIFEXITED(status))
-			g_exit_status = WEXITSTATUS(status);
-		else if (WIFSIGNALED(status))
-			g_exit_status = 128 + WTERMSIG(status);
-		pid = wait(&status);
-	}
-	if (pid == -1 && errno != ECHILD)
-	{
-		perror("waitpid");
-	}
-}
+
+
+
+// void	wait_for_children(void)
+// {
+// 	int		status;
+// 	pid_t	pid;
+
+// 	pid = wait(&status);
+// 	while (pid > 0)
+// 	{
+// 		if (WIFEXITED(status))
+// 			g_exit_status = WEXITSTATUS(status);
+// 		else if (WIFSIGNALED(status))
+// 			g_exit_status = 0;
+// 		//	g_exit_status = 128 + WTERMSIG(status);
+// 		pid = wait(&status);
+// 	}
+// 	if (pid == -1 && errno != ECHILD)
+// 		perror("waitpid");
+// }
 
 int	is_cmd_redir_in_2(t_command *cmd, int prev_fd, t_global *g)
 {
-	if (cmd->redir_in == 2)
+	t_redir	*r;
+
+	r = cmd->redirs;
+	while (r)
 	{
-		create_heredoc_open(cmd->infile, g);
-		if (g->heredoc_interrupted)
+		if (r->type == REDIR_HEREDOC)
 		{
-			g->heredoc_interrupted = 0;
-			if (prev_fd != -1)
-				close(prev_fd);
-			return (1);
+			create_heredoc_open(r->filename, g);
+			if (g->heredoc_interrupted)
+			{
+				g->heredoc_interrupted = 0;
+				if (prev_fd != -1)
+					close(prev_fd);
+				return (1);
+			}
 		}
+		r = r->next;
 	}
 	return (0);
 }
@@ -276,13 +393,19 @@ void	sigdfl_handle_child_process(t_command *cmd, int prev_fd, int *pipe_fd,
 	handle_child_process(cmd, prev_fd, pipe_fd, env);
 }
 
+
+
+
+
 void	exec_command_list(t_command *cmd_list, t_env *env, t_global *g)
 {
 	t_command	*cmd;
 	int			pipe_fd[2];
 	int			prev_fd;
 	pid_t		pid;
+	pid_t 		last_pid;
 
+	last_pid = -1;
 	cmd = cmd_list;
 	prev_fd = -1;
 	while (cmd)
@@ -291,16 +414,64 @@ void	exec_command_list(t_command *cmd_list, t_env *env, t_global *g)
 			return ;
 		pipe_fd[0] = -1;
 		pipe_fd[1] = -1;
-		failed_pipe_with_next_cmd(cmd, prev_fd, pipe_fd);
+		if (cmd->next && pipe(pipe_fd) == -1)
+		{
+			perror("pipe");
+			if (prev_fd != -1) close(prev_fd);
+			return;
+		}
 		pid = fork();
-		if_pid_minus_one(pid, prev_fd, pipe_fd);
+		if (pid == -1)
+		{
+			perror("fork");
+			if (prev_fd != -1) close(prev_fd);
+			if (pipe_fd[0] != -1) close(pipe_fd[0]);
+			if (pipe_fd[1] != -1) close(pipe_fd[1]);
+			return;
+		}
+		last_pid = pid;  // <- importante per wait_for_children
 		if (pid == 0)
-			sigdfl_handle_child_process(cmd, prev_fd, pipe_fd, env);
+		{
+			signal(SIGINT, SIG_DFL);
+			signal(SIGQUIT, SIG_DFL);
+			handle_child_process(cmd, prev_fd, pipe_fd, env);
+		}
 		else
 		{
 			handle_parent_process(&prev_fd, pipe_fd);
 			cmd = cmd->next;
 		}
 	}
-	wait_for_children();
+	wait_for_children(last_pid);
 }
+
+
+
+// void	exec_command_list(t_command *cmd_list, t_env *env, t_global *g)
+// {
+// 	t_command	*cmd;
+// 	int			pipe_fd[2];
+// 	int			prev_fd;
+// 	pid_t		pid;
+
+// 	cmd = cmd_list;
+// 	prev_fd = -1;
+// 	while (cmd)
+// 	{
+// 		if (is_cmd_redir_in_2(cmd, prev_fd, g))
+// 			return ;
+// 		pipe_fd[0] = -1;
+// 		pipe_fd[1] = -1;
+// 		failed_pipe_with_next_cmd(cmd, prev_fd, pipe_fd);
+// 		pid = fork();
+// 		if_pid_minus_one(pid, prev_fd, pipe_fd);
+// 		if (pid == 0)
+// 			sigdfl_handle_child_process(cmd, prev_fd, pipe_fd, env);
+// 		else
+// 		{
+// 			handle_parent_process(&prev_fd, pipe_fd);
+// 			cmd = cmd->next;
+// 		}
+// 	}
+// 	wait_for_children();
+// }

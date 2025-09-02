@@ -15,7 +15,30 @@ t_env	*init_env(void)
 	add_env(&env, "PWD", "/home/user", 1);
 	add_env(&env, "HOME", "/home/user", 1);
 	add_env(&env, "PATH", "/bin:/usr/bin", 1);
+	//add_env(&env, "SHLVL", "0", 1);
 	return (env);
+}
+
+t_env *copy_env(char **envp)
+{
+    t_env *env = NULL;
+    int i = 0;
+    char *eq;
+
+    while (envp[i])
+    {
+        eq = ft_strchr(envp[i], '=');
+        if (eq)
+        {
+            char *key = ft_substr(envp[i], 0, eq - envp[i]);
+            char *value = ft_strdup(eq + 1);
+            add_env(&env, key, value, 1);
+            free(key);
+            free(value);
+        }
+        i++;
+    }
+    return env;
 }
 
 char	*ft_strjoin_3(const char *s1, const char *s2, const char *s3)
@@ -77,7 +100,7 @@ bool	is_builtin(t_command *cmd)
 
 bool	has_pipe_or_redir(t_command *cmd)
 {
-	return (cmd->next != NULL || cmd->redir_in != 0 || cmd->redir_out != 0);
+    return (cmd->next != NULL || cmd->redirs != NULL);
 }
 
 char	*ft_strjoin_free(char *s1, char *s2)
@@ -183,6 +206,7 @@ void	exec_and_wait(t_command *cmds, char *cmd_path, char **envp)
 	pid = fork();
 	if (pid == 0)
 	{
+		//apply_redirections(cmds);
 		execve(cmd_path, cmds->argv, envp);
 		perror("execve");
 		if (envp)
@@ -290,15 +314,15 @@ void	execute_single_command(t_command *cmds, t_env **env)
 		exec_single_non_builtin(cmds, env);
 }
 
-void	process_commands(t_command *cmds, t_env *env, t_global *global)
+void process_commands(t_command *cmds, t_env **env, t_global *global)
 {
-	if (!cmds)
-		return ;
-	if (!has_pipe_or_redir(cmds))
-		execute_single_command(cmds, &env);
-	else
-		exec_command_list(cmds, env, global);
-	free_command(cmds);
+    if (!cmds)
+        return;
+    if (!has_pipe_or_redir(cmds))
+        execute_single_command(cmds, env);  // Passa env come doppio puntatore
+    else
+        exec_command_list(cmds, *env, global);  // Dereferenzia env
+    free_command(cmds);
 }
 
 void	cleanup_resources(t_env *env, t_global *global)
@@ -307,41 +331,47 @@ void	cleanup_resources(t_env *env, t_global *global)
 	free(global);
 }
 
-int	main_loop(t_env *env, t_global *global)
+int main_loop(t_env **env, t_global *global)
 {
-	char		*input;
-	t_command	*cmds;
+    char        *input;
+    t_command   *cmds;
 
-	while (1)
-	{
-		input = readline("minishell$ ");
-		if (handle_input_interruption(global, input))
-			continue ;
-		if (handle_eof(input))
-			break ;
-		process_input_history(input);
-		cmds = parse_input_to_commands(input);
-		process_commands(cmds, env, global);
-		free(input);
-	}
-	return (0);
+    while (1)
+    {
+        input = readline("minishell$ ");
+        if (handle_input_interruption(global, input))
+            continue;
+        if (handle_eof(input))
+            break;
+        process_input_history(input);
+        cmds = parse_input_to_commands(input);
+        process_commands(cmds, env, global);  // Passa l'indirizzo di env
+        free(input);
+    }
+    return 0;
 }
 
-int	main(void)
+int main(int argc, char **argv, char **envp)
 {
-	t_env		*env;
-	t_global	*global;
+	argc = 0;
+	argc++;
+	argv = NULL;
+	free(argv);
+    //t_env       *env = init_env();
+	t_env *env = copy_env(envp);
+    t_global    *global = malloc(sizeof(t_global));
 
-	env = init_env();
-	global = malloc(sizeof(t_global));
-	if (!global)
-	{
-		perror("malloc");
-		exit(EXIT_FAILURE);
-	}
-	global->heredoc_interrupted = 0;
-	setup_shell_signals();
-	main_loop(env, global);
-	cleanup_resources(env, global);
-	return (0);
+	init_shlvl(&env);
+	
+    if (!global)
+    {
+        perror("malloc");
+        exit(EXIT_FAILURE);
+    }
+    global->heredoc_interrupted = 0;
+    setup_shell_signals();
+    main_loop(&env, global);  // Passa l'indirizzo di env
+    cleanup_resources(env, global);
+    return 0;
 }
+
