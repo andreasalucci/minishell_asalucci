@@ -19,11 +19,10 @@ int	is_option_n(const char *str)
 
 int builtin_echo(t_command *cmd)
 {
-    int i;
-    int newline;
-	
-	i = 1;
-	newline = 1;
+    int i = 1;
+    int newline = 1;
+    int first = 1; 
+
     while (cmd->argv[i] && is_option_n(cmd->argv[i]))
     {
         newline = 0;
@@ -31,14 +30,19 @@ int builtin_echo(t_command *cmd)
     }
     while (cmd->argv[i])
     {
-		if (!cmd->arg_is_redir[i])
-			printf("%s", cmd->argv[i]);
-		if (cmd->argv[i + 1] && !cmd->arg_is_redir[i + 1])
-			printf(" ");
-		i++;
+        if (!cmd->arg_is_redir[i])
+        {
+            if (!first)
+                printf(" ");
+            printf("%s", cmd->argv[i]);
+            first = 0;
+        }
+        i++;
     }
+
     if (newline)
         printf("\n");
     g_exit_status = 0;
     return (0);
 }
+

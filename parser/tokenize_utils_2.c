@@ -39,18 +39,9 @@ void    add_custom_token(char *value, int type, t_t **token_list)
 	if (!new_token)
 		return ;
 	new_token->value = ft_strdup(value);
-	if (type == TOKEN_QUOTE)
-	{
-		new_token->type = TOKEN_WORD;
-		new_token->token_quote = 1;
-		new_token->error = false;
-	}
-	else
-	{
-		new_token->type = type;
-		new_token->token_quote = 0;
-		new_token->error = false;
-	}
+	new_token->type = type;
+	new_token->error = false;
+
 	new_token->next = NULL;
 	if (!*token_list)
 		*token_list = new_token;
@@ -62,8 +53,19 @@ void    add_custom_token(char *value, int type, t_t **token_list)
 		tmp->next = new_token;
 	}
 }
+
 void	is_var(t_t *t, t_t **token_list)
 {
+    // Gestione speciale per $?
+    if (t->input[t->pos] == '$' && t->input[t->pos + 1] == '?')
+    {
+        char *exit_status = ft_itoa(g_exit_status);
+        add_custom_token(exit_status, TOKEN_WORD, token_list);
+        free(exit_status);
+        t->pos += 2;
+        t->anchor_pos = t->pos;
+        return;
+    }
 	char	*var_temp;
 	char	*var;
 	char	*var_word;
@@ -133,6 +135,7 @@ void    is_var_2(t_t *t, t_t **token_list)
 		free(t->input);
 		t->input = ft_strjoin(prefix, end_var);
 		t->pos = t->anchor_pos;
+		free(end_var);
 		return;
 	}
 	end_var = ft_strjoin(prefix, var_token);
@@ -145,4 +148,5 @@ void    is_var_2(t_t *t, t_t **token_list)
 	free(end_var);
 	free(prefix);
 	t->anchor_pos = t->pos;
+	
 }

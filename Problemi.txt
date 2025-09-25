@@ -1,0 +1,11 @@
+< main.c cat
+
+cat < main.c |
+$?
+
+||
+$?
+
+minishell$ echo "ffffff'sssss"ssss"rrrr'nnnnnn"
+
+cat << eee

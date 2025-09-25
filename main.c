@@ -7,6 +7,25 @@
 
 int	g_exit_status = 0;
 
+t_command *init_command(void)
+{
+    t_command *cmd;
+    
+    cmd = malloc(sizeof(t_command));
+    if (!cmd)
+        return (NULL);
+    
+    cmd->argv = NULL;
+    cmd->arg_is_redir = NULL;
+    cmd->infile = NULL;
+    cmd->outfile = NULL;
+    cmd->redirs = NULL;
+    cmd->token_quote = 0;
+    cmd->next = NULL;
+    
+    return (cmd);
+}
+
 t_env	*init_env(void)
 {
 	t_env	*env;
@@ -206,6 +225,7 @@ void	exec_and_wait(t_command *cmds, char *cmd_path, char **envp)
 	pid = fork();
 	if (pid == 0)
 	{
+		//apply_redirections(cmds);
 		execve(cmd_path, cmds->argv, envp);
 		perror("execve");
 		if (envp)

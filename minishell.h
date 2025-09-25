@@ -32,25 +32,26 @@ typedef enum token_type
 	TOKEN_DOUBLE_REDIR_IN,
 	TOKEN_DOUBLE_REDIR_OUT,
 	TOKEN_VAR,
-	TOKEN_QUOTE,
 } t_token_type;
 
 typedef struct s_token
 {
-	char			*value;
-	t_token_type	type;
-	struct s_token	*next;
-	bool			single_quote;
-	bool			double_quote;
-	char			*input;
-	char			*start;
-	size_t			pos;
-	size_t			anchor_pos;
-	bool			error;
-	size_t			quote;
-	int				token_quote;
-	bool			continue_var;
-	bool            to_remove; 
+    char            *value;
+    t_token_type    type;
+    struct s_token  *next;
+    struct s_token  *prev;
+	bool            single_quote;
+    bool            double_quote;
+    char            *input;
+    char            *start;
+    size_t          pos;
+    size_t          anchor_pos;
+    bool            error;
+    size_t          quote;
+    int             token_quote;
+    bool            continue_var;
+    bool            to_remove; 
+	char			*tmp_token;
 } t_t;
 
 typedef enum e_redir_type
@@ -124,6 +125,11 @@ void		free_quotes(char *str1, char *str2, char *str3);
 void		check_var(t_t *t);
 void		new_input(t_t *t, char *exp_var, int count, int dollar);
 bool		expand_exit_status(t_t *t);
+void		prepare_quotes(t_t *t, t_t **token_list);
+void		prepare_str(t_t *t, t_t **token_list);
+void		last_str(t_t *t, char *str, t_t **token_list);
+void		temp_token(t_t *t, char *str);
+bool		check_redirs(char pos);
 
 typedef struct s_env
 {
@@ -170,7 +176,7 @@ void handle_child_process(t_command *cmd, int prev_fd, int pipe_fd[], t_env *env
 void handle_parent_process(int *prev_fd, int pipe_fd[]);
 void setup_pipe(t_command *cmd, int pipe_fd[]);
 void fork_process(pid_t *pid);
-void wait_for_children(void);
+void wait_for_children(pid_t last_pid);
 void exec_command_list(t_command *cmd_list, t_env *env, t_global *g);
 char *get_command_path(char *cmd, t_env *env);
 char	**convert_env_list_to_array(t_env *env);
@@ -190,5 +196,7 @@ void redir_append(t_command *cmd, t_t *token);
 void	redir_heredoc(t_command *cmd, t_t *token);
 
 void init_shlvl(t_env **env);
+
+t_command *init_command(void);
 
 # endif
