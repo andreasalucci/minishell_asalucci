@@ -1,4 +1,8 @@
-cat < main.c |
+(
+cat < main.c |	(| aperto)
+' aperto
+" aperto
+)
 $?
 
 ||
@@ -7,5 +11,3 @@ $?
 minishell$ echo "ffffff'sssss"ssss"rrrr'nnnnnn"
 
 cat << eee
-
-errore tester
