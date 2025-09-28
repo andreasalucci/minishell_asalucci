@@ -1,6 +1,6 @@
 # === Compilador y flags ===
 CC      = gcc 
-CFLAGS  = -Wall -Wextra -Werror
+CFLAGS  = -Wall -Wextra -Werror -g
 
 # === Rutas y nombres ===
 NAME        = minishell

@@ -1,0 +1,10 @@
+s_token
+s_command
+
+FUNZIONI:
+add_argument
+is_var
+parse_commands
+parse_commands_2
+redir_in
+init_command
