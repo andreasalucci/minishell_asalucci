@@ -1,3 +1,23 @@
+Ctrl C in multilinea >		(ho scoperto che il multilinea era opzionale, ma ormai l'ho implementato al 90%...)
+
+||
+$?
+
+minishell$ echo "ffffff'sssss"ssss"rrrr'nnnnnn"
+
+.
+./
+
+
+
+
+
+
+
+PROBLEMI ORIGINALI:
+
+< main.c cat
+
 (
 cat < main.c |	(| aperto)
 ' aperto

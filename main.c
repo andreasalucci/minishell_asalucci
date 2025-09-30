@@ -14,7 +14,6 @@ t_command *init_command(void)
     cmd = malloc(sizeof(t_command));
     if (!cmd)
         return (NULL);
-    
     cmd->argv = NULL;
     cmd->arg_is_redir = NULL;
     cmd->infile = NULL;
@@ -22,7 +21,6 @@ t_command *init_command(void)
     cmd->redirs = NULL;
     cmd->token_quote = 0;
     cmd->next = NULL;
-    
     return (cmd);
 }
 
@@ -298,6 +296,19 @@ int	handle_input_interruption(t_global *global, char *input)
 	return (0);
 }
 
+// int	handle_input_interruption(t_global *global, char *input)
+// {
+// 	if (global->heredoc_interrupted || g_exit_status == 130)
+// 	{
+// 		global->heredoc_interrupted = 0;
+// 		if (g_exit_status == 130)
+// 			g_exit_status = 0;  // Reset solo se era 130
+// 		free(input);
+// 		return (1);
+// 	}
+// 	return (0);
+// }
+
 int	handle_eof(char *input)
 {
 	if (!input)
@@ -350,18 +361,92 @@ void	cleanup_resources(t_env *env, t_global *global)
 	free(global);
 }
 
+bool	only_spaces_after_pipe(char *pp)
+{
+	size_t i;
+
+	i = 1;
+	while (pp[i])
+	{
+		if (!(pp[i] == ' ' || pp[i] == '\t'))
+			return (0);
+		i++;
+	}
+	return (1);
+}
+
+int	input_is_open(char *input)
+{
+	char *ap;
+	char *dap;
+	char *pp;
+
+	ap = ft_strchr(input, '\'');
+	dap = ft_strchr(input, '"');
+	pp = ft_strchr(input, '|');
+	if (ap && (!ap[1] || (!ft_strchr(&(ap[1]), '\'') && !ft_strchr(&(ap[1]), '"'))))
+		return (1);
+	if (dap && (!dap[1] || (!ft_strchr(&(dap[1]), '"') && !ft_strchr(&(dap[1]), '\''))))
+		return (1);
+	if (pp && only_spaces_after_pipe(pp))
+		return (2);
+	return (0);
+}
+
 int main_loop(t_env **env, t_global *global)
 {
-    char        *input;
+    char        *input = NULL;
+    char        *temp = NULL;
     t_command   *cmds;
+	int			open_type;
 
     while (1)
     {
-        input = readline("minishell$ ");
-        if (handle_input_interruption(global, input))
-            continue;
-        if (handle_eof(input))
+		input = readline("minishell$ ");
+		// if (handle_input_interruption(global, input))
+		// 	continue;
+		if (input == NULL)
+        {
+            printf("exit\n");
             break;
+        }
+		open_type = input_is_open(input);
+		while (open_type)
+		{
+			temp = readline("> ");
+			if (temp == NULL)
+			{
+				free(input);
+				input = NULL;
+				break;
+			}
+			// if (*temp == '\0')
+			// {
+			// 	free(input);
+			// 	free(temp);
+			// 	input = NULL;
+			// 	g_exit_status = 130;
+			// 	break;
+			// } NON PUO ESSERE LA SOLUZIONE PERCHE IO CON INPUT VUOTO VOGLIO CHE VADA ANCORA A CAPO FINCHE NON SCIROV QUALCOSA
+			if (open_type == 1)
+            	input = ft_strjoin_free(input, temp);
+			if (open_type == 2)
+				input = ft_strjoin_3(input, " ", temp);//////giusto per, non e il problema////////////////
+			free(temp);
+			open_type = input_is_open(input);
+		}
+		if (input == NULL)
+            break;
+        if (handle_input_interruption(global, input))
+        {
+            free(input);
+            continue;
+        }
+        if (handle_eof(input))
+        {
+            free(input);
+            break;
+        }
         process_input_history(input);
         cmds = parse_input_to_commands(input);
         process_commands(cmds, env, global);  // Passa l'indirizzo di env
@@ -372,7 +457,7 @@ int main_loop(t_env **env, t_global *global)
 
 int main(int argc, char **argv, char **envp)
 {
-	argc = 0;
+	argc = 0;      // abc '
 	argc++;
 	argv = NULL;
 	free(argv);
@@ -393,4 +478,3 @@ int main(int argc, char **argv, char **envp)
     cleanup_resources(env, global);
     return 0;
 }
-

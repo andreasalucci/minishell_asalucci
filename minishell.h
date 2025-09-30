@@ -199,4 +199,6 @@ void init_shlvl(t_env **env);
 
 t_command *init_command(void);
 
+void apply_redir_heredoc(void);
+
 # endif
