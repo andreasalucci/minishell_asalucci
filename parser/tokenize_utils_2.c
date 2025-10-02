@@ -21,6 +21,7 @@ void check_pipes_2(t_t *t, t_t **token_list, size_t start, char *word)
     {
         printf("minishell: syntax error near unexpected token '|'\n");
         t->error = true;
+		g_exit_status = 2;
     }
     else
     {

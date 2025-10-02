@@ -54,7 +54,10 @@ t_t	*tokens(char *input)
 	if (t.single_quote || t.double_quote || t.error)
 	{
 		if (t.single_quote || t.double_quote)
+		{
 			printf("minishell: syntax error near unexpected EOF\n");
+			g_exit_status = 2;
+		}
 		return (0);
 	}
 
@@ -101,6 +104,7 @@ void	triple_meta(t_t *t, t_t **token_list)
 			t->pos += 2;
 			t->error = true;
 			add_token(t, token_list);
+			g_exit_status = 2;
 			return ;
 		}
 	}
@@ -113,6 +117,7 @@ void	triple_meta(t_t *t, t_t **token_list)
 			t->pos += 2;
 			t->error = true;
 			add_token(t, token_list);
+			g_exit_status = 2;
 			return ;
 		}
 	}
