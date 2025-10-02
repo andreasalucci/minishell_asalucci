@@ -55,7 +55,7 @@ non gestire parentesi vuol dire con echo stamparle come fossero caratteri ?
 
 
 
-(PROBLEMI ORIGINALI:)
+( PROBLEMI ORIGINALI per suggerire test ai testatori : )
 
 
 
