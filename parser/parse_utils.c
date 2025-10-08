@@ -14,9 +14,9 @@ t_command *parse_commands(t_t *token)
     t_command *head = NULL;
     t_command *current = NULL;
     t_t *prev = NULL;  // Change from struct s_t * to t_t *
-
     while (token && !token->error)
     {
+		
         token->prev = prev; // This should now work
         prev = token;
 
@@ -35,9 +35,10 @@ t_command *parse_commands(t_t *token)
         }
         else if (token->type == TOKEN_WORD || token->type == TOKEN_VAR)
         {
+	
             // Solo se non è un filename di redirezione
             if (!prev || !is_redir_token(prev->type))
-                add_argument(current, token->value, token->token_quote, false);
+                add_argument(current, token->value, false);
         }
 
         token = token->next;
@@ -75,7 +76,7 @@ void parse_commands_2(t_command **current, t_command **head, t_t *token)
     {
         t_t *prev = token->prev; // This should now work
         if (!prev || !is_redir_token(prev->type))
-            add_argument(*current, token->value, token->token_quote, false);
+            add_argument(*current, token->value, false);
     }
 }
 
@@ -92,17 +93,20 @@ void    add_argument_alloc(t_command *cmd, char ***new_argv, bool **new_arg_is_r
         i++;
     }
 }
-void	add_argument(t_command *cmd, char *arg, int token_quote, bool from_redir)
+void	add_argument(t_command *cmd, char *arg, bool from_redir)
 {
+
     int count;
     char **new_argv;
     bool *new_arg_is_redir;
     new_argv = NULL;
     new_arg_is_redir = NULL;
     count = 0;
-    if (cmd->argv)
-        while(cmd->argv[count])
-            count++;
+
+		if (cmd->argv)
+        	while(cmd->argv[count])
+            	count++;
+
     add_argument_alloc(cmd, &new_argv, &new_arg_is_redir, count);
     new_argv[count] = ft_strdup(arg);
     new_argv[count +1] = NULL;  // richiesto da execve
@@ -112,8 +116,6 @@ void	add_argument(t_command *cmd, char *arg, int token_quote, bool from_redir)
     free(cmd->arg_is_redir);
     cmd->argv = new_argv;
     cmd->arg_is_redir = new_arg_is_redir;
-	if (token_quote == 1)
-		cmd->token_quote = 1;
 }
 
 

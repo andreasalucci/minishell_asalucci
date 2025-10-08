@@ -25,7 +25,8 @@ void check_pipes_2(t_t *t, t_t **token_list, size_t start, char *word)
     }
     else
     {
-        t->pos++;
+		if(t->input[t->pos])
+    		t->pos++;
         add_token(t, token_list);
     }
 }
@@ -54,7 +55,7 @@ void    add_custom_token(char *value, int type, t_t **token_list)
 	}
 }
 
-void	is_var(t_t *t, t_t **token_list)
+void is_var(t_t *t, t_t **token_list, t_env *env)
 {
     // Gestione speciale per $?
 	if (t->input[t->pos] == '$' && t->input[t->pos + 1] == '?')
@@ -104,7 +105,7 @@ void	is_var(t_t *t, t_t **token_list)
 			t->pos++;
 		var_temp = malloc(t->pos - t->anchor_pos +1);
 		ft_strlcpy(var_temp, t->input + (t->anchor_pos +1), (t->pos - t->anchor_pos));
-		var = getenv(var_temp);
+		var = get_env_value(env, var_temp);
 		if (!var)
 		{
 			free(var_temp);

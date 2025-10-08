@@ -15,7 +15,11 @@ int	builtin_cd(char **args, t_env **env)
 
 	oldpwd = getcwd(NULL, 0);
 	if (args[2])
+	{
+		free(oldpwd);
 		return (too_many());
+	}
+		
 	if (!args[1])
 		target = get_env_value(*env, "HOME");
 	else

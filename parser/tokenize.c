@@ -16,9 +16,11 @@ void	initStruct(t_t *t)
 	t->quote = 0;
 	t->continue_var = false;
 	t->tmp_token = NULL;
+	t->free_input = 0;
+	
 }
 
-t_t	*tokens(char *input)
+t_t		*tokens(char *input, bool *free_input, t_env *env)
 {
 	t_t t;
 	t_t *token_list;
@@ -32,7 +34,7 @@ t_t	*tokens(char *input)
 	{	
 		quotes(&t);
 		if (t.single_quote || t.double_quote)
-			open_quotes(&t, &token_list);
+			open_quotes(&t, &token_list, free_input);
 		if (t.continue_var)
 		{
 			t.continue_var = !t.continue_var;
@@ -41,15 +43,11 @@ t_t	*tokens(char *input)
 		if(t.input[t.pos])
 		{
 			if (t.input[t.pos] == '$')
-				is_var(&t, &token_list);
-			
-			//ft_printf("t->pos antes metacharacters:: %c\n\n", t.input[t.pos]);
+				is_var(&t, &token_list, env);
 			metacharacters(&t, &token_list);
-			//ft_printf("t->pos depues metacharacters:: %c\n\n", t.input[t.pos]);
 		}
 		if (!t.input[t.pos] && t.pos != t.anchor_pos)
 			add_token(&t, &token_list);
-		//ft_printf("final\nt->pos:: %i\n\n", t.pos);
 	}
 	if (t.single_quote || t.double_quote || t.error)
 	{
@@ -60,9 +58,10 @@ t_t	*tokens(char *input)
 		}
 		return (0);
 	}
-
+	free(t.input);
 	 return (set_metachar_type(&token_list));
 }
+
 t_t	*set_metachar_type(t_t **token_list)
 {
 	t_t *temp;
