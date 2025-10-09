@@ -44,6 +44,20 @@ t_command *parse_commands(t_t *token)
         token = token->next;
     }
 
+	// if (current && (!current->argv || !current->argv[0]))
+    // {
+    //     // Se abbiamo un comando senza argv[0] ma con redirezioni,
+    //     // creiamo un argv fittizio per evitare crash
+    //     if (current->redirs)
+    //         add_argument(current, "", false);  // Aggiungi stringa vuota come comando
+    //     else
+    //     {
+    //         // Comando completamente vuoto, possiamo ignorare
+    //         free_command(current);
+    //         current = NULL;
+    //     }
+    // }
+
     if (current)
         add_pipe(&head, current);
 
@@ -127,7 +141,7 @@ void add_redir(t_command *cmd, int type, const char *filename)
     if (!new)
         return; // gestisci errore malloc
     new->type = type;
-    new->filename = ft_strdup(filename);
+    new->filename = (char *)filename;
     new->next = NULL;
 
     if (!cmd->redirs)

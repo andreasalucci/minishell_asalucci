@@ -329,6 +329,7 @@ int	handle_eof(char *input)
 	if (!input)
 	{
 		printf("exit\n");
+		free(input);//////////////////////////////
 		return (1);
 	}
 	return (0);
@@ -339,35 +340,6 @@ void	process_input_history(char *input)
 	if (*input)
 		add_history(input);
 }
-
-// void	process_input_history(char *input) // per gestire la memoria di tutte le righe
-// {
-// 	char	**lines;
-// 	int		i;
-	
-// 	if (!input || !*input)
-// 		return;
-	
-// 	// Splitta l'input in linee
-// 	lines = ft_split(input, '\n');
-// 	if (!lines)
-// 		return;
-	
-// 	// Salva ogni linea nella history
-// 	i = 0;
-// 	while (lines[i])
-// 	{
-// 		add_history(lines[i]);
-// 		i++;
-// 	}
-	
-// 	// Libera la memoria
-// 	i = 0;
-// 	while (lines[i])
-// 		free(lines[i++]);
-// 	free(lines);
-// }
-
 
 t_command *parse_input_to_commands(char *input, bool *free_input, t_env *env)
 {
@@ -513,13 +485,11 @@ int main_loop(t_env **env, t_global *global)
 
 		if (handle_input_interruption(global, input))
 		{
-			free(input);
 			input = NULL;
 			continue;
 		}
 		if (handle_eof(input))
 		{
-			free(input);
 			input = NULL;
 			break;
 		}
@@ -528,7 +498,6 @@ int main_loop(t_env **env, t_global *global)
 		process_commands(cmds, env, global);
 		if (free_input)
 		{
-			free(input);
 			input = NULL;
 			free_input = false;
 		}

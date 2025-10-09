@@ -27,25 +27,6 @@ void apply_redirections(t_command *cmd)
     }
 }
 
-// void apply_redirections(t_command *cmd)
-// {
-//     t_redir *r;
-
-// 	r = cmd->redirs;
-//     while (r)
-//     {
-//         if (r->type == REDIR_IN)
-// 			apply_redir_in1(r);
-//         else if (r->type == REDIR_OUT)
-// 			apply_redir_out1(r);
-//         else if (r->type == REDIR_APPEND)
-// 			apply_redir_out2(r);
-//         // else if (r->type == REDIR_HEREDOC)
-// 		// 	apply_redir_heredoc(r, g);
-//         r = r->next;
-//     }
-// }
-
 void	apply_redir_in1(t_redir *r)
 {
 	int	fd;
@@ -111,35 +92,6 @@ void apply_redir_heredoc(void)
     dup2(fd, STDIN_FILENO);
     close(fd);
 }
-
-// void	create_heredoc_effective(const char *delimiter)
-// {
-// 	int		fd;
-// 	char	*line;
-
-// 	fd = open(".heredoc_tmp", O_WRONLY | O_CREAT | O_TRUNC, 0644);
-// 	if (fd < 0)
-// 		exit(1);
-// 	signal(SIGINT, heredoc_sigint_handler);
-// 	while (1)
-// 	{
-// 		line = readline("> ");
-// 		if (!line)
-// 		{
-// 			write(STDOUT_FILENO, "\n", 1);
-// 			break ;
-// 		}
-// 		if (ft_strcmp(line, delimiter) == 0)
-// 		{
-// 			free(line);
-// 			break ;
-// 		}
-// 		ft_putendl_fd(line, fd);
-// 		free(line);
-// 	}
-// 	close(fd);
-// 	exit(0);
-// }
 
 void	create_heredoc_effective(const char *delimiter)
 {
@@ -271,6 +223,11 @@ void	handle_child_cmd_path(t_command *cmd, t_env *env)
 	char	*cmd_path;
 	char 	**argv_filtered;
 
+    // if (!cmd || !cmd->argv || !cmd->argv[0] || cmd->argv[0][0] == '\0')
+    // {
+    //     ft_putstr_fd("minishell: invalid command structure\n", 2);
+    //     exit(1);
+    // }
 	cmd_path = get_command_path(cmd->argv[0], env);
 	if (!cmd_path)
 		command_not_found(cmd);
@@ -308,6 +265,11 @@ void	handle_child_process(t_command *cmd, int prev_fd, int pipe_fd[],
 		close(pipe_fd[1]);
 	}
 	apply_redirections(cmd);
+	// if (!cmd || !cmd->argv || !cmd->argv[0] || cmd->argv[0][0] == '\0')
+    // {
+    //     // Heredoc senza comando → esci con successo dopo aver applicato redirezioni
+    //     exit(0);
+    // }
 	handle_child_cmd_path(cmd, env);
 }
 
@@ -336,22 +298,6 @@ void	setup_pipe(t_command *cmd, int pipe_fd[])
 	}
 }
 
-// void	fork_process(pid_t *pid)
-// {
-// 	*pid = fork();
-// 	if (*pid == -1)
-// 	{
-// 		perror("fork");
-// 		exit(EXIT_FAILURE);
-// 	}
-// }
-
-
-
-
-
-
-
 
 void wait_for_children(pid_t last_pid)
 {
@@ -376,26 +322,6 @@ void wait_for_children(pid_t last_pid)
 
 
 
-
-
-// void	wait_for_children(void)
-// {
-// 	int		status;
-// 	pid_t	pid;
-
-// 	pid = wait(&status);
-// 	while (pid > 0)
-// 	{
-// 		if (WIFEXITED(status))
-// 			g_exit_status = WEXITSTATUS(status);
-// 		else if (WIFSIGNALED(status))
-// 			g_exit_status = 0;
-// 		//	g_exit_status = 128 + WTERMSIG(status);
-// 		pid = wait(&status);
-// 	}
-// 	if (pid == -1 && errno != ECHILD)
-// 		perror("waitpid");
-// }
 
 int	is_cmd_redir_in_2(t_command *cmd, int prev_fd, t_global *g)
 {

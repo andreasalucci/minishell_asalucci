@@ -8,7 +8,7 @@ PROBLEMI IRRISOLTI:
 
 echo ?$
 heredoc non viene chiuso se <<a (<< attaccate ad a )
-richiamare memoria heredoc, cancellare e fare ctrlD stampa caratteri strani
+richiamare memoria, cancellare e fare ctrlD crea leak
 
 
 
