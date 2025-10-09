@@ -6,8 +6,9 @@ PROBLEMI IRRISOLTI:
 	Importanti:
 
 
-memoria degli heredoc solo prima linea
 echo ?$
+heredoc non viene chiuso se <<a (<< attaccate ad a )
+richiamare memoria heredoc, cancellare e fare ctrlD stampa caratteri strani
 
 
 
@@ -32,8 +33,6 @@ asalucci@c2r6p4:~/0_0_minishell$ << "ciao" cat > prova
 
 	Opzionali e sottigliezze:
 
-
-Ctrl C in multilinea >		(ho scoperto che il multilinea era opzionale, ma ormai l'ho implementato al 90%...)
 
 || da' errore al primo || attaccato a ||, non riconosce ||
 

@@ -340,6 +340,35 @@ void	process_input_history(char *input)
 		add_history(input);
 }
 
+// void	process_input_history(char *input) // per gestire la memoria di tutte le righe
+// {
+// 	char	**lines;
+// 	int		i;
+	
+// 	if (!input || !*input)
+// 		return;
+	
+// 	// Splitta l'input in linee
+// 	lines = ft_split(input, '\n');
+// 	if (!lines)
+// 		return;
+	
+// 	// Salva ogni linea nella history
+// 	i = 0;
+// 	while (lines[i])
+// 	{
+// 		add_history(lines[i]);
+// 		i++;
+// 	}
+	
+// 	// Libera la memoria
+// 	i = 0;
+// 	while (lines[i])
+// 		free(lines[i++]);
+// 	free(lines);
+// }
+
+
 t_command *parse_input_to_commands(char *input, bool *free_input, t_env *env)
 {
     t_t *token;
@@ -431,7 +460,6 @@ int	input_is_open(char *input)
 int main_loop(t_env **env, t_global *global)
 {
     char        *input = NULL;
-    char        *temp = NULL;
     t_command   *cmds;
 	int			open_type;
 	bool	free_input;
@@ -445,55 +473,64 @@ int main_loop(t_env **env, t_global *global)
             printf("exit\n");
             break;
         }
-
 		open_type = input_is_open(input);
-		while (open_type)
+
+
+		if (open_type == 1)
 		{
-			temp = readline("> ");
-			if (temp == NULL)
-			{
-				free(input);
-				input = NULL;
-				break;
-			}
-			if (open_type == 1)
-            	input = ft_strjoin_free(input, temp);
-			if (open_type == 2)
-				input = ft_strjoin_3(input, " ", temp);
-			free(temp);
-			open_type = input_is_open(input);
+			ft_putstr_fd("minishell: Syntax error: unclosed quotes\n", 2);
+			g_exit_status = 2;
+			continue;
 		}
+		// if (open_type == 2)
+		// {
+		// 	ft_putstr_fd("minishell: Error: Pipe not specified\n", 2);
+		// 	continue;
+		// }
+
+		// if (open_type)
+        //     global->in_multiline = true;
+		// while (open_type)
+		// {
+		// 	temp = readline("> ");
+		// 	if (temp == NULL)
+		// 	{
+		// 		free(input);
+		// 		input = NULL;
+		// 		break;
+		// 	}
+		// 	if (open_type == 1)
+        //     	input = ft_strjoin_free(input, temp);
+		// 	if (open_type == 2)
+		// 		input = ft_strjoin_3(input, " ", temp);
+		// 	free(temp);
+		// 	open_type = input_is_open(input);
+		// }
+		// global->in_multiline = false;
+
+
 		if (input == NULL)
             break;
-
         if (handle_input_interruption(global, input))
         {
             free(input);
           //  rl_free_line_state();
             continue;
         }
-
         if (handle_eof(input))
         {
             free(input);
           //  rl_free_line_state();
             break;
         }
-
         process_input_history(input);
         cmds = parse_input_to_commands(input, &free_input, *env);
         process_commands(cmds, env, global);
-
-       
     }
 	if (free_input)
-			{
-				free(input);
-			}
-
-			rl_free_line_state();
-			input = NULL;
- 
+		free(input);
+	rl_free_line_state();
+	input = NULL;
     rl_clear_history(); 
     return 0;
 }

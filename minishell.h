@@ -17,6 +17,8 @@
 #include <signal.h>
 #include <errno.h>  // Per errno e ECHILD
 
+#include <sys/stat.h>
+
 extern int g_exit_status;
 
 typedef enum token_type
@@ -83,7 +85,7 @@ typedef struct s_command
 
 typedef struct global 
 {
-	int	heredoc_interrupted;
+	int		heredoc_interrupted;
 } t_global;
 
 typedef struct s_key_value {

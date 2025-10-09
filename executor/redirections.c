@@ -112,21 +112,33 @@ void apply_redir_heredoc(void)
     close(fd);
 }
 
-// void apply_redir_heredoc(t_redir *r, t_global *g)
+// void	create_heredoc_effective(const char *delimiter)
 // {
-//     int fd;
+// 	int		fd;
+// 	char	*line;
 
-//     create_heredoc_open(r->filename, g);
-//     if (g->heredoc_interrupted)
-//         exit(130);
-//     fd = open(".heredoc_tmp", O_RDONLY);
-//     if (fd < 0)
-//     {
-//         perror("heredoc");
-//         exit(EXIT_FAILURE);
-//     }
-//     dup2(fd, STDIN_FILENO);
-//     close(fd);
+// 	fd = open(".heredoc_tmp", O_WRONLY | O_CREAT | O_TRUNC, 0644);
+// 	if (fd < 0)
+// 		exit(1);
+// 	signal(SIGINT, heredoc_sigint_handler);
+// 	while (1)
+// 	{
+// 		line = readline("> ");
+// 		if (!line)
+// 		{
+// 			write(STDOUT_FILENO, "\n", 1);
+// 			break ;
+// 		}
+// 		if (ft_strcmp(line, delimiter) == 0)
+// 		{
+// 			free(line);
+// 			break ;
+// 		}
+// 		ft_putendl_fd(line, fd);
+// 		free(line);
+// 	}
+// 	close(fd);
+// 	exit(0);
 // }
 
 void	create_heredoc_effective(const char *delimiter)
@@ -136,24 +148,38 @@ void	create_heredoc_effective(const char *delimiter)
 
 	fd = open(".heredoc_tmp", O_WRONLY | O_CREAT | O_TRUNC, 0644);
 	if (fd < 0)
+	{
+		perror("open .heredoc_tmp");
 		exit(1);
+	}
+	
 	signal(SIGINT, heredoc_sigint_handler);
+	
 	while (1)
 	{
 		line = readline("> ");
 		if (!line)
 		{
 			write(STDOUT_FILENO, "\n", 1);
-			break ;
+			break;
 		}
+		
+		// SALVA OGNI LINEA NELLA HISTORY!
+		if (*line)
+			add_history(line);
+		
 		if (ft_strcmp(line, delimiter) == 0)
 		{
 			free(line);
-			break ;
+			break;
 		}
-		ft_putendl_fd(line, fd);
+		
+		write(fd, line, ft_strlen(line));
+		write(fd, "\n", 1);
+		fsync(fd);
 		free(line);
 	}
+	
 	close(fd);
 	exit(0);
 }
