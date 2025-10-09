@@ -480,6 +480,8 @@ int main_loop(t_env **env, t_global *global)
 		{
 			ft_putstr_fd("minishell: Syntax error: unclosed quotes\n", 2);
 			g_exit_status = 2;
+			free(input);
+			input = NULL;
 			continue;
 		}
 		// if (open_type == 2)
@@ -509,30 +511,30 @@ int main_loop(t_env **env, t_global *global)
 		// global->in_multiline = false;
 
 
-		if (input == NULL)
-            break;
-        if (handle_input_interruption(global, input))
-        {
-            free(input);
-          //  rl_free_line_state();
-            continue;
-        }
-        if (handle_eof(input))
-        {
-            free(input);
-          //  rl_free_line_state();
-            break;
-        }
-        process_input_history(input);
-        cmds = parse_input_to_commands(input, &free_input, *env);
-        process_commands(cmds, env, global);
-    }
-	if (free_input)
-		free(input);
-	rl_free_line_state();
-	input = NULL;
-    rl_clear_history(); 
-    return 0;
+		if (handle_input_interruption(global, input))
+		{
+			free(input);
+			input = NULL;
+			continue;
+		}
+		if (handle_eof(input))
+		{
+			free(input);
+			input = NULL;
+			break;
+		}
+		process_input_history(input);
+		cmds = parse_input_to_commands(input, &free_input, *env);
+		process_commands(cmds, env, global);
+		if (free_input)
+		{
+			free(input);
+			input = NULL;
+			free_input = false;
+		}
+	}
+	rl_clear_history();
+	return 0;
 }
 
 
