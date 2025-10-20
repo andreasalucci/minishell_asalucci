@@ -38,6 +38,8 @@ int builtin_echo(t_command *cmd)
             first = 0;
         }
         i++;
+		
+
     }
 
     if (newline)

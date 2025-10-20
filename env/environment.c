@@ -24,6 +24,20 @@ t_env	*create_env_node(char *key, char *value, int exportable)
 	return (node);
 }
 
+t_env *create_env_node_nocopy(char *key, char *value, int exportable)
+{
+	t_env	*node;
+
+	node = malloc(sizeof(t_env));
+	if (!node)
+		return (NULL);
+	node->key = key;      // ✅ Prende ownership direttamente
+	node->value = value;  // ✅ Prende ownership direttamente
+	node->exportable = exportable;
+	node->next = NULL;
+	return (node);
+}
+
 int	add_env(t_env **env, char *key, char *value, int exportable)
 {
 	t_env	*new;
@@ -36,15 +50,29 @@ int	add_env(t_env **env, char *key, char *value, int exportable)
 	return (1);
 }
 
+int	add_env_nocopy(t_env **env, char *key, char *value, int exportable)
+{
+	t_env	*new_node;
+
+	new_node = create_env_node_nocopy(key, value, exportable);
+	if (!new_node)
+		return (0);
+	new_node->next = *env;
+	*env = new_node;
+	return (1);
+}
+
 int	update_env(t_env **env, const char *key, const char *value)
 {
 	t_env	*curr;
 	char	*new_val;
 
-	curr = *env;
+	if (!value)/////////////////////
+		return (0);
 	new_val = ft_strdup(value);
 	if (!new_val)
 		return (0);
+	curr = *env;
 	while (curr)
 	{
 		if (ft_strcmp(curr->key, key) == 0)

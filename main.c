@@ -14,15 +14,12 @@ t_command *init_command(void)
     cmd = malloc(sizeof(t_command));
     if (!cmd)
         return (NULL);
-    
     cmd->argv = NULL;
     cmd->arg_is_redir = NULL;
     cmd->infile = NULL;
     cmd->outfile = NULL;
     cmd->redirs = NULL;
-    cmd->token_quote = 0;
     cmd->next = NULL;
-    
     return (cmd);
 }
 
@@ -38,6 +35,28 @@ t_env	*init_env(void)
 	return (env);
 }
 
+// t_env *copy_env(char **envp)
+// {
+//     t_env *env = NULL;
+//     int i = 0;
+//     char *eq;
+
+//     while (envp[i])
+//     {
+//         eq = ft_strchr(envp[i], '=');
+//         if (eq)
+//         {
+//             char *key = ft_substr(envp[i], 0, eq - envp[i]);
+//             char *value = ft_strdup(eq + 1);
+//             add_env(&env, key, value, 1);
+//             free(key);
+//             free(value);
+//         }
+//         i++;
+//     }
+//     return env;
+// }
+
 t_env *copy_env(char **envp)
 {
     t_env *env = NULL;
@@ -51,9 +70,8 @@ t_env *copy_env(char **envp)
         {
             char *key = ft_substr(envp[i], 0, eq - envp[i]);
             char *value = ft_strdup(eq + 1);
-            add_env(&env, key, value, 1);
-            free(key);
-            free(value);
+            add_env_nocopy(&env, key, value, 1);  // ✅ Nessuna copia aggiuntiva
+            // NON free(key) e free(value) - add_env_nocopy se ne occupa
         }
         i++;
     }
@@ -131,6 +149,15 @@ char	*ft_strjoin_free(char *s1, char *s2)
 	return (joined);
 }
 
+bool	dot_slash(char *cmd)
+{
+	if (ft_strcmp(cmd, ".") == 0)
+		return (true);
+	if (ft_strcmp(cmd, "./") == 0)
+		return (true);
+	return (false);
+}
+
 char	*get_command_path(char *cmd, t_env *env)
 {
 	char	*path_var;
@@ -138,6 +165,8 @@ char	*get_command_path(char *cmd, t_env *env)
 	char	*candidate;
 	int		i;
 
+	if (dot_slash(cmd))
+		return (NULL);
 	if (ft_strchr(cmd, '/'))
 		return (ft_strdup(cmd));
 	path_var = get_env_value(env, "PATH");
@@ -152,9 +181,16 @@ char	*get_command_path(char *cmd, t_env *env)
 		candidate = ft_strjoin(paths[i], "/");
 		candidate = ft_strjoin_free(candidate, cmd);
 		if (access(candidate, X_OK) == 0)
+		{
+			free_paths(paths);
 			return (candidate);
+		}
+		free(candidate);	
 		i++;
 	}
+	
+	candidate = NULL;
+	free_paths(paths);
 	return (NULL);
 }
 
@@ -240,9 +276,15 @@ void	exec_and_wait(t_command *cmds, char *cmd_path, char **envp)
 			g_exit_status = WEXITSTATUS(status);
 		else if (WIFSIGNALED(status))
 			g_exit_status = 128 + WTERMSIG(status);
+		if (envp)
+			free_env_array(envp);
 	}
 	else
+	{
 		perror("fork");
+		if (envp)
+			free_env_array(envp);
+	}
 	free(cmd_path);
 }
 
@@ -257,12 +299,23 @@ void	exec_single_non_builtin(t_command *cmds, t_env **env)
 	{
 		exec_and_wait(cmds, cmd_path, envp);
 	}
+	else if (ft_strcmp(cmds->argv[0], ".") == 0)
+	{
+		ft_putstr_fd(".: filename argument required\n", 2);
+		g_exit_status = 2;
+	}
+	else if (ft_strcmp(cmds->argv[0], "./") == 0)
+	{
+		ft_putstr_fd("./: Is a directory\n", 2);
+		g_exit_status = 126;
+	}
 	else
 	{
 		ft_putstr_fd(cmds->argv[0], 2);
 		ft_putstr_fd(": command not found\n", 2);
 		g_exit_status = 127;
 	}
+	free_env_array(envp);
 }
 
 void	sigint_handler(int signum)
@@ -303,6 +356,7 @@ int	handle_eof(char *input)
 	if (!input)
 	{
 		printf("exit\n");
+		free(input);//////////////////////////////
 		return (1);
 	}
 	return (0);
@@ -314,15 +368,18 @@ void	process_input_history(char *input)
 		add_history(input);
 }
 
-t_command	*parse_input_to_commands(char *input)
+t_command *parse_input_to_commands(char *input, bool *free_input, t_env *env)
 {
-	t_t	*token;
+    t_t *token;
+    t_command *cmd;
 
-	token = tokens(input);
-	if (!token)
-		return (NULL);
-	parse(token);
-	return (parse_commands(token));
+    token = tokens(input, free_input, env);  // PASS env
+    if (!token)
+        return (NULL);
+    cmd = parse(token);
+    //cmd = parse_commands(token);
+   	free_token_list(token);  // ← Aquí liberas los tokens
+    return (cmd);
 }
 
 void	execute_single_command(t_command *cmds, t_env **env)
@@ -341,55 +398,170 @@ void process_commands(t_command *cmds, t_env **env, t_global *global)
         execute_single_command(cmds, env);  // Passa env come doppio puntatore
     else
         exec_command_list(cmds, *env, global);  // Dereferenzia env
-    free_command(cmds);
+    free_command_l(cmds);
 }
 
 void	cleanup_resources(t_env *env, t_global *global)
 {
-	free_env(env);
-	free(global);
+	if (env)
+		free_env(env);
+	if (global)
+		free(global);
+	rl_clear_history();
+	unlink(".heredoc_tmp");
+}
+
+bool	only_spaces_after_pipe(char *pp)
+{
+	size_t i;
+
+	i = 1;
+	while (pp[i])
+	{
+		if (!(pp[i] == ' ' || pp[i] == '\t'))
+			return (0);
+		i++;
+	}
+	return (1);
+}
+
+bool quotes_closed(char *input)
+{
+    bool in_single;
+    bool in_double;
+	char *p;
+
+	in_single = false;
+    in_double = false;
+	p = input;
+    while (*p)
+	{
+        if (*p == '\'' && !in_double)
+            in_single = !in_single;
+        else if (*p == '"' && !in_single)
+            in_double = !in_double;
+        else if (*p == '\\')
+            if (*(p + 1))
+				p++;
+		p++;
+    }
+    return (!in_single && !in_double);
+}
+
+int	input_is_open(char *input)
+{
+	char *pp;
+
+	pp = ft_strchr(input, '|');
+	if (!quotes_closed(input))
+		return (1);
+	if (pp && only_spaces_after_pipe(pp))
+		return (2);
+	return (0);
 }
 
 int main_loop(t_env **env, t_global *global)
 {
-    char        *input;
+    char        *input = NULL;
     t_command   *cmds;
+	int			open_type;
+	bool	free_input;
 
+	free_input = 0;
     while (1)
     {
-        input = readline("minishell$ ");
-        if (handle_input_interruption(global, input))
-            continue;
-        if (handle_eof(input))
+		input = readline("minishell$ ");
+		if (input == NULL)
+        {
+            printf("exit\n");
             break;
-        process_input_history(input);
-        cmds = parse_input_to_commands(input);
-        process_commands(cmds, env, global);  // Passa l'indirizzo di env
-        free(input);
-    }
-    return 0;
+        }
+		open_type = input_is_open(input);
+
+
+		if (open_type == 1)
+		{
+			ft_putstr_fd("minishell: Syntax error: unclosed quotes\n", 2);
+			g_exit_status = 2;
+			free(input);
+			input = NULL;
+			continue;
+		}
+		if (handle_input_interruption(global, input))
+		{
+			input = NULL;
+			continue;
+		}
+		if (handle_eof(input))
+		{
+			input = NULL;
+			break;
+		}
+		process_input_history(input);
+		cmds = parse_input_to_commands(input, &free_input, *env);
+		process_commands(cmds, env, global);
+		if (free_input)
+		{
+			input = NULL;
+			free_input = false;
+		}
+	}
+	rl_clear_history();
+	return 0;
 }
+
 
 int main(int argc, char **argv, char **envp)
 {
-	argc = 0;
-	argc++;
-	argv = NULL;
-	free(argv);
-    //t_env       *env = init_env();
-	t_env *env = copy_env(envp);
-    t_global    *global = malloc(sizeof(t_global));
+    t_env *env = copy_env(envp);
+    t_global *global = malloc(sizeof(t_global));
 
-	init_shlvl(&env);
-	
     if (!global)
     {
         perror("malloc");
         exit(EXIT_FAILURE);
     }
+
+    init_shlvl(&env);
     global->heredoc_interrupted = 0;
     setup_shell_signals();
-    main_loop(&env, global);  // Passa l'indirizzo di env
+
+    // Modo no interactivo con -c
+    if (argc >= 3 && !ft_strncmp(argv[1], "-c", 3))
+    {
+		char *input = argv[2];
+		char *input_copy = strdup(input); // Duplica para evitar modificar argv[2]
+		if (!input_copy)
+		{
+			perror("strdup");
+			cleanup_resources(env, global);
+			return 1;
+		}
+
+		int open_type = input_is_open(input_copy);
+		if (open_type == 1)
+		{
+			ft_putstr_fd("minishell: Syntax error: unclosed quotes\n", 2);
+			free(input_copy);
+			cleanup_resources(env, global);
+			return 2;
+		}
+
+		process_input_history(input_copy);
+		bool free_input = false;
+		t_command *cmds = parse_input_to_commands(input_copy, &free_input, env);
+		process_commands(cmds, &env, global);
+
+		//if (free_input)
+		free(input_copy);
+
+		cleanup_resources(env, global);
+		return g_exit_status;
+
+    }
+
+    // Modo interactivo normal
+    main_loop(&env, global);
     cleanup_resources(env, global);
     return 0;
 }

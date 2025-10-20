@@ -10,6 +10,7 @@ void    check_var(t_t *t)
 	count = t->pos;
 	while(t->input[count] && t->input[count] != '"')
 	{
+		//ft_printf("entrar\n");
 		if (t->input[count] == '$' && t->input[count +1] == '?')
 		{
 			expand_exit_status(t);
@@ -48,6 +49,9 @@ void    new_input(t_t *t, char *exp_var, int count, int dollar)
 	free(begin_var);
 	ft_strlcpy(after_var, t->input + count, (ft_strlen(t->input) - count) +1);
 	new_input = ft_strjoin(with_var, after_var);
+	free(after_var);
+	free(with_var);
+	free(t->input);
 	t->input = NULL;
 	t->input = new_input;
 	t->start = new_input;

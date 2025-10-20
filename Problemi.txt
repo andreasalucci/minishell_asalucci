@@ -1,6 +1,70 @@
+PROBLEMI IRRISOLTI:
+
+
+
+
+	Importanti:
+
+
+echo ?$
+heredoc non viene chiuso se <<a (<< attaccate ad a )
+richiamare memoria, cancellare e fare ctrlD crea leak
+
+
+
+
+	Get crazy:
+
+
+asalucci@c2r6p4:~/0_0_minishell$ << ciao cat > prova
+> $HOME
+> "$HOME"
+> '$HOME'
+> "'$HOM'E"
+> ciao
+asalucci@c2r6p4:~/0_0_minishell$ << "ciao" cat > prova
+> $HOME
+> "$HOME"
+> '$HOME'
+> ciao
+
+
+
+
+	Opzionali e sottigliezze:
+
+
+|| da' errore al primo || attaccato a ||, non riconosce ||
+
+.
+./   Ok, stderr, exit code giusto, tutto corretto eccetto che non viene stampatp "minishell:" come "bash:" nel caso generale dell'errore, senza comandi
+
+non gestire parentesi vuol dire con echo stamparle come fossero caratteri ?
+
+
+
+
+
+
+
+
+
+
+
+
+( PROBLEMI ORIGINALI per suggerire test ai testatori : )
+
+
+
+
+
 < main.c cat
 
-cat < main.c |
+(
+cat < main.c |	(| aperto)
+' aperto
+" aperto
+)
 $?
 
 ||
@@ -9,3 +73,24 @@ $?
 minishell$ echo "ffffff'sssss"ssss"rrrr'nnnnnn"
 
 cat << eee
+
+
+---
+
+
+asalucci@c2r6p4:~/0_0_minishell$ << ciao cat > prova
+> $HOME
+> "$HOME"
+> '$HOME'
+> "'$HOM'E"
+> ciao
+asalucci@c2r6p4:~/0_0_minishell$ << "ciao" cat > prova
+> $HOME
+> "$HOME"
+> '$HOME'
+> ciao
+
+
+
+minishell$ export ciao="echo"
+minishell$ $ciao ciao2

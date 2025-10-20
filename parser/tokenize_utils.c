@@ -5,22 +5,26 @@ void quotes(t_t *t)
 {
 	if ((t->input[t->pos] == '\'' && !t->double_quote) && (t->start == t->input || t->input[t->pos - 1] != '\\'))
 	{
+		
 		t->single_quote = !t->single_quote;
 		if (t->input[t->anchor_pos] == ' ')
 			t->anchor_pos++;
 		t->quote = t->pos; // marca la virgoletta
-		t->pos++;
+		if(t->input[t->pos])
+    		t->pos++;
 	}
 	else if ((t->input[t->pos] == '\"' && !t->single_quote) && (t->start == t->input || t->input[t->pos - 1] != '\\'))
 	{
-		//ft_printf("antes t->double_quote:: %i\nt->pos:: -->%c<--\n", t->double_quote, t->input[t->pos -1]);
+		//ft_printf("quotes t->pos:: %i\n", t->pos);//ft_printf("antes t->double_quote:: %i\nt->pos:: -->%c<--\n", t->double_quote, t->input[t->pos -1]);
 		t->double_quote = !t->double_quote;
-		//ft_printf("despues t->double_quote:: %i\nt->pos:: -->%c<--\n\n", t->double_quote, t->input[t->pos -1]);
+		
 		if (t->input[t->anchor_pos] == ' ')
 			t->anchor_pos++;
 		t->quote = t->pos; // marca la virgoletta
 		
-		t->pos++;
+		if(t->input[t->pos])
+    		t->pos++;
+		//ft_printf("despues t->double_quote:: %i\nt->pos -1:: -->%c<--\n\n", t->double_quote, t->input[t->pos -1]);
 	}
 }
 
@@ -54,7 +58,7 @@ void	metacharacters(t_t *t, t_t **token_list)
 			{
 				t->pos += 2;
 				add_token(t, token_list);
-				t->anchor_pos = t->pos +1;
+				t->anchor_pos = t->pos;
 			}
 		else if (t->input[t->pos] == '>' && t->input[t->pos +1] == '>'
 		&& t->input[t->pos +2] != '>')
@@ -68,7 +72,7 @@ void	metacharacters(t_t *t, t_t **token_list)
 			triple_meta(t, token_list);
 		if ((t->input[t->pos] == '<' || t->input[t->pos] == '>') && t->input[t->pos -1] != ' ')
 			return ;
-		if (t->input[t->pos] != '"')
+		if (t->input[t->pos] != '"' && t->input[t->pos] != '\'')
 			t->pos++;
 		
 
@@ -76,7 +80,7 @@ void	metacharacters(t_t *t, t_t **token_list)
 	}
 }
 
-void open_quotes(t_t *t, t_t **token_list)
+void open_quotes(t_t *t, t_t **token_list, bool *free_input)
 {
 	
 	if (t->single_quote || t->double_quote)
@@ -85,6 +89,7 @@ void open_quotes(t_t *t, t_t **token_list)
 			check_var(t);
 		while (t->input[t->pos])
 		{
+			
 			if (t->single_quote && t->input[t->pos] == '\'' && t->input[t->pos - 1] != '\\')
 			{
 				t->single_quote = !t->single_quote;
@@ -92,7 +97,7 @@ void open_quotes(t_t *t, t_t **token_list)
 				{
 					if (t->quote != t->anchor_pos) // per che non entre in comandi tipo -"vmaos"-
 					{
-						prepare_quotes(t, token_list);
+						prepare_quotes(t, token_list, free_input);
 					}
 					else
 					{
@@ -102,26 +107,28 @@ void open_quotes(t_t *t, t_t **token_list)
 						t->anchor_pos = t->pos + 1;
 					}
 				}
-				t->pos++;
+				if(t->input[t->pos])
+    				t->pos++;
 				return;
 			}
 			else if (t->double_quote && t->input[t->pos] == '\"' && t->input[t->pos - 1] != '\\')
 			{
+				//ft_printf("t->input[t->pos]:: %c, t->pos:: %i\n", t->input[t->pos], t->pos);
 				t->double_quote = !t->double_quote;
+				//ft_printf("t->double_quote:: %i\n", t->double_quote);
 				if (t->pos > t->anchor_pos) 
 				{
 					
 					if (t->quote != t->anchor_pos) // per che non entre in comandi tipo -"vmaos"-
-					{
-						prepare_quotes(t, token_list);	
-											
-					}
+						prepare_quotes(t, token_list, free_input);	
 					else
 					{
+						
 						if (t->input[t->anchor_pos] == '\"')
 							t->anchor_pos++;
 						prepare_str(t, token_list);
-						t->pos++;
+						if(t->input[t->pos])
+    						t->pos++;
 						t->anchor_pos = t->pos;
 						
 					}	
@@ -131,14 +138,17 @@ void open_quotes(t_t *t, t_t **token_list)
 				
 				return;
 			}
-			t->pos++;
+			if(t->input[t->pos])
+    			t->pos++;
 		}
 	}
-	t->pos++;
+	if(t->input[t->pos])
+    	t->pos++;
 }
 
-void prepare_quotes(t_t *t, t_t **token_list)
+void prepare_quotes(t_t *t, t_t **token_list, bool *free_input)
 {
+	//ft_printf("entro\n");
 	char	*begin_quote;
 	char	*after_quote;
 	char	*end_str;
@@ -151,19 +161,22 @@ void prepare_quotes(t_t *t, t_t **token_list)
 		
 		if (t->pos == t->quote +1)
 		{
-			
 			ft_strlcpy(begin_quote, t->input, t->quote +1);
-			t->pos++;
+			if(t->input[t->pos])
+    			t->pos++;
 			while(t->input[t->pos])
 				t->pos++;
 			after_quote = malloc((t->pos - t->quote +1) +1);
 			ft_strlcpy(after_quote, t->input + (t->quote +2), t->pos - (t->quote));
 			end_str = ft_strjoin(begin_quote, after_quote);
+			free(begin_quote);
+			free(after_quote);
 			free(t->input);
 			t->input = ft_strdup(end_str);
 			t->start = t->input;
 			free(end_str);
 			t->pos = t->anchor_pos;
+			*free_input = 1;
 		}
 		else
 		{
@@ -172,6 +185,8 @@ void prepare_quotes(t_t *t, t_t **token_list)
 			after_quote = malloc((t->pos - t->quote) +1);
 			ft_strlcpy(after_quote, t->input + (t->quote +1), t->pos - (t->quote));
 			end_str = ft_strjoin(begin_quote, after_quote);
+			free(begin_quote);
+			free(after_quote);
 			if (t->input[t->pos +1] == t->input[t->quote])
 				temp_token(t, end_str);
 			else
@@ -185,7 +200,8 @@ void prepare_quotes(t_t *t, t_t **token_list)
 					free(end_str);
 				}
 			}
-			t->pos++;
+			if(t->input[t->pos])
+    			t->pos++;
 		}
 	}
 	else
@@ -195,6 +211,7 @@ void prepare_quotes(t_t *t, t_t **token_list)
 			free(t->input);
 			t->input = ft_strdup(begin_quote);
 			free(begin_quote);
+			*free_input = 1;
 		}
 	t->anchor_pos = t->pos;	
 }
@@ -204,17 +221,17 @@ void	last_str(t_t *t, char *str, t_t **token_list)
 	
 	end_str = NULL;
 
-
 	end_str = ft_strjoin(t->tmp_token, str);
 	add_custom_token(end_str, TOKEN_WORD, token_list);
 	free(t->tmp_token);
+	t->tmp_token = NULL;
 	free(end_str);
 	free(str);
 }
 void	temp_token(t_t *t, char *str)
 {
 	char	*tmp;
-
+	
 	tmp = NULL;
 	if (!t->tmp_token)
 	{
@@ -227,6 +244,7 @@ void	temp_token(t_t *t, char *str)
 	t->tmp_token = ft_strdup(tmp);
 	free(tmp);
 	free(str);
+	
 }
 void	prepare_str(t_t *t, t_t **token_list)
 {
@@ -241,14 +259,17 @@ void	prepare_str(t_t *t, t_t **token_list)
 		temp_token(t, str_quote);
 	else
 	{
+		
 		if (t->tmp_token && (!t->input[t->pos +1] || t->input[t->pos +1] == ' ' || t->input[t->pos +1] == '<' || t->input[t->pos +1] == '>'))
 			last_str(t, str_quote, token_list);
 		else
 		{
+			
 			if (t->input[t->pos +1] && t->input[t->pos +1] != ' ' && t->input[t->pos +1] != '<' && t->input[t->pos +1] != '>')
 				temp_token(t, str_quote);
 			else
 			{
+				
 				add_custom_token(str_quote, TOKEN_WORD, token_list);
 				free(str_quote);
 			}
@@ -266,13 +287,15 @@ void add_token(t_t *t, t_t **token_list)
 	int	redir_control;
 
 	redir_control = 0;
-	while (t->input[t->anchor_pos] == ' ' && t->anchor_pos < t->pos)
+	while (t->input[t->anchor_pos] == ' ' && t->anchor_pos < t->pos){
 		t->anchor_pos++;
+		}
 	if(t->anchor_pos == t->pos && (t->input[t->pos] == '<' || t->input[t->pos] == '>'))
 	{
 		if (t->input[t->pos +1] == '<' || t->input[t->pos +1] == '>')
 			return ;
-		t->pos++;
+		if(t->input[t->pos])
+    		t->pos++;
 		redir_control = 1;
 	}
 		
@@ -294,7 +317,7 @@ void add_token(t_t *t, t_t **token_list)
 		t->anchor_pos = t->pos;
 		return;
 	}
-
+	//ft_printf("new_token->value:: '%s'\n", new_token->value);
 	t->anchor_pos = t->pos;	// (il +1 è per non ripettere l'ultimo carattere) in qualche momento funcionava adesso non piu, tolto.
 	if (ft_strchr(("|<>"), new_token->value[0]))
 	{

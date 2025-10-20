@@ -17,6 +17,8 @@
 #include <signal.h>
 #include <errno.h>  // Per errno e ECHILD
 
+#include <sys/stat.h>
+
 extern int g_exit_status;
 
 typedef enum token_type
@@ -48,10 +50,10 @@ typedef struct s_token
     size_t          anchor_pos;
     bool            error;
     size_t          quote;
-    int             token_quote;
     bool            continue_var;
     bool            to_remove; 
 	char			*tmp_token;
+	bool			free_input;
 } t_t;
 
 typedef enum e_redir_type
@@ -78,13 +80,12 @@ typedef struct s_command
 	t_redir				*redirs;
     // int					redir_in;
     // int					redir_out;
-	int					token_quote;
     struct s_command	*next;
 } t_command;
 
 typedef struct global 
 {
-	int	heredoc_interrupted;
+	int		heredoc_interrupted;
 } t_global;
 
 typedef struct s_key_value {
@@ -94,20 +95,28 @@ typedef struct s_key_value {
     char    *old_value;
 } t_key_value;
 
-t_t	*tokens(char *input);
+typedef struct s_env
+{
+    char *key;
+    char *value;
+	int exportable;
+    struct s_env *next;
+} t_env;
+
+t_t			*tokens(char *input, bool *free_input, t_env *env);
 void		quotes(t_t *t);
 void		metacharacters(t_t *t, t_t **token_list);
-void		open_quotes(t_t *t, t_t **token_list);
+void		open_quotes(t_t *t, t_t **token_list, bool *free_input);
 void		add_token(t_t *t, t_t **token_list);
 void		initStruct(t_t *t);
 void		add_token_2(t_t *new_token, t_t **token_list, int redir_control,  t_t *t);
 int			alloc_new_token(t_t **new_token, int len);
 void		triple_meta(t_t *t, t_t **token_list);
 t_t			*set_metachar_type(t_t **token_list);
-void		parse(t_t *token);
+t_command	*parse(t_t *token);
 t_command	*parse_commands(t_t *token);
 void		parse_commands_2(t_command **current, t_command **head, t_t *token);
-void		add_argument(t_command *cmd, char *arg, int token_quote, bool from_redir);
+void		add_argument(t_command *cmd, char *arg, bool from_redir);
 void 		redir_in(t_command *cmd, t_t *token);
 void		redir_out(t_command *cmd, t_t *token);
 void		add_pipe(t_command **head, t_command *new_node);
@@ -119,25 +128,20 @@ bool		check_errorNclose(t_command **head, t_command *current, bool error);
 void		check_pipes(t_t *t, t_t **token_list);
 void    	check_pipes_2(t_t *t, t_t **token_list, size_t start, char *word);
 void		add_custom_token(char *value, int type, t_t **token_list);
-void		is_var(t_t *t, t_t **token_list);
+void		is_var(t_t *t, t_t **token_list, t_env *env);
 void		is_var_2(t_t *t, t_t **token_list);
 void		free_quotes(char *str1, char *str2, char *str3);
 void		check_var(t_t *t);
 void		new_input(t_t *t, char *exp_var, int count, int dollar);
 bool		expand_exit_status(t_t *t);
-void		prepare_quotes(t_t *t, t_t **token_list);
+void		prepare_quotes(t_t *t, t_t **token_list, bool *free_input);
 void		prepare_str(t_t *t, t_t **token_list);
 void		last_str(t_t *t, char *str, t_t **token_list);
 void		temp_token(t_t *t, char *str);
 bool		check_redirs(char pos);
-
-typedef struct s_env
-{
-    char *key;
-    char *value;
-	int exportable;
-    struct s_env *next;
-} t_env;
+void		free_command_args(t_command *cmd);
+void		free_paths(char **paths);
+void        free_command_l(t_command *cmd_list);
 
 int	builtin_cd(char **args, t_env **env);
 void	builtin_env(t_env *env);
@@ -198,5 +202,9 @@ void	redir_heredoc(t_command *cmd, t_t *token);
 void init_shlvl(t_env **env);
 
 t_command *init_command(void);
+
+void apply_redir_heredoc(void);
+
+int	add_env_nocopy(t_env **env, char *key, char *value, int exportable);
 
 # endif

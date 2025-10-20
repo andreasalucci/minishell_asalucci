@@ -12,7 +12,6 @@ int	is_valid_identifier(const char *str)
 		if (!(ft_isalnum(str[i]) || str[i] == '_' || (str[i] == '+' && str[i
 						+ 1] == '=')))
 		{
-			printf("   non e alfan   ");
 			return (0);
 		}
 		i++;

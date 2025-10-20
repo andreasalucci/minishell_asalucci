@@ -21,10 +21,12 @@ void check_pipes_2(t_t *t, t_t **token_list, size_t start, char *word)
     {
         printf("minishell: syntax error near unexpected token '|'\n");
         t->error = true;
+		g_exit_status = 2;
     }
     else
     {
-        t->pos++;
+		if(t->input[t->pos])
+    		t->pos++;
         add_token(t, token_list);
     }
 }
@@ -41,7 +43,6 @@ void    add_custom_token(char *value, int type, t_t **token_list)
 	new_token->value = ft_strdup(value);
 	new_token->type = type;
 	new_token->error = false;
-
 	new_token->next = NULL;
 	if (!*token_list)
 		*token_list = new_token;
@@ -54,99 +55,162 @@ void    add_custom_token(char *value, int type, t_t **token_list)
 	}
 }
 
-void	is_var(t_t *t, t_t **token_list)
+void is_var(t_t *t, t_t **token_list, t_env *env)
 {
-    // Gestione speciale per $?
+	
     if (t->input[t->pos] == '$' && t->input[t->pos + 1] == '?')
     {
+		
         char *exit_status = ft_itoa(g_exit_status);
-        add_custom_token(exit_status, TOKEN_WORD, token_list);
-        free(exit_status);
         t->pos += 2;
+        if (ft_isalnum(t->input[t->pos]) || t->input[t->pos] == '_')
+        {
+            size_t start = t->pos;
+            while (t->input[t->pos] && (ft_isalnum(t->input[t->pos]) || t->input[t->pos] == '_'))
+                t->pos++;
+            char *suffix = ft_substr(t->input, start, t->pos - start);
+            char *joined = ft_strjoin(exit_status, suffix);
+            add_custom_token(joined, TOKEN_WORD, token_list);
+            free(suffix);
+            free(joined);
+        }
+        else
+		{
+			if (t->input[t->pos] == '\'' || t->input[t->pos] == '"')
+			{
+				temp_token(t, exit_status);
+				t->anchor_pos = t->pos;
+      			return;
+			}
+				
+			else
+				add_custom_token(exit_status, TOKEN_WORD, token_list);
+
+		} 
+        free(exit_status);
         t->anchor_pos = t->pos;
         return;
     }
-	char	*var_temp;
-	char	*var;
-	char	*var_word;
+
 	
-	if (expand_exit_status(t))
-		return;
-	if (t->input[t->anchor_pos] == ' ')
-		t->anchor_pos++;
+    char *var_temp;
+    char *var;
+    char *var_word;
+    char *tmp_str;
+
+    if (expand_exit_status(t))
+        return;
+    if (t->input[t->anchor_pos] == ' ')
+        t->anchor_pos++;
+
     if (t->input[t->anchor_pos] == '$')
-	{
-		if (!t->input[t->anchor_pos +1] || t->input[t->anchor_pos +1] == ' ')
-		{
-			add_custom_token("$", TOKEN_WORD, token_list);
-			t->anchor_pos++;
-			t->pos = t->anchor_pos;
-			return;
-		}
-		if (t->pos == t->anchor_pos)
-			t->pos++;
-		while (t->input[t->pos] && (ft_isalnum(t->input[t->pos]) || t->input[t->pos] == '_'))
-			t->pos++;
-		var_temp = malloc(t->pos - t->anchor_pos +1);
-		ft_strlcpy(var_temp, t->input + (t->anchor_pos +1), (t->pos - t->anchor_pos));
-		var = getenv(var_temp);
-		if (!var)
-		{
-			free(var_temp);
-			t->anchor_pos = t->pos;
-			return;
-		}		
-		var_word = ft_strdup(var);
-		add_custom_token(var_word, TOKEN_VAR, token_list);
-		free(var_word);
-		free(var_temp);
-		t->anchor_pos = t->pos;
-	}
-	else
-		is_var_2(t, token_list);
+    {
+		
+        if (!t->input[t->anchor_pos + 1] || t->input[t->anchor_pos + 1] == ' ')
+        {
+            if (t->tmp_token)
+            {
+                tmp_str = malloc(2);
+                if (!tmp_str)
+                    return;
+                tmp_str[0] = '$';
+                tmp_str[1] = '\0';
+                last_str(t, tmp_str, token_list);
+                t->anchor_pos++;
+                t->pos = t->anchor_pos;
+            }
+            else
+            {
+                add_custom_token("$", TOKEN_WORD, token_list);
+                t->anchor_pos++;
+                t->pos = t->anchor_pos;
+            }
+            return;
+        }
+
+        if (t->pos == t->anchor_pos)
+            t->pos++;
+
+        while (t->input[t->pos] && (ft_isalnum(t->input[t->pos]) || t->input[t->pos] == '_'))
+            t->pos++;
+
+        size_t len = t->pos - (t->anchor_pos + 1);
+        var_temp = malloc(len + 1);
+        if (!var_temp)
+            return;
+        ft_strlcpy(var_temp, t->input + t->anchor_pos + 1, len + 1);
+
+        var = get_env_value(env, var_temp);
+		
+        if (!var)
+        {
+            free(var_temp);
+            t->anchor_pos = t->pos;
+            return;
+        }
+
+        var_word = ft_strdup(var);
+        add_custom_token(var_word, TOKEN_VAR, token_list);
+        free(var_word);
+        free(var_temp);
+        t->anchor_pos = t->pos;
+    }
+    else
+        is_var_2(t, token_list);
 }
 
-void    is_var_2(t_t *t, t_t **token_list)
+
+void is_var_2(t_t *t, t_t **token_list)
 {
-	int		dolar;
-	char	*prefix;
-	char	*var;
-	char	*var_token;
-	char	*end_var;
+    size_t dolar = t->pos;
+    char *prefix;
+    char *var;
+    char *var_token;
+    char *end_var;
 	
-	dolar = t->pos;
-	prefix = malloc(t->pos - t->anchor_pos +1);
-	ft_strlcpy(prefix, t->input, (t->pos - t->anchor_pos) +1);
-	while (t->input[t->pos] && (ft_isalnum(t->input[t->pos]) || t->input[t->pos] == '_'))
-		t->pos++;
-	dolar++;
-	var = malloc((t->pos - dolar) +1);
-	ft_strlcpy(var, t->input + dolar, (t->pos - dolar));
-	var_token = getenv(var);
-	if (!var_token)
-	{
-		free(var);
-		dolar = t->pos;
-		dolar++;
-		while (t->input[t->pos])
-			t->pos++;
-		end_var = malloc((t->pos - dolar) +1);
-		ft_strlcpy(end_var, t->input + dolar, (t->pos - dolar) +1);
-		free(t->input);
-		t->input = ft_strjoin(prefix, end_var);
-		t->pos = t->anchor_pos;
+    prefix = malloc(t->pos - t->anchor_pos + 1);
+    if (!prefix)
+        return;
+
+    ft_strlcpy(prefix, t->input + t->anchor_pos, (t->pos - t->anchor_pos) + 1);
+
+    while (t->input[t->pos + 1] && (ft_isalnum(t->input[t->pos + 1]) || t->input[t->pos + 1] == '_'))
+        t->pos++;
+
+    if (t->pos != dolar)
+        dolar++;
+
+    size_t len = t->pos - dolar;
+    var = malloc(len + 2);
+    if (!var)
+    {
+        free(prefix);
+        return;
+    }
+
+    ft_strlcpy(var, t->input + dolar, len + 2);
+    var_token = getenv(var);
+	
+    if (!var_token)
+    {
+		//end_var = malloc(ft_strlen(prefix) + ft_strlen(var) +1);
+		end_var = ft_strjoin(prefix, var);
+        add_custom_token(end_var, TOKEN_WORD, token_list);
+        free(prefix);
+        free(var);
 		free(end_var);
-		return;
-	}
-	end_var = ft_strjoin(prefix, var_token);
-	add_custom_token(end_var, TOKEN_VAR, token_list);
-	ft_putstr_fd(end_var, 2);
-	ft_putstr_fd(": command not found\n", 2);
-	g_exit_status = 127;
-	t->error = true;
-	free(var);
-	free(end_var);
-	free(prefix);
-	t->anchor_pos = t->pos;
-	
+		t->pos++;
+        t->anchor_pos = t->pos;
+        return;
+    }
+    end_var = ft_strjoin(prefix, var_token);
+	//ft_printf("end_var:: %s\n", end_var);
+    add_custom_token(end_var, TOKEN_VAR, token_list);
+
+    free(var);
+    free(end_var);
+    free(prefix);
+    t->anchor_pos = t->pos;
 }
+
+

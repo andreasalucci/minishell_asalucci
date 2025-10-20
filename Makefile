@@ -1,6 +1,7 @@
 # === Compilador y flags ===
 CC      = gcc 
 CFLAGS  = -Wall -Wextra -Werror -g
+COMPILE_FLAGS = -c
 
 # === Rutas y nombres ===
 NAME        = minishell
@@ -24,7 +25,7 @@ $(NAME): libft $(OBJ)
 # Regla para compilar archivos .c a .o respetando la estructura de subdirectorios
 $(BUILD_DIR)/%.o: %.c | $(BUILD_DIR)
 	@mkdir -p $(dir $@)
-	$(CC) $(CFLAGS) -I$(LIBFT_DIR) -Iinclude -c $< -o $@
+	$(CC) $(CFLAGS) $(COMPILE_FLAGS) -I$(LIBFT_DIR) -Iinclude $< -o $@
 
 $(BUILD_DIR):
 	@mkdir -p $(BUILD_DIR)

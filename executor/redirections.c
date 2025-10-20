@@ -12,17 +12,17 @@ void apply_redirections(t_command *cmd)
 {
     t_redir *r;
 
-	r = cmd->redirs;
+    r = cmd->redirs;
     while (r)
     {
         if (r->type == REDIR_IN)
-			apply_redir_in1(r);
+            apply_redir_in1(r);
         else if (r->type == REDIR_OUT)
-			apply_redir_out1(r);
+            apply_redir_out1(r);
         else if (r->type == REDIR_APPEND)
-			apply_redir_out2(r);
-        // else if (r->type == REDIR_HEREDOC)
-		// 	apply_redir_heredoc(r, g);
+            apply_redir_out2(r);
+        else if (r->type == REDIR_HEREDOC)
+            apply_redir_heredoc();
         r = r->next;
     }
 }
@@ -79,22 +79,19 @@ void	apply_redir_out2(t_redir *r)
 	}
 }
 
-// void apply_redir_heredoc(t_redir *r, t_global *g)
-// {
-//     int fd;
+void apply_redir_heredoc(void)
+{
+    int fd;
 
-//     create_heredoc_open(r->filename, g);
-//     if (g->heredoc_interrupted)
-//         exit(130);
-//     fd = open(".heredoc_tmp", O_RDONLY);
-//     if (fd < 0)
-//     {
-//         perror("heredoc");
-//         exit(EXIT_FAILURE);
-//     }
-//     dup2(fd, STDIN_FILENO);
-//     close(fd);
-// }
+    fd = open(".heredoc_tmp", O_RDONLY);
+    if (fd < 0)
+    {
+        perror(".heredoc_tmp");
+        exit(EXIT_FAILURE);
+    }
+    dup2(fd, STDIN_FILENO);
+    close(fd);
+}
 
 void	create_heredoc_effective(const char *delimiter)
 {
@@ -103,24 +100,39 @@ void	create_heredoc_effective(const char *delimiter)
 
 	fd = open(".heredoc_tmp", O_WRONLY | O_CREAT | O_TRUNC, 0644);
 	if (fd < 0)
+	{
+		perror("open .heredoc_tmp");
 		exit(1);
+	}
+	
 	signal(SIGINT, heredoc_sigint_handler);
+	
 	while (1)
 	{
 		line = readline("> ");
 		if (!line)
 		{
 			write(STDOUT_FILENO, "\n", 1);
-			break ;
+			close(fd);
+			exit(130);  // ← CAMBIA DA 0 A 130!
 		}
+		
+		// SALVA OGNI LINEA NELLA HISTORY!
+		if (*line)
+			add_history(line);
+		
 		if (ft_strcmp(line, delimiter) == 0)
 		{
 			free(line);
-			break ;
+			break;
 		}
-		ft_putendl_fd(line, fd);
+		
+		write(fd, line, ft_strlen(line));
+		write(fd, "\n", 1);
+		fsync(fd);
 		free(line);
 	}
+	
 	close(fd);
 	exit(0);
 }
@@ -212,13 +224,22 @@ void	handle_child_cmd_path(t_command *cmd, t_env *env)
 	char	*cmd_path;
 	char 	**argv_filtered;
 
+    if (!cmd || !cmd->argv || !cmd->argv[0] || cmd->argv[0][0] == '\0')
+    {
+        //ft_putstr_fd("minishell: invalid command structure\n", 2);
+        exit(1);
+    }
 	cmd_path = get_command_path(cmd->argv[0], env);
 	if (!cmd_path)
+	{
+		free_command_l(cmd);/////////////////////////////////////////////
 		command_not_found(cmd);
+	}
 	if (is_builtin(cmd))
 	{
 		free(cmd_path);
 		exec_builtin(cmd, &env);
+		free_command_l(cmd);///////////////////////////////
 		exit(g_exit_status);
 	}
 	else
@@ -249,6 +270,11 @@ void	handle_child_process(t_command *cmd, int prev_fd, int pipe_fd[],
 		close(pipe_fd[1]);
 	}
 	apply_redirections(cmd);
+	// if (!cmd || !cmd->argv || !cmd->argv[0] || cmd->argv[0][0] == '\0')
+    // {
+    //     // Heredoc senza comando → esci con successo dopo aver applicato redirezioni
+    //     exit(0);
+    // }
 	handle_child_cmd_path(cmd, env);
 }
 
@@ -277,22 +303,6 @@ void	setup_pipe(t_command *cmd, int pipe_fd[])
 	}
 }
 
-// void	fork_process(pid_t *pid)
-// {
-// 	*pid = fork();
-// 	if (*pid == -1)
-// 	{
-// 		perror("fork");
-// 		exit(EXIT_FAILURE);
-// 	}
-// }
-
-
-
-
-
-
-
 
 void wait_for_children(pid_t last_pid)
 {
@@ -317,26 +327,6 @@ void wait_for_children(pid_t last_pid)
 
 
 
-
-
-// void	wait_for_children(void)
-// {
-// 	int		status;
-// 	pid_t	pid;
-
-// 	pid = wait(&status);
-// 	while (pid > 0)
-// 	{
-// 		if (WIFEXITED(status))
-// 			g_exit_status = WEXITSTATUS(status);
-// 		else if (WIFSIGNALED(status))
-// 			g_exit_status = 0;
-// 		//	g_exit_status = 128 + WTERMSIG(status);
-// 		pid = wait(&status);
-// 	}
-// 	if (pid == -1 && errno != ECHILD)
-// 		perror("waitpid");
-// }
 
 int	is_cmd_redir_in_2(t_command *cmd, int prev_fd, t_global *g)
 {
@@ -395,9 +385,6 @@ void	sigdfl_handle_child_process(t_command *cmd, int prev_fd, int *pipe_fd,
 	handle_child_process(cmd, prev_fd, pipe_fd, env);
 }
 
-
-
-
 void exec_command_list(t_command *cmd_list, t_env *env, t_global *g)
 {
     t_command *cmd = cmd_list;
@@ -416,6 +403,7 @@ void exec_command_list(t_command *cmd_list, t_env *env, t_global *g)
         {
             perror("pipe");
             if (prev_fd != -1) close(prev_fd);
+			free_command_l(cmd_list);
             return;
         }
         pid = fork();
@@ -425,6 +413,7 @@ void exec_command_list(t_command *cmd_list, t_env *env, t_global *g)
             if (prev_fd != -1) close(prev_fd);
             if (pipe_fd[0] != -1) close(pipe_fd[0]);
             if (pipe_fd[1] != -1) close(pipe_fd[1]);
+			free_command_l(cmd_list);
             return;
         }
         last_pid = pid;
@@ -452,82 +441,15 @@ void exec_command_list(t_command *cmd_list, t_env *env, t_global *g)
     wait_for_children(last_pid);
 }
 
-
-// void	exec_command_list(t_command *cmd_list, t_env *env, t_global *g)
-// {
-// 	t_command	*cmd;
-// 	int			pipe_fd[2];
-// 	int			prev_fd;
-// 	pid_t		pid;
-// 	pid_t 		last_pid;
-
-// 	last_pid = -1;
-// 	cmd = cmd_list;
-// 	prev_fd = -1;
-// 	while (cmd)
-// 	{
-// 		if (is_cmd_redir_in_2(cmd, prev_fd, g))
-// 			return ;
-// 		pipe_fd[0] = -1;
-// 		pipe_fd[1] = -1;
-// 		if (cmd->next && pipe(pipe_fd) == -1)
-// 		{
-// 			perror("pipe");
-// 			if (prev_fd != -1) close(prev_fd);
-// 			return;
-// 		}
-// 		pid = fork();
-// 		if (pid == -1)
-// 		{
-// 			perror("fork");
-// 			if (prev_fd != -1) close(prev_fd);
-// 			if (pipe_fd[0] != -1) close(pipe_fd[0]);
-// 			if (pipe_fd[1] != -1) close(pipe_fd[1]);
-// 			return;
-// 		}
-// 		last_pid = pid;  // <- importante per wait_for_children
-// 		if (pid == 0)
-// 		{
-// 			signal(SIGINT, SIG_DFL);
-// 			signal(SIGQUIT, SIG_DFL);
-// 			handle_child_process(cmd, prev_fd, pipe_fd, env);
-// 		}
-// 		else
-// 		{
-// 			handle_parent_process(&prev_fd, pipe_fd);
-// 			cmd = cmd->next;
-// 		}
-// 	}
-// 	wait_for_children(last_pid);
-// }
-
-
-
-// void	exec_command_list(t_command *cmd_list, t_env *env, t_global *g)
-// {
-// 	t_command	*cmd;
-// 	int			pipe_fd[2];
-// 	int			prev_fd;
-// 	pid_t		pid;
-
-// 	cmd = cmd_list;
-// 	prev_fd = -1;
-// 	while (cmd)
-// 	{
-// 		if (is_cmd_redir_in_2(cmd, prev_fd, g))
-// 			return ;
-// 		pipe_fd[0] = -1;
-// 		pipe_fd[1] = -1;
-// 		failed_pipe_with_next_cmd(cmd, prev_fd, pipe_fd);
-// 		pid = fork();
-// 		if_pid_minus_one(pid, prev_fd, pipe_fd);
-// 		if (pid == 0)
-// 			sigdfl_handle_child_process(cmd, prev_fd, pipe_fd, env);
-// 		else
-// 		{
-// 			handle_parent_process(&prev_fd, pipe_fd);
-// 			cmd = cmd->next;
-// 		}
-// 	}
-// 	wait_for_children();
-// }
+void	free_redirections(t_redir *redir)
+{
+	t_redir	*tmp;
+	
+	while (redir)
+	{
+		tmp = redir;
+		redir = redir->next;
+		free(tmp->filename);
+		free(tmp); 
+	}
+}
