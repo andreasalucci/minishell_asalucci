@@ -13,10 +13,10 @@ t_command *parse_commands(t_t *token)
 {
     t_command *head = NULL;
     t_command *current = NULL;
-    t_t *prev = NULL;  // Change from struct s_t * to t_t *
+    t_t *prev = NULL;
     while (token && !token->error)
     {
-        token->prev = prev; // This should now work
+        token->prev = prev;
         prev = token;
 
         if (!current)
@@ -34,8 +34,6 @@ t_command *parse_commands(t_t *token)
         }
         else if (token->type == TOKEN_WORD || token->type == TOKEN_VAR)
         {
-	
-            // Solo se non è un filename di redirezione
             if (!prev || !is_redir_token(prev->type))
                 add_argument(current, token->value, false);
         }
@@ -60,7 +58,6 @@ void parse_commands_2(t_command **current, t_command **head, t_t *token)
         redir_heredoc(*current, token);
     else if (token->type == TOKEN_PIPE)
     {
-        // Prima di aggiungere il pipe, verifica che il comando corrente sia valido
         if (*current && (!(*current)->argv || !(*current)->argv[0])) {
             printf("minishell: syntax error near unexpected token '|'\n");
             token->error = true;
@@ -72,7 +69,7 @@ void parse_commands_2(t_command **current, t_command **head, t_t *token)
     }
     else if (token->type == TOKEN_WORD || token->type == TOKEN_VAR)
     {
-        t_t *prev = token->prev; // This should now work
+        t_t *prev = token->prev;
         if (!prev || !is_redir_token(prev->type))
             add_argument(*current, token->value, false);
     }
@@ -116,43 +113,19 @@ void	add_argument(t_command *cmd, char *arg, bool from_redir)
     cmd->arg_is_redir = new_arg_is_redir;
 }
 
-
-// void add_redir(t_command *cmd, int type, const char *filename)
-// {
-//     t_redir *new = malloc(sizeof(t_redir));
-//     t_redir *tmp;
-
-//     if (!new)
-//         return; // gestisci errore malloc
-//     new->type = type;
-//     new->filename = (char *)filename;
-//     new->next = NULL;
-
-//     if (!cmd->redirs)
-//         cmd->redirs = new;
-//     else
-//     {
-//         tmp = cmd->redirs;
-//         while (tmp->next)
-//             tmp = tmp->next;
-//         tmp->next = new;
-//     }
-// }
-
-void add_redir(t_command *cmd, int type, char *filename)  // ✅ Cambia da const char* a char*
+void add_redir(t_command *cmd, int type, char *filename)
 {
     t_redir *new = malloc(sizeof(t_redir));
     t_redir *tmp;
 
     if (!new)
     {
-        free(filename);  // ✅ Libera filename se malloc fallisce
+        free(filename);
         return;
     }
     new->type = type;
-    new->filename = filename;  // ✅ Prende ownership direttamente
+    new->filename = filename;
     new->next = NULL;
-
     if (!cmd->redirs)
         cmd->redirs = new;
     else
@@ -171,12 +144,10 @@ void redir_in(t_command *cmd, t_t *token)
     {
         add_redir(cmd, REDIR_IN, ft_strdup(token->next->value));
         
-        // Marca i token per la rimozione
         token->to_remove = true;
         token->next->to_remove = true;
         
-        // Salta il token del filename
-        token = token->next;   // anziché  token->next->to_remove = true;
+        token = token->next;
     }
     else
     {
@@ -191,10 +162,8 @@ void redir_out(t_command *cmd, t_t *token)
     if (token->next && token->next->type == TOKEN_WORD)
     {
         add_redir(cmd, REDIR_OUT, ft_strdup(token->next->value));
-
-        // Escludi dal vettore argv
-        token->to_remove = true;        // ">"
-        token->next->to_remove = true;  // filename
+        token->to_remove = true;
+        token->next->to_remove = true;
     }
     else
     {
@@ -209,8 +178,6 @@ void redir_append(t_command *cmd, t_t *token)
     if (token->next && token->next->type == TOKEN_WORD)
     {
         add_redir(cmd, REDIR_APPEND, ft_strdup(token->next->value));
-
-        // Escludi dal vettore argv
         token->to_remove = true;        // ">>"
         token->next->to_remove = true;  // filename
     }
@@ -227,8 +194,6 @@ void redir_heredoc(t_command *cmd, t_t *token)
     if (token->next && token->next->type == TOKEN_WORD)
     {
         add_redir(cmd, REDIR_HEREDOC, ft_strdup(token->next->value));
-
-        // Escludi dal vettore argv
         token->to_remove = true;        // "<<"
         token->next->to_remove = true;  // delimiter
     }
