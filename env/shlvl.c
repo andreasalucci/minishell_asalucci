@@ -23,5 +23,5 @@ void	init_shlvl(t_env **env)
         tmp = tmp->next;
     }
     if (!found)
-        add_env(env, "SHLVL", "1", 1);
+		add_env_nocopy(env, ft_strdup("SHLVL"), ft_strdup("1"), 1);
 }

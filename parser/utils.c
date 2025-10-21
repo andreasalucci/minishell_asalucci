@@ -10,7 +10,7 @@ void    check_var(t_t *t)
 	count = t->pos;
 	while(t->input[count] && t->input[count] != '"')
 	{
-		//ft_printf("entrar\n");
+	
 		if (t->input[count] == '$' && t->input[count +1] == '?')
 		{
 			expand_exit_status(t);

@@ -23,59 +23,30 @@ t_command *init_command(void)
     return (cmd);
 }
 
-t_env	*init_env(void)
-{
-	t_env	*env;
-
-	env = NULL;
-	add_env(&env, "PWD", "/home/user", 1);
-	add_env(&env, "HOME", "/home/user", 1);
-	add_env(&env, "PATH", "/bin:/usr/bin", 1);
-	//add_env(&env, "SHLVL", "0", 1);
-	return (env);
-}
-
-// t_env *copy_env(char **envp)
-// {
-//     t_env *env = NULL;
-//     int i = 0;
-//     char *eq;
-
-//     while (envp[i])
-//     {
-//         eq = ft_strchr(envp[i], '=');
-//         if (eq)
-//         {
-//             char *key = ft_substr(envp[i], 0, eq - envp[i]);
-//             char *value = ft_strdup(eq + 1);
-//             add_env(&env, key, value, 1);
-//             free(key);
-//             free(value);
-//         }
-//         i++;
-//     }
-//     return env;
-// }
-
 t_env *copy_env(char **envp)
 {
-    t_env *env = NULL;
-    int i = 0;
-    char *eq;
+	t_env *env = NULL;
+	int i = 0;
+	char *eq;
 
-    while (envp[i])
-    {
-        eq = ft_strchr(envp[i], '=');
-        if (eq)
-        {
-            char *key = ft_substr(envp[i], 0, eq - envp[i]);
-            char *value = ft_strdup(eq + 1);
-            add_env_nocopy(&env, key, value, 1);  // ✅ Nessuna copia aggiuntiva
-            // NON free(key) e free(value) - add_env_nocopy se ne occupa
-        }
-        i++;
-    }
-    return env;
+	while (envp[i])
+	{
+		eq = ft_strchr(envp[i], '=');
+		if (eq)
+		{
+			char *key = ft_substr(envp[i], 0, eq - envp[i]);
+			char *value = ft_strdup(eq + 1);
+			if (key && value)
+				add_env_nocopy(&env, key, value, 1);
+			else
+			{
+				free(key);
+				free(value);
+			}
+		}
+		i++;
+	}
+	return env;
 }
 
 char	*ft_strjoin_3(const char *s1, const char *s2, const char *s3)
@@ -106,18 +77,31 @@ char	**convert_env_list_to_array(t_env *env)
 
 	count = 0;
 	tmp = env;
+	while (tmp)
+	{
+		if (tmp->exportable) // ✅ Solo variabili exportabili
+			count++;
+		tmp = tmp->next;
+	}
+	
+	envp = malloc((count + 1) * sizeof(char *));
+	if (!envp)
+		return (NULL);
+		
+	tmp = env;
 	i = 0;
 	while (tmp)
 	{
-		count++;
-		tmp = tmp->next;
-	}
-	envp = malloc((count + 1) * sizeof(char *));
-	tmp = env;
-	while (tmp)
-	{
-		envp[i] = ft_strjoin_3(tmp->key, "=", tmp->value);
-		i++;
+		if (tmp->exportable && tmp->value) // ✅ Solo exportabili con valore
+		{
+			envp[i] = ft_strjoin_3(tmp->key, "=", tmp->value);
+			if (!envp[i])
+			{
+				free_env_array(envp);
+				return (NULL);
+			}
+			i++;
+		}
 		tmp = tmp->next;
 	}
 	envp[i] = NULL;
@@ -314,8 +298,8 @@ void	exec_single_non_builtin(t_command *cmds, t_env **env)
 		ft_putstr_fd(cmds->argv[0], 2);
 		ft_putstr_fd(": command not found\n", 2);
 		g_exit_status = 127;
+		free_env_array(envp);
 	}
-	free_env_array(envp);
 }
 
 void	sigint_handler(int signum)
@@ -464,30 +448,29 @@ int main_loop(t_env **env, t_global *global)
 {
     char        *input = NULL;
     t_command   *cmds;
-	int			open_type;
-	bool	free_input;
+    int         open_type;
+    bool        free_input;
 
-	free_input = 0;
+    free_input = 0;
     while (1)
     {
-		input = readline("minishell$ ");
-		if (input == NULL)
+        input = readline("minishell$ ");
+        if (input == NULL)
         {
             printf("exit\n");
             break;
         }
-		open_type = input_is_open(input);
 
+        open_type = input_is_open(input);
+        if (open_type == 1)
+        {
+            ft_putstr_fd("minishell: Syntax error: unclosed quotes\n", 2);
+            g_exit_status = 2;
+            free(input);
+            continue;
+        }
 
-		if (open_type == 1)
-		{
-			ft_putstr_fd("minishell: Syntax error: unclosed quotes\n", 2);
-			g_exit_status = 2;
-			free(input);
-			input = NULL;
-			continue;
-		}
-		if (handle_input_interruption(global, input))
+        if (handle_input_interruption(global, input))
 		{
 			input = NULL;
 			continue;
@@ -509,7 +492,6 @@ int main_loop(t_env **env, t_global *global)
 	rl_clear_history();
 	return 0;
 }
-
 
 int main(int argc, char **argv, char **envp)
 {

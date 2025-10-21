@@ -38,18 +38,6 @@ t_env *create_env_node_nocopy(char *key, char *value, int exportable)
 	return (node);
 }
 
-int	add_env(t_env **env, char *key, char *value, int exportable)
-{
-	t_env	*new;
-
-	new = create_env_node(key, value, exportable);
-	if (!new)
-		return (0);
-	new->next = *env;
-	*env = new;
-	return (1);
-}
-
 int	add_env_nocopy(t_env **env, char *key, char *value, int exportable)
 {
 	t_env	*new_node;
@@ -59,6 +47,36 @@ int	add_env_nocopy(t_env **env, char *key, char *value, int exportable)
 		return (0);
 	new_node->next = *env;
 	*env = new_node;
+	return (1);
+}
+
+int	add_env_dup(t_env **env, const char *key, const char *value, int exportable)
+{
+	char *key_dup;
+	char *value_dup;
+
+	key_dup = ft_strdup(key);
+	if (!key_dup)
+		return (0);
+		
+	if (value)
+	{
+		value_dup = ft_strdup(value);
+		if (!value_dup)
+		{
+			free(key_dup);
+			return (0);
+		}
+	}
+	else
+		value_dup = NULL;
+		
+	if (!add_env_nocopy(env, key_dup, value_dup, exportable))
+	{
+		free(key_dup);
+		free(value_dup);
+		return (0);
+	}
 	return (1);
 }
 
@@ -87,6 +105,7 @@ int	update_env(t_env **env, const char *key, const char *value)
 	return (0);
 }
 
+
 void	update_env_var(t_env **env, const char *key, const char *value)
 {
 	if (!env || !key)
@@ -94,7 +113,7 @@ void	update_env_var(t_env **env, const char *key, const char *value)
 	if (env_exists(*env, key))
 		update_env(env, key, value);
 	else
-		add_env(env, (char *)key, (char *)value, 1);
+		add_env_dup(env, key, value, 1);  // ✅ Usa la nuova funzione
 }
 
 int	env_exists(t_env *env, const char *key)

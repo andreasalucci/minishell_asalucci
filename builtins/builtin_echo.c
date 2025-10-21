@@ -33,8 +33,9 @@ int builtin_echo(t_command *cmd)
         if (!cmd->arg_is_redir[i])
         {
             if (!first)
-                printf(" ");
-            printf("%s", cmd->argv[i]);
+                write(1, " ", 1);
+            write(1, cmd->argv[i], ft_strlen(cmd->argv[i]));
+
             first = 0;
         }
         i++;
@@ -43,7 +44,7 @@ int builtin_echo(t_command *cmd)
     }
 
     if (newline)
-        printf("\n");
+        write(1, "\n", 1);
     g_exit_status = 0;
     return (0);
 }

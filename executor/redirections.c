@@ -223,6 +223,7 @@ void	handle_child_cmd_path(t_command *cmd, t_env *env)
 {
 	char	*cmd_path;
 	char 	**argv_filtered;
+	char	**envp;
 
     if (!cmd || !cmd->argv || !cmd->argv[0] || cmd->argv[0][0] == '\0')
     {
@@ -245,8 +246,10 @@ void	handle_child_cmd_path(t_command *cmd, t_env *env)
 	else
 	{
 		filter_args(cmd, &argv_filtered);
-		execve(cmd_path, argv_filtered, convert_env_list_to_array(env));
+		envp = convert_env_list_to_array(env);
+		execve(cmd_path, argv_filtered, envp);
 		perror("execve");
+		free_env_array(envp);
 		free(argv_filtered);
 		free(cmd_path);
 		exit(126);

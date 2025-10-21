@@ -25,12 +25,20 @@ void	handle_append_case(t_key_value *data, t_env **env)
 	free(data->new_value_part);
 }
 
+// void	update_or_add_env(t_key_value *data, t_env **env)
+// {
+// 	if (env_exists(*env, data->key))
+// 		update_env(env, data->key, data->value);
+// 	else
+// 		add_env(env, data->key, data->value, 1);
+// }
+
 void	update_or_add_env(t_key_value *data, t_env **env)
 {
 	if (env_exists(*env, data->key))
 		update_env(env, data->key, data->value);
 	else
-		add_env(env, data->key, data->value, 1);
+		add_env_dup(env, data->key, data->value, 1);  // ✅ Usa add_env_dup
 }
 
 void	cleanup_key_value(t_key_value *data)

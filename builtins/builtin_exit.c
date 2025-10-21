@@ -5,7 +5,7 @@ void	builtin_exit(char **args)
 	long	code;
 
 	code = 0;
-	ft_putstr_fd("exit\n", 1);
+	//ft_putstr_fd("exit\n", 1);
 	if (args[1])
 	{
 		if (!str_is_numeric(args[1]))

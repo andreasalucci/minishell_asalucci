@@ -6,7 +6,6 @@ PROBLEMI IRRISOLTI:
 	Importanti:
 
 
-echo ?$
 heredoc non viene chiuso se <<a (<< attaccate ad a )
 richiamare memoria, cancellare e fare ctrlD crea leak
 

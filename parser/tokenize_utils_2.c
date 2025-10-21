@@ -57,7 +57,6 @@ void    add_custom_token(char *value, int type, t_t **token_list)
 
 void is_var(t_t *t, t_t **token_list, t_env *env)
 {
-	
     if (t->input[t->pos] == '$' && t->input[t->pos + 1] == '?')
     {
 		
@@ -121,6 +120,7 @@ void is_var(t_t *t, t_t **token_list, t_env *env)
             }
             else
             {
+				
                 add_custom_token("$", TOKEN_WORD, token_list);
                 t->anchor_pos++;
                 t->pos = t->anchor_pos;
@@ -133,7 +133,6 @@ void is_var(t_t *t, t_t **token_list, t_env *env)
 
         while (t->input[t->pos] && (ft_isalnum(t->input[t->pos]) || t->input[t->pos] == '_'))
             t->pos++;
-
         size_t len = t->pos - (t->anchor_pos + 1);
         var_temp = malloc(len + 1);
         if (!var_temp)
@@ -141,17 +140,30 @@ void is_var(t_t *t, t_t **token_list, t_env *env)
         ft_strlcpy(var_temp, t->input + t->anchor_pos + 1, len + 1);
 
         var = get_env_value(env, var_temp);
-		
         if (!var)
         {
             free(var_temp);
             t->anchor_pos = t->pos;
+			if (t->tmp_token)
+			{
+				add_custom_token(t->tmp_token, TOKEN_WORD, token_list);
+				free(t->tmp_token);
+				t->tmp_token = NULL;
+			}
+			
             return;
         }
 
         var_word = ft_strdup(var);
-        add_custom_token(var_word, TOKEN_VAR, token_list);
-        free(var_word);
+		if (t->tmp_token)
+			last_str(t, var_word, token_list);
+		else
+		{
+			add_custom_token(var_word, TOKEN_VAR, token_list);
+			free(var_word);
+		}		
+        	
+        
         free(var_temp);
         t->anchor_pos = t->pos;
     }
@@ -204,7 +216,7 @@ void is_var_2(t_t *t, t_t **token_list)
         return;
     }
     end_var = ft_strjoin(prefix, var_token);
-	//ft_printf("end_var:: %s\n", end_var);
+	
     add_custom_token(end_var, TOKEN_VAR, token_list);
 
     free(var);

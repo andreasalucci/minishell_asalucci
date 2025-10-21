@@ -160,7 +160,7 @@ void	free_env(t_env *env);
 char	*get_env_value(t_env *env, const char *key);
 int	mark_as_exportable(t_env **env, char *key);
 t_env	*create_env_node(char *key, char *value, int exportable);
-int	add_env(t_env **env, char *key, char *value, int exportable);
+//int	add_env(t_env **env, char *key, char *value, int exportable);
 int	update_env(t_env **env, const char *key, const char *value);
 void	update_env_var(t_env **env, const char *key, const char *value);
 int	env_exists(t_env *env, const char *key);
@@ -206,5 +206,9 @@ t_command *init_command(void);
 void apply_redir_heredoc(void);
 
 int	add_env_nocopy(t_env **env, char *key, char *value, int exportable);
+
+void	free_env_array(char **envp);
+
+int	add_env_dup(t_env **env, const char *key, const char *value, int exportable);
 
 # endif

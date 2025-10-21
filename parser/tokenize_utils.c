@@ -15,7 +15,7 @@ void quotes(t_t *t)
 	}
 	else if ((t->input[t->pos] == '\"' && !t->single_quote) && (t->start == t->input || t->input[t->pos - 1] != '\\'))
 	{
-		//ft_printf("quotes t->pos:: %i\n", t->pos);//ft_printf("antes t->double_quote:: %i\nt->pos:: -->%c<--\n", t->double_quote, t->input[t->pos -1]);
+		
 		t->double_quote = !t->double_quote;
 		
 		if (t->input[t->anchor_pos] == ' ')
@@ -24,7 +24,7 @@ void quotes(t_t *t)
 		
 		if(t->input[t->pos])
     		t->pos++;
-		//ft_printf("despues t->double_quote:: %i\nt->pos -1:: -->%c<--\n\n", t->double_quote, t->input[t->pos -1]);
+		
 	}
 }
 
@@ -41,17 +41,17 @@ void	metacharacters(t_t *t, t_t **token_list)
 			
 			if (t->pos == t->anchor_pos)
 				t->pos++;
-			//ft_printf("metacharacters t->pos:: %i\n", t->pos);
+			
 			add_token(t, token_list);
 		}
 				
 		else if (t->input[t->pos] == '>' && t->input[t->pos +1] != '>')
 		{
-			//ft_printf("t->anchor pos:: %c, t->pos:: %c\n\n", t->input[t->anchor_pos], t->input[t->pos]);
+			
 			if (t->pos == t->anchor_pos)
 				t->pos++;
 			add_token(t, token_list);
-			//ft_printf("---METACHARACTERS---\nt->input[t->anchor_pos]:: %c, t->input[t->pos]:: %c, t->input[t->pos +1]:: %c\n", t->input[t->anchor_pos], t->input[t->pos], t->input[t->pos +1]); //cancellare dopo i test
+			
 		}
 		else if (t->input[t->pos] == '<' && t->input[t->pos +1] == '<'
 		&& t->input[t->pos +2] != '<' )
@@ -113,9 +113,9 @@ void open_quotes(t_t *t, t_t **token_list, bool *free_input)
 			}
 			else if (t->double_quote && t->input[t->pos] == '\"' && t->input[t->pos - 1] != '\\')
 			{
-				//ft_printf("t->input[t->pos]:: %c, t->pos:: %i\n", t->input[t->pos], t->pos);
+				
 				t->double_quote = !t->double_quote;
-				//ft_printf("t->double_quote:: %i\n", t->double_quote);
+			
 				if (t->pos > t->anchor_pos) 
 				{
 					
@@ -148,7 +148,7 @@ void open_quotes(t_t *t, t_t **token_list, bool *free_input)
 
 void prepare_quotes(t_t *t, t_t **token_list, bool *free_input)
 {
-	//ft_printf("entro\n");
+
 	char	*begin_quote;
 	char	*after_quote;
 	char	*end_str;
@@ -283,7 +283,6 @@ void add_token(t_t *t, t_t **token_list)
 		return ;
 	size_t	len;
 	t_t *new_token;
-	int check_memory;
 	int	redir_control;
 
 	redir_control = 0;
@@ -305,8 +304,7 @@ void add_token(t_t *t, t_t **token_list)
 		t->anchor_pos++;
 		return;
 	}
-	check_memory = alloc_new_token(&new_token, len);
-	if (check_memory == 0)
+	if (!alloc_new_token(&new_token, len))
 		return ;
 	ft_strlcpy(new_token->value, t->start + t->anchor_pos, len +1);
 	if (t->tmp_token)
@@ -317,7 +315,7 @@ void add_token(t_t *t, t_t **token_list)
 		t->anchor_pos = t->pos;
 		return;
 	}
-	//ft_printf("new_token->value:: '%s'\n", new_token->value);
+
 	t->anchor_pos = t->pos;	// (il +1 è per non ripettere l'ultimo carattere) in qualche momento funcionava adesso non piu, tolto.
 	if (ft_strchr(("|<>"), new_token->value[0]))
 	{
