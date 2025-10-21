@@ -25,5 +25,5 @@ int	mark_as_exportable(t_env **env, char *key)
 		}
 		curr = curr->next;
 	}
-	return (add_env_dup(env, key, NULL, 1));  // ✅ Usa add_env_dup
+	return (add_env(env, key, NULL, 1));
 }

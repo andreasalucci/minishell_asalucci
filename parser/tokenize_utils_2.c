@@ -185,7 +185,7 @@ void is_var_2(t_t *t, t_t **token_list)
         return;
 
     ft_strlcpy(prefix, t->input + t->anchor_pos, (t->pos - t->anchor_pos) + 1);
-
+	//ft_printf("prefix:: %s, anchor:: %c\b", prefix, t->input[t->anchor_pos]);
     while (t->input[t->pos + 1] && (ft_isalnum(t->input[t->pos + 1]) || t->input[t->pos + 1] == '_'))
         t->pos++;
 
@@ -202,10 +202,8 @@ void is_var_2(t_t *t, t_t **token_list)
 
     ft_strlcpy(var, t->input + dolar, len + 2);
     var_token = getenv(var);
-	
     if (!var_token)
     {
-		//end_var = malloc(ft_strlen(prefix) + ft_strlen(var) +1);
 		end_var = ft_strjoin(prefix, var);
         add_custom_token(end_var, TOKEN_WORD, token_list);
         free(prefix);
