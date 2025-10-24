@@ -1,14 +1,20 @@
 PROBLEMI IRRISOLTI:
 
+stampa exit
 
 
 
-	Importanti:
+LEAKS
 
+echo a > b
 
-echo ?$
-heredoc non viene chiuso se <<a (<< attaccate ad a )
-richiamare memoria, cancellare e fare ctrlD crea leak
+<< a
+b
+a
+
+<<a
+b
+a
 
 
 
