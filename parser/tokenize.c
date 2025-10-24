@@ -63,8 +63,10 @@ t_t		*tokens(char *input, bool *free_input, t_env *env)
 			printf("minishell: syntax error near unexpected EOF\n");
 			g_exit_status = 2;
 		}
-		if (t.tmp_token) // sustituir por una funcion que libera todo en casa de error
+		if (t.tmp_token)
 			free(t.tmp_token);
+		free_token_list(token_list);
+		free(t.input);
 		return (0);
 	}
 	free(t.input);

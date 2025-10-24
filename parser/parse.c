@@ -22,52 +22,50 @@ t_command	*parse(t_t *token)
 
 void print_commands(t_command *cmd)
 {
-    int i;
-    int index = 1;
-    t_redir *r;
+	int i;
+	int index = 1;
+	t_redir *r;
 
-    while (cmd)
-    {
-        printf("🔹 Comando #%d:\n", index++);
+	while (cmd)
+	{
+		printf("🔹 Comando #%d:\n", index++);
 
-        // Argomenti
-        printf("  argv: ");
-        if (cmd->argv)
-        {
-            i = 0;
-            while (cmd->argv[i])
-            {
-                printf("\"%s\" ", cmd->argv[i]);
-                i++;
-            }
-        }
-        else
-            printf("(vuoto)");
-        printf("\n");
+		// Argomenti
+		printf("  argv: ");
+		if (cmd->argv)
+		{
+			i = 0;
+			while (cmd->argv[i])
+			{
+				printf("\"%s\" ", cmd->argv[i]);
+				i++;
+			}
+		}
+		else
+			printf("(vuoto)");
+		printf("\n");
 
-        // Redirezioni
-        if (cmd->redirs)
-        {
-            printf("  redirs:\n");
-            r = cmd->redirs;
-            while (r)
-            {
-                if (r->type == REDIR_IN)
-                    printf("    <  \"%s\"\n", r->filename);
-                else if (r->type == REDIR_OUT)
-                    printf("    >  \"%s\"\n", r->filename);
-                else if (r->type == REDIR_APPEND)
-                    printf("    >> \"%s\"\n", r->filename);
-                else if (r->type == REDIR_HEREDOC)
-                    printf("    << \"%s\"\n", r->filename);
-                r = r->next;
-            }
-        }
-        else
-            printf("  redirs: (nessuna)\n");
-
-        printf("  ───────────────\n");
-
-        cmd = cmd->next;
-    }
+		// Redirezioni
+		if (cmd->redirs)
+		{
+			printf("  redirs:\n");
+			r = cmd->redirs;
+			while (r)
+			{
+				if (r->type == REDIR_IN)
+					printf("    <  \"%s\"\n", r->filename);
+				else if (r->type == REDIR_OUT)
+					printf("    >  \"%s\"\n", r->filename);
+				else if (r->type == REDIR_APPEND)
+					printf("    >> \"%s\"\n", r->filename);
+				else if (r->type == REDIR_HEREDOC)
+					printf("    << \"%s\"\n", r->filename);
+				r = r->next;
+			}
+		}
+		else
+			printf("  redirs: (nessuna)\n");
+		printf("  ───────────────\n");
+		cmd = cmd->next;
+	}
 }

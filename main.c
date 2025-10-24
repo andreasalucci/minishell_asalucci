@@ -9,18 +9,18 @@ int	g_exit_status = 0;
 
 t_command *init_command(void)
 {
-    t_command *cmd;
-    
-    cmd = malloc(sizeof(t_command));
-    if (!cmd)
-        return (NULL);
-    cmd->argv = NULL;
-    cmd->arg_is_redir = NULL;
-    cmd->infile = NULL;
-    cmd->outfile = NULL;
-    cmd->redirs = NULL;
-    cmd->next = NULL;
-    return (cmd);
+	t_command *cmd;
+	
+	cmd = malloc(sizeof(t_command));
+	if (!cmd)
+		return (NULL);
+	cmd->argv = NULL;
+	cmd->arg_is_redir = NULL;
+	cmd->infile = NULL;
+	cmd->outfile = NULL;
+	cmd->redirs = NULL;
+	cmd->next = NULL;
+	return (cmd);
 }
 
 t_env	*init_env(void)
@@ -37,24 +37,24 @@ t_env	*init_env(void)
 
 t_env *copy_env(char **envp)
 {
-    t_env *env = NULL;
-    int i = 0;
-    char *eq;
+	t_env *env = NULL;
+	int i = 0;
+	char *eq;
 
-    while (envp[i])
-    {
-        eq = ft_strchr(envp[i], '=');
-        if (eq)
-        {
-            char *key = ft_substr(envp[i], 0, eq - envp[i]);
-            char *value = ft_strdup(eq + 1);
-            add_env(&env, key, value, 1);
-            free(key);
-            free(value);
-        }
-        i++;
-    }
-    return env;
+	while (envp[i])
+	{
+		eq = ft_strchr(envp[i], '=');
+		if (eq)
+		{
+			char *key = ft_substr(envp[i], 0, eq - envp[i]);
+			char *value = ft_strdup(eq + 1);
+			add_env(&env, key, value, 1);
+			free(key);
+			free(value);
+		}
+		i++;
+	}
+	return env;
 }
 
 char	*ft_strjoin_3(const char *s1, const char *s2, const char *s3)
@@ -116,7 +116,7 @@ bool	is_builtin(t_command *cmd)
 
 bool	has_pipe_or_redir(t_command *cmd)
 {
-    return (cmd->next != NULL || cmd->redirs != NULL);
+	return (cmd->next != NULL || cmd->redirs != NULL);
 }
 
 char	*ft_strjoin_free(char *s1, char *s2)
@@ -343,16 +343,16 @@ void	process_input_history(char *input)
 
 t_command *parse_input_to_commands(char *input, bool *free_input, t_env *env)
 {
-    t_t *token;
-    t_command *cmd;
+	t_t *token;
+	t_command *cmd;
 
-    token = tokens(input, free_input, env);  // PASS env
-    if (!token)
-        return (NULL);
-    cmd = parse(token);
-    //cmd = parse_commands(token);
+	token = tokens(input, free_input, env);  // PASS env
+	if (!token)
+		return (NULL);
+	cmd = parse(token);
+	//cmd = parse_commands(token);
    	free_token_list(token);  // ← Aquí liberas los tokens
-    return (cmd);
+	return (cmd);
 }
 
 void	execute_single_command(t_command *cmds, t_env **env)
@@ -365,13 +365,13 @@ void	execute_single_command(t_command *cmds, t_env **env)
 
 void process_commands(t_command *cmds, t_env **env, t_global *global)
 {
-    if (!cmds)
-        return;
-    if (!has_pipe_or_redir(cmds))
-        execute_single_command(cmds, env);  // Passa env come doppio puntatore
-    else
-        exec_command_list(cmds, *env, global);  // Dereferenzia env
-    free_command_l(cmds);
+	if (!cmds)
+		return;
+	if (!has_pipe_or_redir(cmds))
+		execute_single_command(cmds, env);  // Passa env come doppio puntatore
+	else
+		exec_command_list(cmds, *env, global);  // Dereferenzia env	
+	free_command_l(cmds);
 }
 
 void	cleanup_resources(t_env *env, t_global *global)
@@ -396,25 +396,25 @@ bool	only_spaces_after_pipe(char *pp)
 
 bool quotes_closed(char *input)
 {
-    bool in_single;
-    bool in_double;
+	bool in_single;
+	bool in_double;
 	char *p;
 
 	in_single = false;
-    in_double = false;
+	in_double = false;
 	p = input;
-    while (*p)
+	while (*p)
 	{
-        if (*p == '\'' && !in_double)
-            in_single = !in_single;
-        else if (*p == '"' && !in_single)
-            in_double = !in_double;
-        else if (*p == '\\')
-            if (*(p + 1))
+		if (*p == '\'' && !in_double)
+			in_single = !in_single;
+		else if (*p == '"' && !in_single)
+			in_double = !in_double;
+		else if (*p == '\\')
+			if (*(p + 1))
 				p++;
 		p++;
-    }
-    return (!in_single && !in_double);
+	}
+	return (!in_single && !in_double);
 }
 
 int	input_is_open(char *input)
@@ -431,20 +431,20 @@ int	input_is_open(char *input)
 
 int main_loop(t_env **env, t_global *global)
 {
-    char        *input = NULL;
-    t_command   *cmds;
+	char        *input = NULL;
+	t_command   *cmds;
 	int			open_type;
 	bool	free_input;
 
 	free_input = 0;
-    while (1)
-    {
+	while (1)
+	{
 		input = readline("minishell$ ");
 		if (input == NULL)
-        {
-            printf("exit\n");
-            break;
-        }
+		{
+			printf("exit\n");
+			break;
+		}
 		open_type = input_is_open(input);
 
 
@@ -476,6 +476,7 @@ int main_loop(t_env **env, t_global *global)
 		}
 	}
 	rl_clear_history();
+
 	return 0;
 }
 
@@ -483,22 +484,22 @@ int main_loop(t_env **env, t_global *global)
 
 int main(int argc, char **argv, char **envp)
 {
-    t_env *env = copy_env(envp);
-    t_global *global = malloc(sizeof(t_global));
+	t_env *env = copy_env(envp);
+	t_global *global = malloc(sizeof(t_global));
 
-    if (!global)
-    {
-        perror("malloc");
-        exit(EXIT_FAILURE);
-    }
+	if (!global)
+	{
+		perror("malloc");
+		exit(EXIT_FAILURE);
+	}
 
-    init_shlvl(&env);
-    global->heredoc_interrupted = 0;
-    setup_shell_signals();
+	init_shlvl(&env);
+	global->heredoc_interrupted = 0;
+	setup_shell_signals();
 
-    // Modo no interactivo con -c
-    if (argc >= 3 && !ft_strncmp(argv[1], "-c", 3))
-    {
+	// Modo no interactivo con -c
+	if (argc >= 3 && !ft_strncmp(argv[1], "-c", 3))
+	{
 		char *input = argv[2];
 		char *input_copy = strdup(input); // Duplica para evitar modificar argv[2]
 		if (!input_copy)
@@ -524,15 +525,15 @@ int main(int argc, char **argv, char **envp)
 
 		if (free_input)
 			free(input_copy);
-
 		cleanup_resources(env, global);
 		return g_exit_status;
 
-    }
-
-    // Modo interactivo normal
-    main_loop(&env, global);
-    cleanup_resources(env, global);
-    return 0;
+	}
+	
+	// Modo interactivo normal
+	main_loop(&env, global);
+	cleanup_resources(env, global);
+	
+	return 0;
 }
 
