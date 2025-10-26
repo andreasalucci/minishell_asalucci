@@ -196,7 +196,7 @@ bool is_builtin(t_command *cmd);
 //void	exec_single_simple_command(t_command *cmds, t_env **env);
 void	exec_builtin(t_command *cmds, t_env **env);
 void	exec_single_non_builtin(t_command *cmds, t_env **env);
-void	builtin_exit(char **args);
+void	builtin_exit(t_command *cmd);
 
 void	sigint_handler(int signum);
 void	init_key_value(t_key_value *data, char *arg, char *equal_pos, int is_append);

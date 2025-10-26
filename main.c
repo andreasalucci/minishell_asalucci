@@ -23,6 +23,7 @@ t_command *init_command(void)
 	return (cmd);
 }
 
+/*
 t_env	*init_env(void)
 {
 	t_env	*env;
@@ -34,6 +35,7 @@ t_env	*init_env(void)
 	//add_env(&env, "SHLVL", "0", 1);
 	return (env);
 }
+*/
 
 t_env *copy_env(char **envp)
 {
@@ -46,8 +48,20 @@ t_env *copy_env(char **envp)
 		eq = ft_strchr(envp[i], '=');
 		if (eq)
 		{
-			char *key = ft_substr(envp[i], 0, eq - envp[i]);
-			char *value = ft_strdup(eq + 1);
+			// char *key = ft_substr(envp[i], 0, eq - envp[i]); // non fa malloc, quindi sta usando l'iput del main
+			// char *value = ft_substr(eq, 1, ft_strlen(eq + 1));
+			// //char *value = ft_strdup(eq + 1); // fa malloc, quindi copia l'input del main
+			// add_env(&env, key, value, 1);
+			// //		free(key);
+			// //		free(value);
+
+			// char *key = ft_substr(envp[i], 0, eq - envp[i]); // mallocato, quindi copia l'input del main
+			// char *value = eq + 1; // non mallocato
+			// add_env(&env, key, value, 1);
+			// free(key);
+
+			char *key = ft_substr(envp[i], 0, eq - envp[i]); // key: allocata copia di input main
+			char *value = ft_strdup(eq + 1); // value: allocata copia di input main
 			add_env(&env, key, value, 1);
 			free(key);
 			free(value);
@@ -109,7 +123,7 @@ bool	is_builtin(t_command *cmd)
 		return (false);
 	return (ft_strcmp(cmd->argv[0], "cd") == 0 || ft_strcmp(cmd->argv[0],
 			"export") == 0 || ft_strcmp(cmd->argv[0], "unset") == 0
-		|| ft_strcmp(cmd->argv[0], "exit") == 0 || ft_strcmp(cmd->argv[0],
+		/*|| ft_strcmp(cmd->argv[0], "exit") == 0*/ || ft_strcmp(cmd->argv[0],
 			"echo") == 0 || ft_strcmp(cmd->argv[0], "env") == 0
 		|| ft_strcmp(cmd->argv[0], "pwd") == 0);
 }
@@ -200,8 +214,8 @@ void	exec_builtin(t_command *cmds, t_env **env)
 		builtin_pwd();
 	else if (ft_strcmp(cmds->argv[0], "echo") == 0)
 		builtin_echo(cmds);
-	else if (ft_strcmp(cmds->argv[0], "exit") == 0)
-		builtin_exit(cmds->argv);
+	// else if (ft_strcmp(cmds->argv[0], "exit") == 0)
+	// 	builtin_exit(cmds->argv);
 }
 
 bool	expand_exit_status(t_t *t)
@@ -240,6 +254,7 @@ void	exec_and_wait(t_command *cmds, char *cmd_path, char **envp)
 	pid = fork();
 	if (pid == 0)
 	{
+				//		printf("DEBUG:   EXEC AND WAIT PID == 0");
 		//apply_redirections(cmds);
 		execve(cmd_path, cmds->argv, envp);
 		perror("execve");
@@ -367,6 +382,11 @@ void process_commands(t_command *cmds, t_env **env, t_global *global)
 {
 	if (!cmds)
 		return;
+	if (ft_strcmp(cmds->argv[0], "exit") == 0)
+	{
+		cleanup_resources(*env, global);
+		builtin_exit(cmds);
+	}
 	if (!has_pipe_or_redir(cmds))
 		execute_single_command(cmds, env);  // Passa env come doppio puntatore
 	else
@@ -490,6 +510,7 @@ int main(int argc, char **argv, char **envp)
 	if (!global)
 	{
 		perror("malloc");
+		free_env(env);
 		exit(EXIT_FAILURE);
 	}
 

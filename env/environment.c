@@ -4,12 +4,12 @@ t_env	*create_env_node(char *key, char *value, int exportable)
 {
 	t_env	*node;
 
-	node = malloc(sizeof(t_env));
+	node = malloc(sizeof(t_env));//////
 	if (!node)
 		return (NULL);
-	node->key = ft_strdup(key);
+	node->key = ft_strdup(key);//////
 	if (value)
-		node->value = ft_strdup(value);
+		node->value = ft_strdup(value);//////
 	else
 		node->value = NULL;
 	if (!node->key || (value && !node->value))

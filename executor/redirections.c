@@ -50,15 +50,20 @@ void	apply_redir_out1(t_redir *r, t_env *env, t_command *cmd, t_global *global)
 	fd = open(r->filename, O_CREAT | O_WRONLY | O_TRUNC, 0644);
 	if (fd < 0)
 	{
+		//printf("DEBUG FD < 0 FD < 0\n\n");
 		perror(r->filename);
 		cleanup_resources(env, global);
 		free_command_l(cmd);
 		exit(EXIT_FAILURE);
 	}
 	if (r->next && (r->next->type == REDIR_OUT || r->next->type == REDIR_APPEND))
+	{
+		//printf("DEBUG 222222222\n\n");
 		close(fd);
+	}
 	else
 	{
+		//printf("DEBUG 3333333\n\n");
 		dup2(fd, STDOUT_FILENO);
 		close(fd);
 	}
