@@ -1,0 +1,41 @@
+[0;31m/// TEST 1  KO  (dollar nb 1)///[0m
+1: Expected [127] status but found [0]
+[0;31m/// TEST 2  KO  (dollar nb 2)///[0m
+2: Expected [127] status but found [0]
+2: Expected [00: command not found] error output but found [0: command not found]
+[0;31m/// TEST 3  KO  (dollar nb 3)///[0m
+3: Expected [127] status but found [0]
+3: Expected [?/home/user: command not found] error output but found [execve: No such file or directory]
+3: Valgrind: memory leak:    still reachable: 12 bytes in 1 blocks
+[0;31m/// TEST 4  KO  (dollar nb 4)///[0m
+4: Expected [127] status but found [0]
+[0;31m/// TEST 5  KO  (dollar nb 5)///[0m
+5: Expected [126] status but found [0]
+5: Expected [/home/user: Is a directory] error output but found [execve: Permission denied]
+5: Valgrind: memory leak:    still reachable: 11 bytes in 1 blocks
+[0;31m/// TEST 7  KO  (dollar nb 7)///[0m
+7: Expected [127] status but found [139] A.K.A. SIGSEGV or SEGMENTATION FAULT or CRASH !!!
+7: Expected [: command not found] error output but found []
+7: Valgrind: memory leak:    still reachable: 5,645 bytes in 162 blocks
+7: Valgrind:  read : Invalid read of size 1
+[0;31m/// TEST 8  KO  (dollar nb 8)///[0m
+8: Expected [127] status but found [0]
+[0;31m/// TEST 10  KO  (dollar nb 10)///[0m
+10: Expected [127] status but found [0]
+10: Expected [-R: command not found] error output but found [$VAR: command not found]
+[0;31m/// TEST 11  KO  (wildcard nb 1)///[0m
+11: Expected [minitester.sh] output but found []
+11: Expected no error output but found [ls: cannot access '*': No such file or directory]
+[0;31m/// TEST 12  KO  (wildcard nb 2)///[0m
+12: Expected [ignore_rl_leaks.supp
+12: Expected no error output but found [ls: cannot access '*.*': No such file or directory]
+[0;31m/// TEST 13  KO  (wildcard nb 3)///[0m
+13: Expected [2] status but found [0]
+[0;31m/// TEST 14  KO  (wildcard nb 4)///[0m
+14: Expected [syntax;] output but found []
+14: Expected no error output but found [cat: '.*es*re': No such file or directory]
+[0;31m/// TEST 15  KO  (wildcard nb 5)///[0m
+15: Expected [1] status but found [0]
+[0;31m/// TEST 16  KO  (wildcard nb 6)///[0m
+16: Expected [syntax;] output but found []
+16: Expected no error output but found [cat: '.*es*re': No such file or directory]

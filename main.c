@@ -246,7 +246,7 @@ bool	expand_exit_status(t_t *t)
 		return (0);
 }
 
-void	exec_and_wait(t_command *cmds, char *cmd_path, char **envp, t_env *env, t_global *g)// MODIFICA aggiunti env e g
+int	exec_and_wait(t_command *cmds, char *cmd_path, char **envp)
 {
 	int		status;
 	pid_t	pid;
@@ -254,15 +254,11 @@ void	exec_and_wait(t_command *cmds, char *cmd_path, char **envp, t_env *env, t_g
 	pid = fork();
 	if (pid == 0)
 	{
-				//		printf("DEBUG:   EXEC AND WAIT PID == 0");
-		//apply_redirections(cmds);
 		execve(cmd_path, cmds->argv, envp);
 		perror("execve");
 		if (envp)
 			free_env_array(envp);
-		free_command_l(cmds);// MODIFICA aggiunta riga
-		cleanup_resources(env, g);// MODIFICA aggiunta riga
-		exit(EXIT_FAILURE);
+		return (0);
 	}
 	else if (pid > 0)
 	{
@@ -275,6 +271,7 @@ void	exec_and_wait(t_command *cmds, char *cmd_path, char **envp, t_env *env, t_g
 	else
 		perror("fork");
 	free(cmd_path);
+	return (1);
 }
 
 void	exec_single_non_builtin(t_command *cmds, t_env **env, t_global *g)//aggiunta global
@@ -286,7 +283,12 @@ void	exec_single_non_builtin(t_command *cmds, t_env **env, t_global *g)//aggiunt
 	cmd_path = get_command_path(cmds->argv[0], *env);
 	if (cmd_path)
 	{
-		exec_and_wait(cmds, cmd_path, envp, *env, g);// MODIFICA aggiunto *env, g
+		if(exec_and_wait(cmds, cmd_path, envp))
+		{
+			free_command_l(cmds);
+			cleanup_resources(*env, g);
+			exit(EXIT_FAILURE);
+		}
 	}
 	else if (ft_strcmp(cmds->argv[0], ".") == 0)
 	{
