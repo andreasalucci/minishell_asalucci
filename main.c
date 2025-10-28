@@ -246,7 +246,7 @@ bool	expand_exit_status(t_t *t)
 		return (0);
 }
 
-void	exec_and_wait(t_command *cmds, char *cmd_path, char **envp)
+void	exec_and_wait(t_command *cmds, char *cmd_path, char **envp, t_env *env, t_global *g)// MODIFICA aggiunti env e g
 {
 	int		status;
 	pid_t	pid;
@@ -260,7 +260,8 @@ void	exec_and_wait(t_command *cmds, char *cmd_path, char **envp)
 		perror("execve");
 		if (envp)
 			free_env_array(envp);
-		free(cmd_path);
+		free_command_l(cmds);// MODIFICA aggiunta riga
+		cleanup_resources(env, g);// MODIFICA aggiunta riga
 		exit(EXIT_FAILURE);
 	}
 	else if (pid > 0)
@@ -276,7 +277,7 @@ void	exec_and_wait(t_command *cmds, char *cmd_path, char **envp)
 	free(cmd_path);
 }
 
-void	exec_single_non_builtin(t_command *cmds, t_env **env)
+void	exec_single_non_builtin(t_command *cmds, t_env **env, t_global *g)//aggiunta global
 {
 	char	*cmd_path;
 	char	**envp;
@@ -285,7 +286,7 @@ void	exec_single_non_builtin(t_command *cmds, t_env **env)
 	cmd_path = get_command_path(cmds->argv[0], *env);
 	if (cmd_path)
 	{
-		exec_and_wait(cmds, cmd_path, envp);
+		exec_and_wait(cmds, cmd_path, envp, *env, g);// MODIFICA aggiunto *env, g
 	}
 	else if (ft_strcmp(cmds->argv[0], ".") == 0)
 	{
@@ -370,12 +371,12 @@ t_command *parse_input_to_commands(char *input, bool *free_input, t_env *env)
 	return (cmd);
 }
 
-void	execute_single_command(t_command *cmds, t_env **env)
+void	execute_single_command(t_command *cmds, t_env **env, t_global *g)//AGGIUNTA g
 {
 	if (is_builtin(cmds))
 		exec_builtin(cmds, env);
 	else
-		exec_single_non_builtin(cmds, env);
+		exec_single_non_builtin(cmds, env, g);
 }
 
 void process_commands(t_command *cmds, t_env **env, t_global *global)
@@ -388,7 +389,7 @@ void process_commands(t_command *cmds, t_env **env, t_global *global)
 		builtin_exit(cmds);
 	}
 	if (!has_pipe_or_redir(cmds))
-		execute_single_command(cmds, env);  // Passa env come doppio puntatore
+		execute_single_command(cmds, env, global);  // Passa env come doppio puntatore
 	else
 		exec_command_list(cmds, *env, global);  // Dereferenzia env	
 	free_command_l(cmds);
