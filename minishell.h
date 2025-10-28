@@ -178,7 +178,7 @@ int builtin_echo(t_command *cmd);
 
 void	cleanup_resources(t_env *env, t_global *global);
 void apply_redirections(t_command *cmd, t_env *env, t_global *global);
-void apply_redir_in1(t_redir *r);
+void	apply_redir_in1(t_redir *r, t_env *env, t_command *cmd, t_global *global);
 void	apply_redir_out1(t_redir *r, t_env *env, t_command *cmd, t_global *global);
 void apply_redir_out2(t_redir *r);
 char *mini_getline(const char *prompt);

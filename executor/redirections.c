@@ -10,14 +10,13 @@ static void	heredoc_sigint_handler(int signum)
 
 void apply_redirections(t_command *cmd, t_env *env, t_global *global)
 {
-	t_redir *r;
+	t_redir	*r;
 
 	r = cmd->redirs;
 	while (r)
 	{
-		
 		if (r->type == REDIR_IN)
-			apply_redir_in1(r);
+			apply_redir_in1(r, env, cmd, global);
 		else if (r->type == REDIR_OUT)
 			apply_redir_out1(r, env, cmd, global);
 		else if (r->type == REDIR_APPEND)
@@ -26,10 +25,9 @@ void apply_redirections(t_command *cmd, t_env *env, t_global *global)
 			apply_redir_heredoc();
 		r = r->next;
 	}
-	
 }
 
-void	apply_redir_in1(t_redir *r)
+void	apply_redir_in1(t_redir *r, t_env *env, t_command *cmd, t_global *global)
 {
 	int	fd;
 
@@ -37,6 +35,8 @@ void	apply_redir_in1(t_redir *r)
 	if (fd < 0)
 	{
 		perror(r->filename);
+		cleanup_resources(env, global);
+		free_command_l(cmd);
 		exit(EXIT_FAILURE);
 	}
 	dup2(fd, STDIN_FILENO);
@@ -50,7 +50,6 @@ void	apply_redir_out1(t_redir *r, t_env *env, t_command *cmd, t_global *global)
 	fd = open(r->filename, O_CREAT | O_WRONLY | O_TRUNC, 0644);
 	if (fd < 0)
 	{
-		//printf("DEBUG FD < 0 FD < 0\n\n");
 		perror(r->filename);
 		cleanup_resources(env, global);
 		free_command_l(cmd);
@@ -66,6 +65,7 @@ void	apply_redir_out1(t_redir *r, t_env *env, t_command *cmd, t_global *global)
 		//printf("DEBUG 3333333\n\n");
 		dup2(fd, STDOUT_FILENO);
 		close(fd);
+		//close(STDOUT_FILENO);
 	}
 }
 
@@ -227,16 +227,11 @@ void	filter_args(t_command *cmd, char ***argv_filtered)
 	(*argv_filtered)[j] = NULL;
 }
 
-void	handle_child_cmd_path(t_command *cmd, t_env *env)
+void	handle_child_cmd_path(t_command *cmd, t_env *env, t_global *global)
 {
 	char	*cmd_path;
-	char 	**argv_filtered;
+	char	**argv_filtered;
 
-	// if (!cmd || !cmd->argv || !cmd->argv[0] || cmd->argv[0][0] == '\0')
-	// {
-	//     ft_putstr_fd("minishell: invalid command structure\n", 2);
-	//     exit(1);
-	// }
 	cmd_path = get_command_path(cmd->argv[0], env);
 	if (!cmd_path)
 		command_not_found(cmd);
@@ -244,6 +239,8 @@ void	handle_child_cmd_path(t_command *cmd, t_env *env)
 	{
 		free(cmd_path);
 		exec_builtin(cmd, &env);
+		cleanup_resources(env, global);
+		free_command_l(cmd);
 		exit(g_exit_status);
 	}
 	else
@@ -253,6 +250,7 @@ void	handle_child_cmd_path(t_command *cmd, t_env *env)
 		perror("execve");
 		free(argv_filtered);
 		free(cmd_path);
+		
 		exit(126);
 	}
 }
@@ -262,6 +260,7 @@ void	handle_child_process(t_command *cmd, t_p_fd p_fd, t_env *env, t_global* glo
 	//int prev_fd = -1; //creato adesso
 	signal(SIGINT, SIG_DFL);
 	signal(SIGQUIT, SIG_DFL);
+
 	if (p_fd.prev_fd != -1)
 	{
 		dup2(p_fd.prev_fd, STDIN_FILENO);
@@ -274,12 +273,7 @@ void	handle_child_process(t_command *cmd, t_p_fd p_fd, t_env *env, t_global* glo
 		close(p_fd.pipe_fd[1]);
 	}
 	apply_redirections(cmd, env, global);
-	// if (!cmd || !cmd->argv || !cmd->argv[0] || cmd->argv[0][0] == '\0')
-	// {
-	//     // Heredoc senza comando → esci con successo dopo aver applicato redirezioni
-	//     exit(0);
-	// }
-	handle_child_cmd_path(cmd, env);
+	handle_child_cmd_path(cmd, env, global);
 }
 
 void	handle_parent_process(int *prev_fd, int pipe_fd[])
@@ -405,17 +399,17 @@ void exec_command_list(t_command *cmd_list, t_env *env, t_global *g)
 
 	while (cmd)
 	{
-		
 		if (is_cmd_redir_in_2(cmd, p_fd.prev_fd, g))
-			return;
-		//ft_printf("pre_fd:: %i\n", prev_fd);
+			return ;
+
 		p_fd.pipe_fd[0] = -1;
 		p_fd.pipe_fd[1] = -1;
 		if (cmd->next && pipe(p_fd.pipe_fd) == -1)
 		{
 			perror("pipe");
-			if (p_fd.prev_fd != -1) close(p_fd.prev_fd);
-			return;
+			if (p_fd.prev_fd != -1)
+				close(p_fd.prev_fd);
+			return ;
 		}
 		pid = fork();
 		if (pid == -1)
@@ -424,7 +418,7 @@ void exec_command_list(t_command *cmd_list, t_env *env, t_global *g)
 			if (p_fd.prev_fd != -1) close(p_fd.prev_fd);
 			if (p_fd.pipe_fd[0] != -1) close(p_fd.pipe_fd[0]);
 			if (p_fd.pipe_fd[1] != -1) close(p_fd.pipe_fd[1]);
-			return;
+			return ;
 		}
 		last_pid = pid;
 		if (pid == 0)
@@ -448,5 +442,6 @@ void exec_command_list(t_command *cmd_list, t_env *env, t_global *g)
 			cmd = cmd->next;
 		}
 	}
+	
 	wait_for_children(last_pid);
 }

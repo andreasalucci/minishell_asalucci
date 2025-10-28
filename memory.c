@@ -18,70 +18,70 @@ int alloc_new_token(t_t **new_token, int len)
 
 void free_command_list(t_command *cmd)
 {
-    t_command *tmp;
-    int i;
+	t_command *tmp;
+	int i;
 
-    while (cmd)
-    {
+	while (cmd)
+	{
 		i = 0;
-        tmp = cmd->next;
-        if (cmd->argv)
-        {
-            while (cmd->argv[i])
-                free(cmd->argv[i++]);
-            free(cmd->argv);
-        }
-        free(cmd->infile);
-        free(cmd->outfile);
-        free(cmd);
-        cmd = tmp;
-    }
+		tmp = cmd->next;
+		if (cmd->argv)
+		{
+			while (cmd->argv[i])
+				free(cmd->argv[i++]);
+			free(cmd->argv);
+		}
+		free(cmd->infile);
+		free(cmd->outfile);
+		free(cmd);
+		cmd = tmp;
+	}
 }
 
 void free_token_list(t_t *token)
 {
-    t_t *tmp;
+	t_t *tmp;
 
-    while (token)
-    {
-        tmp = token->next;
-        free(token->value);
-        free(token);
-        token = tmp;
-    }
+	while (token)
+	{
+		tmp = token->next;
+		free(token->value);
+		free(token);
+		token = tmp;
+	}
 }
 
 void free_command(t_command *cmd)
 {
-    int i = 0;
-    t_redir *r;
-    t_redir *tmp;
+	int i = 0;
+	t_redir *r;
+	t_redir *tmp;
 
-    if (!cmd)
+	if (!cmd)
 		return;
 	if (cmd->arg_is_redir)
 	{
 		free(cmd->arg_is_redir);
 		 cmd->arg_is_redir = NULL;
 	}
-    if (cmd->argv)
-    {
-        while (cmd->argv[i])
-            free(cmd->argv[i++]);
-        free(cmd->argv);
-    }
-      // ← Añadido
-    r = cmd->redirs;
-    while (r)
-    {
-        tmp = r->next;
-        free(r->filename);
-        free(r);
-        r = tmp;
-    }
-    free(cmd->infile);
-    free(cmd->outfile);
-    free(cmd);
+	if (cmd->argv)
+	{
+		while (cmd->argv[i])
+			free(cmd->argv[i++]);
+		free(cmd->argv);
+	}
+	  // ← Añadido
+	r = cmd->redirs;
+	while (r)
+	{
+		tmp = r->next;
+		free(r->filename);
+		free(r);
+		r = tmp;
+	}
+	free(cmd->infile);
+	free(cmd->outfile);
+	free(cmd);
 }
 
 void free_paths(char **paths)
@@ -99,11 +99,12 @@ void free_paths(char **paths)
 
 void free_command_l(t_command *cmd_list)
 {
-    t_command *tmp;
-    while (cmd_list)
-    {
-        tmp = cmd_list->next;
-        free_command(cmd_list);
-        cmd_list = tmp;
-    }
+	t_command	*tmp;
+
+	while (cmd_list)
+	{
+		tmp = cmd_list->next;
+		free_command(cmd_list);
+		cmd_list = tmp;
+	}
 }

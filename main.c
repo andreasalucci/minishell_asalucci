@@ -451,10 +451,10 @@ int	input_is_open(char *input)
 
 int main_loop(t_env **env, t_global *global)
 {
-	char        *input = NULL;
-	t_command   *cmds;
+	char		*input = NULL;
+	t_command	*cmds;
 	int			open_type;
-	bool	free_input;
+	bool		free_input;
 
 	free_input = 0;
 	while (1)
@@ -463,28 +463,26 @@ int main_loop(t_env **env, t_global *global)
 		if (input == NULL)
 		{
 			printf("exit\n");
-			break;
+			break ;
 		}
 		open_type = input_is_open(input);
-
-
 		if (open_type == 1)
 		{
 			ft_putstr_fd("minishell: Syntax error: unclosed quotes\n", 2);
 			g_exit_status = 2;
 			free(input);
 			input = NULL;
-			continue;
+			continue ;
 		}
 		if (handle_input_interruption(global, input))
 		{
 			input = NULL;
-			continue;
+			continue ;
 		}
 		if (handle_eof(input))
 		{
 			input = NULL;
-			break;
+			break ;
 		}
 		process_input_history(input);
 		cmds = parse_input_to_commands(input, &free_input, *env);
@@ -496,6 +494,7 @@ int main_loop(t_env **env, t_global *global)
 		}
 	}
 	rl_clear_history();
+
 
 	return 0;
 }
@@ -553,6 +552,7 @@ int main(int argc, char **argv, char **envp)
 	
 	// Modo interactivo normal
 	main_loop(&env, global);
+
 	cleanup_resources(env, global);
 	
 	return 0;
