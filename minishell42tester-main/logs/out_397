@@ -1,0 +1,5 @@
+minishell$ unset HOME
+minishell$ 
+minishell$ 
+minishell$ cd $HOME
+minishell$ exit

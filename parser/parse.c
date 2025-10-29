@@ -3,13 +3,15 @@
 
 t_command	*parse(t_t *token)
 {
-	t_command *cmd_list;
-   
+	t_command	*cmd_list;
+
 	cmd_list = NULL;
 	token->error = false;
 	cmd_list = parse_commands(token);
 	if (!cmd_list)
 		return (NULL);
+	if (!cmd_list->argv)
+		cmd_list->argv = NULL;
 	//print_commands(cmd_list);
 	return (cmd_list);
 }

@@ -1,0 +1,6 @@
+minishell$ export HOLA="   -n bonjour   "  
+minishell$ 
+minishell$ 
+minishell$ echo $HOLA
+   -n bonjour   
+minishell$ exit

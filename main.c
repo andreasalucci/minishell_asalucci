@@ -274,7 +274,7 @@ int	exec_and_wait(t_command *cmds, char *cmd_path, char **envp)
 	return (1);
 }
 
-void	exec_single_non_builtin(t_command *cmds, t_env **env, t_global *g)//aggiunta global
+void	exec_single_non_builtin(t_command *cmds, t_env **env)//aggiunta hrd_interrupted
 {
 	char	*cmd_path;
 	char	**envp;
@@ -286,7 +286,7 @@ void	exec_single_non_builtin(t_command *cmds, t_env **env, t_global *g)//aggiunt
 		if(exec_and_wait(cmds, cmd_path, envp))
 		{
 			free_command_l(cmds);
-			cleanup_resources(*env, g);
+			free_env(*env);
 			exit(EXIT_FAILURE);
 		}
 	}
@@ -331,11 +331,11 @@ void	setup_shell_signals(void)
 	signal(SIGQUIT, SIG_IGN);
 }
 
-int	handle_input_interruption(t_global *global, char *input)
+int	handle_input_interruption(bool *hrd_interrupted, char *input)
 {
-	if (global->heredoc_interrupted)
+	if (*hrd_interrupted)
 	{
-		global->heredoc_interrupted = 0;
+		*hrd_interrupted = false;
 		free(input);
 		return (1);
 	}
@@ -373,34 +373,28 @@ t_command *parse_input_to_commands(char *input, bool *free_input, t_env *env)
 	return (cmd);
 }
 
-void	execute_single_command(t_command *cmds, t_env **env, t_global *g)//AGGIUNTA g
+void	execute_single_command(t_command *cmds, t_env **env)//AGGIUNTA g
 {
 	if (is_builtin(cmds))
 		exec_builtin(cmds, env);
 	else
-		exec_single_non_builtin(cmds, env, g);
+		exec_single_non_builtin(cmds, env);
 }
 
-void process_commands(t_command *cmds, t_env **env, t_global *global)
+void process_commands(t_command *cmds, t_env **env, bool *hrd_interrupted)
 {
 	if (!cmds)
 		return;
-	if (ft_strcmp(cmds->argv[0], "exit") == 0)
+	if (cmds->argv && ft_strcmp(cmds->argv[0], "exit") == 0)
 	{
-		cleanup_resources(*env, global);
+		free_env(*env);
 		builtin_exit(cmds);
 	}
 	if (!has_pipe_or_redir(cmds))
-		execute_single_command(cmds, env, global);  // Passa env come doppio puntatore
+		execute_single_command(cmds, env);  // Passa env come doppio puntatore
 	else
-		exec_command_list(cmds, *env, global);  // Dereferenzia env	
+		exec_command_list(cmds, *env, hrd_interrupted);  // Dereferenzia env	
 	free_command_l(cmds);
-}
-
-void	cleanup_resources(t_env *env, t_global *global)
-{
-	free_env(env);
-	free(global);
 }
 
 bool	only_spaces_after_pipe(char *pp)
@@ -452,7 +446,7 @@ int	input_is_open(char *input)
 	return (0);
 }
 
-int main_loop(t_env **env, t_global *global)
+int main_loop(t_env **env, bool *hrd_interrupted)
 {
 	char		*input = NULL;
 	t_command	*cmds;
@@ -477,7 +471,7 @@ int main_loop(t_env **env, t_global *global)
 			input = NULL;
 			continue ;
 		}
-		if (handle_input_interruption(global, input))
+		if (handle_input_interruption(hrd_interrupted, input))
 		{
 			input = NULL;
 			continue ;
@@ -489,7 +483,12 @@ int main_loop(t_env **env, t_global *global)
 		}
 		process_input_history(input);
 		cmds = parse_input_to_commands(input, &free_input, *env);
-		process_commands(cmds, env, global);
+		if(!cmds)
+		{
+			free_command_l(cmds);
+			
+		}
+		process_commands(cmds, env, hrd_interrupted);
 		if (free_input)
 		{
 			input = NULL;
@@ -507,17 +506,10 @@ int main_loop(t_env **env, t_global *global)
 int main(int argc, char **argv, char **envp)
 {
 	t_env *env = copy_env(envp);
-	t_global *global = malloc(sizeof(t_global));
-
-	if (!global)
-	{
-		perror("malloc");
-		free_env(env);
-		exit(EXIT_FAILURE);
-	}
+	bool hrd_interrupted;
 
 	init_shlvl(&env);
-	global->heredoc_interrupted = 0;
+	hrd_interrupted = false;
 	setup_shell_signals();
 
 	// Modo no interactivo con -c
@@ -528,7 +520,7 @@ int main(int argc, char **argv, char **envp)
 		if (!input_copy)
 		{
 			perror("strdup");
-			cleanup_resources(env, global);
+			free_env(env);
 			return 1;
 		}
 
@@ -537,26 +529,26 @@ int main(int argc, char **argv, char **envp)
 		{
 			ft_putstr_fd("minishell: Syntax error: unclosed quotes\n", 2);
 			free(input_copy);
-			cleanup_resources(env, global);
+			free_env(env);
 			return 2;
 		}
 
 		process_input_history(input_copy);
 		bool free_input = false;
 		t_command *cmds = parse_input_to_commands(input_copy, &free_input, env);
-		process_commands(cmds, &env, global);
+		process_commands(cmds, &env, &hrd_interrupted);
 
 		if (free_input)
 			free(input_copy);
-		cleanup_resources(env, global);
+		free_env(env);
 		return g_exit_status;
 
 	}
 	
 	// Modo interactivo normal
-	main_loop(&env, global);
+	main_loop(&env, &hrd_interrupted);
 
-	cleanup_resources(env, global);
+	free_env(env);
 	
 	return 0;
 }

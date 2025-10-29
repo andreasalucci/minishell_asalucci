@@ -1,0 +1,10 @@
+minishell$ echo hola > a
+minishell$ 
+minishell$ 
+minishell$ >>b echo que tal
+minishell$ 
+minishell$ 
+minishell$ cat a | <b cat | cat > c | cat 
+minishell$ 
+minishell$ 
+minishell$ rm a b c

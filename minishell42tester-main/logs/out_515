@@ -1,0 +1,2 @@
+minishell$ time sleep 1 | sleep 1
+minishell$ exit

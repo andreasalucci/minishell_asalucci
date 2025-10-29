@@ -1,0 +1,2 @@
+minishell$ ifconfig | grep hola
+minishell$ exit

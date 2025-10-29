@@ -1,0 +1,6 @@
+minishell$ export "HOLA=bonjour"=casse-toi
+minishell$ 
+minishell$ 
+minishell$ echo $HOLA
+bonjour=casse-toi
+minishell$ exit

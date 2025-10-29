@@ -1,0 +1,10 @@
+minishell$ unset PWD
+minishell$ 
+minishell$ 
+minishell$ env | grep PWD
+OLDPWD=/home/eltiob/github/minishell_asalucci
+minishell$ 
+minishell$ 
+minishell$ pwd
+/home/eltiob/github/minishell_asalucci/minishell42tester-main
+minishell$ exit

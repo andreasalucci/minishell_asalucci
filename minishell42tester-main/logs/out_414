@@ -1,0 +1,5 @@
+minishell$ export CDPATH=/
+minishell$ 
+minishell$ 
+minishell$ cd mnt/nfs/homes/user
+minishell$ exit

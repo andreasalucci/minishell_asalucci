@@ -1,0 +1,6 @@
+minishell$ export HOLA="  bonjour  hey  "  
+minishell$ 
+minishell$ 
+minishell$ echo wesh""$HOLA.
+weshHOLA .
+minishell$ exit

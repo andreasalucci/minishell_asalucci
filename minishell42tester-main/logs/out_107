@@ -1,0 +1,4 @@
+minishell$ echo > <
+
+minishell: syntax error near unexpected token
+minishell$ exit

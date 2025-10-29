@@ -1,0 +1,2 @@
+minishell$ export ?=2
+minishell$ exit

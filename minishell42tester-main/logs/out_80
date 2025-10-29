@@ -1,0 +1,2 @@
+minishell$ echo -n -nnn hola -nnnn
+hola -nnnnminishell$ exit

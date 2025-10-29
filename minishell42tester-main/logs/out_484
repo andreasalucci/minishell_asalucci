@@ -1,0 +1,5 @@
+minishell$ whoami | grep $USER > /tmp/bonjour
+minishell$ 
+minishell$ 
+minishell$ cat /tmp/bonjour
+eltiob

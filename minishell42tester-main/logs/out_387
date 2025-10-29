@@ -1,0 +1,5 @@
+minishell$ cd /
+minishell$ 
+minishell$ 
+minishell$ cd ..
+minishell$ exit

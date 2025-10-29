@@ -1,0 +1,6 @@
+minishell$ export HOLA="ls        -l    - a"
+minishell$ 
+minishell$ 
+minishell$ echo $HOLA
+ls        -l    - a
+minishell$ exit

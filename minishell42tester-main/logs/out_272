@@ -1,0 +1,9 @@
+minishell$ export HOLA=bonjour
+minishell$ 
+minishell$ 
+minishell$ export HOLA=' hola et $HOLA'
+minishell$ 
+minishell$ 
+minishell$ echo $HOLA
+ hola et $HOLA
+minishell$ exit

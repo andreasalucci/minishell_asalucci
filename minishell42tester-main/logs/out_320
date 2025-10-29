@@ -1,0 +1,2 @@
+minishell$ unset _HOLA
+minishell$ exit

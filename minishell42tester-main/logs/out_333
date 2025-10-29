@@ -1,0 +1,6 @@
+minishell$ unset PATH
+minishell$ 
+minishell$ 
+minishell$ echo $PATH
+
+minishell$ exit

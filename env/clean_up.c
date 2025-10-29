@@ -13,4 +13,5 @@ void	free_env(t_env *env)
 		free(tmp->value);
 		free(tmp);
 	}
+	env = NULL;
 }

@@ -1,0 +1,6 @@
+minishell$ export HOLA=hey 
+minishell$ 
+minishell$ 
+minishell$ echo $HOLA$HOLA$HOLA=hey$HOLA
+hey hey $HOLA
+minishell$ exit

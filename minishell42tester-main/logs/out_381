@@ -1,0 +1,6 @@
+minishell$ cd //
+minishell$ 
+minishell$ 
+minishell$ pwd
+/
+minishell$ exit

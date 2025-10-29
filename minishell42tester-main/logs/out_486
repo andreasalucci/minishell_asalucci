@@ -1,0 +1,5 @@
+minishell$ whereis ls | cat -e | cat -e > /tmp/bonjour
+minishell$ 
+minishell$ 
+minishell$ cat /tmp/bonjour
+ls: /usr/bin/ls /usr/share/man/man1/ls.1.gz$$

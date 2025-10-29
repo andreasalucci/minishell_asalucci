@@ -89,11 +89,6 @@ typedef struct s_command
     struct s_command	*next;
 } t_command;
 
-typedef struct global 
-{
-	int		heredoc_interrupted;
-} t_global;
-
 typedef struct s_key_value {
     char    *key;
     char    *value;
@@ -176,26 +171,29 @@ int builtin_pwd(void);
 int is_option_n(const char *str);
 int builtin_echo(t_command *cmd);
 
-void	cleanup_resources(t_env *env, t_global *global);
-void apply_redirections(t_command *cmd, t_env *env, t_global *global);
-void	apply_redir_in1(t_redir *r, t_env *env, t_command *cmd, t_global *global);
-void	apply_redir_out1(t_redir *r, t_env *env, t_command *cmd, t_global *global);
-void	apply_redir_out2(t_redir *r, t_command *cmd, t_env *env, t_global *g);
+void apply_redirections(t_command *cmd, t_env *env);
+void	apply_redir_in1(t_redir *r, t_env *env, t_command *cmd);
+void	apply_redir_out1(t_redir *r, t_env *env, t_command *cmd);
+void	apply_redir_out2(t_redir *r, t_command *cmd, t_env *env);
+void apply_redir_heredoc(t_command *cmd, t_env *env);
+void	create_heredoc_effective(const char *delimiter, t_command *cmd, t_env *env);
+void	create_heredoc_open(const char *delimiter, t_command *cmd, t_env *env, bool *g);
+
+void	free_env(t_env *env);
 char *mini_getline(const char *prompt);
-void	create_heredoc_open(const char *delimiter, t_command *cmd, t_env *env, t_global *g);
-void	create_heredoc_effective(const char *delimiter, t_command *cmd, t_env *env, t_global *g);
-void	handle_child_process(t_command *cmd, t_p_fd p_fd, t_env *env, t_global* global);
+
+void	handle_child_process(t_command *cmd, t_p_fd p_fd, t_env *env);
 void handle_parent_process(int *prev_fd, int pipe_fd[]);
-void	setup_pipe(t_command *cmd, int pipe_fd[], t_env *env, t_global *g);
+void	setup_pipe(t_command *cmd, int pipe_fd[], t_env *env);
 void fork_process(pid_t *pid);
 void wait_for_children(pid_t last_pid);
-void exec_command_list(t_command *cmd_list, t_env *env, t_global *g);
+void exec_command_list(t_command *cmd_list, t_env *env, bool *g);
 char *get_command_path(char *cmd, t_env *env);
 char	**convert_env_list_to_array(t_env *env);
 bool is_builtin(t_command *cmd);
 //void	exec_single_simple_command(t_command *cmds, t_env **env);
 void	exec_builtin(t_command *cmds, t_env **env);
-void	exec_single_non_builtin(t_command *cmds, t_env **env, t_global *g);
+void	exec_single_non_builtin(t_command *cmds, t_env **env);
 void	builtin_exit(t_command *cmd);
 
 void	sigint_handler(int signum);
@@ -211,6 +209,6 @@ void init_shlvl(t_env **env);
 
 t_command *init_command(void);
 
-void apply_redir_heredoc(t_command *cmd, t_env *env, t_global *g);
+void	free_env_array(char **envp);
 
 # endif

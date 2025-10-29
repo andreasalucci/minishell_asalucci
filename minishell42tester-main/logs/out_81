@@ -1,0 +1,2 @@
+minishell$ echo -n -nnn-nnnn
+-nnn-nnnnminishell$ exit

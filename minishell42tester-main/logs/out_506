@@ -1,0 +1,2 @@
+minishell$ cat .testignore | grep syntax | cat -e
+minishell$ exit

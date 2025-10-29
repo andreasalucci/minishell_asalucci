@@ -1,0 +1,2 @@
+minishell$ ls | exit 42
+minishell$ exit

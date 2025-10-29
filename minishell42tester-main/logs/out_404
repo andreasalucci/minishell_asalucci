@@ -1,0 +1,7 @@
+minishell$ cd ~/ | echo $?
+0
+minishell$ 
+minishell$ 
+minishell$ pwd
+/home/eltiob/github/minishell_asalucci/minishell42tester-main
+minishell$ exit
