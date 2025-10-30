@@ -1,2 +1,0 @@
-minishell$ cat .testignore | cat -e | cat -e
-minishell$ exit

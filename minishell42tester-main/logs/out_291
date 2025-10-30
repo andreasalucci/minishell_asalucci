@@ -1,8 +1,0 @@
-minishell$ export HOLA=p
-minishell$ 
-minishell$ 
-minishell$ export BYE=w
-minishell$ 
-minishell$ 
-minishell$ $"HOLA"$"BYE"d
-minishell$ exit

@@ -1,4 +1,0 @@
-minishell$ export HOLA="  bonjour  hey  "  
-minishell$ 
-minishell$ 
-minishell$ echo wesh"$HOLA" | cat -e

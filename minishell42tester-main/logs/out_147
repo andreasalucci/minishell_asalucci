@@ -1,3 +1,0 @@
-minishell$ echo $"HOLA"
-HOLA
-minishell$ exit

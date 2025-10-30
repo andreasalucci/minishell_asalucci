@@ -1,5 +1,0 @@
-minishell$ whoami | cat -e | cat -e > /tmp/bonjour
-minishell$ 
-minishell$ 
-minishell$ cat /tmp/bonjour
-eltiob$$

@@ -1,3 +1,0 @@
-minishell$ echo ' $ ' | cat -e
- $ $
-minishell$ exit

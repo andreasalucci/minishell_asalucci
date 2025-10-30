@@ -242,6 +242,41 @@ void	filter_args(t_command *cmd, char ***argv_filtered, t_env *env)// aggiunti i
 	(*argv_filtered)[j] = NULL;
 }
 
+// void	handle_child_cmd_path(t_command *cmd, t_env *env)
+// {
+//     char	*cmd_path;
+//     char	**argv_filtered;
+
+//     if (cmd->argv)
+//         cmd_path = get_command_path(cmd->argv[0], env);
+//     else
+//         cmd_path = NULL;
+        
+//     if (!cmd_path && !is_builtin(cmd))  // Solo se non è builtin
+//         command_not_found(cmd, env);
+    
+//     if (is_builtin(cmd))
+//     {
+//         // PER BUILTIN: esegui e esci, ma NON liberare env globale
+//         if (cmd_path)
+//             free(cmd_path);
+//         exec_builtin(cmd, &env);
+//         // NON free_env(env) - perché è una copia del riferimento
+//         // NON free_command_l(cmd) - perché è una copia del riferimento
+//         exit(g_exit_status);
+//     }
+//     else
+//     {
+//         // PER COMANDI ESTERNI: procedi normalmente
+//         filter_args(cmd, &argv_filtered, env);
+//         execve(cmd_path, argv_filtered, convert_env_list_to_array(env));
+//         perror("execve");
+//         free(argv_filtered);
+//         free(cmd_path);
+//         exit(126);
+//     }
+// }
+
 void	handle_child_cmd_path(t_command *cmd, t_env *env)
 {
 	char	*cmd_path;

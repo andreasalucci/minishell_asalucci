@@ -1,2 +1,0 @@
-minishell$ ls -la | grep "'.'"
-minishell$ exit

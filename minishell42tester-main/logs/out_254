@@ -1,9 +1,0 @@
-minishell$ export HOLA=bonjour
-minishell$ 
-minishell$ 
-minishell$ export BYE=casse-toi
-minishell$ 
-minishell$ 
-minishell$ echo $HOLA et $BYE
-bonjour et casse-toi
-minishell$ exit

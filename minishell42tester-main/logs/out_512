@@ -1,6 +1,0 @@
-minishell$ export HOLA | echo hola
-hola
-minishell$ 
-minishell$ 
-minishell$ env | grep PROUT
-minishell$ exit

@@ -1,8 +1,0 @@
-minishell$ unset HOME
-minishell$ 
-minishell$ 
-minishell$ export HOME=
-minishell$ 
-minishell$ 
-minishell$ cd
-minishell$ exit

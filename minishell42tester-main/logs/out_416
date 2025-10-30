@@ -1,5 +1,0 @@
-minishell$ export CDPATH=./
-minishell$ 
-minishell$ 
-minishell$ cd ..
-minishell$ exit

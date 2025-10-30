@@ -1,5 +1,0 @@
-minishell$ unset "" HOLA
-minishell$ 
-minishell$ 
-minishell$ env | grep HOLA
-minishell$ exit

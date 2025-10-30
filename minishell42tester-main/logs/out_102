@@ -1,3 +1,0 @@
-minishell$ echo $UID$HOME
-$HOME
-minishell$ exit

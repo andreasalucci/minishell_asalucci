@@ -1,3 +1,0 @@
-minishell$ echo $DONTEXIST Hola
-Hola
-minishell$ exit

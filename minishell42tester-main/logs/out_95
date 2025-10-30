@@ -1,3 +1,0 @@
-minishell$ echo my shit terminal is [$TERM]
-my shit terminal is [xterm-256color M]
-minishell$ exit

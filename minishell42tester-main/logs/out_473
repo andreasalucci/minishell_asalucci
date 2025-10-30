@@ -1,3 +1,0 @@
-minishell$ echo oui | cat -e
-oui$
-minishell$ exit

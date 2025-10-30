@@ -1,3 +1,0 @@
-minishell$ echo "'"h'o'la"'"
-'ho la'
-minishell$ exit

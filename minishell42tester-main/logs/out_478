@@ -1,3 +1,0 @@
-minishell$ cd .. | echo "hola"
-hola
-minishell$ exit

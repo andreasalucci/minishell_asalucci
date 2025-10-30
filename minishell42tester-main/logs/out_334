@@ -1,5 +1,0 @@
-minishell$ unset PATH
-minishell$ 
-minishell$ 
-minishell$ cat Makefile
-minishell$ exit

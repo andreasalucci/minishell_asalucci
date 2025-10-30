@@ -1,3 +1,0 @@
-minishell$ echo hola | cat -e | cat -e | cat -e
-hola$$$
-minishell$ exit

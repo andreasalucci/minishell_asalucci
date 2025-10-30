@@ -1,3 +1,0 @@
-minishell$ echo $? | echo $? | echo $?
-0
-minishell$ exit

@@ -1,3 +1,0 @@
-minishell$ echo Le path de mon HOME est $HOME
-Le path de mon HOME est /home/eltiob
-minishell$ exit

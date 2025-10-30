@@ -1,3 +1,0 @@
-minishell$ echo $USER$var\$USER$USER\$USERtest$USER
-eltiob eltiob $USER
-minishell$ exit

@@ -1,5 +1,0 @@
-minishell$ export HOLA=-n
-minishell$ 
-minishell$ 
-minishell$ ""echo $HOLA"" hey
- heyminishell$ exit

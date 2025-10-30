@@ -1,6 +1,0 @@
-minishell$ export HOLA="cat Makefile | grep NAME"  
-minishell$ 
-minishell$ 
-minishell$ echo $HOLA
-cat Makefile | grep NAME
-minishell$ exit

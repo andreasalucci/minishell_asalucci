@@ -1,4 +1,0 @@
-minishell$ echo hola > bonjour
-minishell$ 
-minishell$ 
-minishell$ exit | cat -e bonjour

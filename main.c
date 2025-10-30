@@ -258,7 +258,13 @@ int	exec_and_wait(t_command *cmds, char *cmd_path, char **envp)
 		perror("execve");
 		if (envp)
 			free_env_array(envp);
-		return (0);
+		free(cmd_path);
+
+		free_command_l(cmds);
+		//free_env(*env);
+
+		exit(EXIT_FAILURE);
+		return (1);
 	}
 	else if (pid > 0)
 	{
@@ -271,7 +277,7 @@ int	exec_and_wait(t_command *cmds, char *cmd_path, char **envp)
 	else
 		perror("fork");
 	free(cmd_path);
-	return (1);
+	return 0;
 }
 
 void	exec_single_non_builtin(t_command *cmds, t_env **env)//aggiunta hrd_interrupted
@@ -285,9 +291,8 @@ void	exec_single_non_builtin(t_command *cmds, t_env **env)//aggiunta hrd_interru
 	{
 		if(exec_and_wait(cmds, cmd_path, envp))
 		{
-			free_command_l(cmds);
 			free_env(*env);
-			exit(EXIT_FAILURE);
+			return;
 		}
 	}
 	else if (ft_strcmp(cmds->argv[0], ".") == 0)

@@ -1,3 +1,0 @@
-minishell$ whoami | grep $USER
-eltiob
-minishell$ exit

@@ -1,5 +1,0 @@
-minishell$ unset OLDPWD
-minishell$ 
-minishell$ 
-minishell$ env | grep OLDPWD
-minishell$ exit

@@ -1,3 +1,0 @@
-minishell$ ls | ls | echo hola | rev
-aloh
-minishell$ exit

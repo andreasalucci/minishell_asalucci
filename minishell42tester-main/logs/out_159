@@ -1,3 +1,0 @@
-minishell$ echo '''ho"''''l"a'''
-ho"l"a
-minishell$ exit

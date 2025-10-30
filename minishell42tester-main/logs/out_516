@@ -1,2 +1,0 @@
-minishell$ sleep 1 | exit
-minishell$ exit

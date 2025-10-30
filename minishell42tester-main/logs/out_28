@@ -1,3 +1,0 @@
-minishell$ | hola
-minishell: syntax error near unexpected token '|'
-minishell$ exit

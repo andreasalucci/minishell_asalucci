@@ -1,6 +1,0 @@
-minishell$ export HOLA="bonjour      "  
-minishell$ 
-minishell$ 
-minishell$ echo $HOLA | cat -e
-bonjour      $
-minishell$ exit

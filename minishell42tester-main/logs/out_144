@@ -1,3 +1,0 @@
-minishell$ echo $'HOME'
-HOME
-minishell$ exit

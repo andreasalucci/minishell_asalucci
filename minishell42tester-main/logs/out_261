@@ -1,5 +1,0 @@
-minishell$ export HOLA=at
-minishell$ 
-minishell$ 
-minishell$ c$HOLA Makefile
-minishell$ exit

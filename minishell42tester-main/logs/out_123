@@ -1,3 +1,0 @@
-minishell$ echo hola*hola *
-hola*hola *
-minishell$ exit

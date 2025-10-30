@@ -1,2 +1,0 @@
-minishell$ export | grep "HOME"
-minishell$ exit

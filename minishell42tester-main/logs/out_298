@@ -1,5 +1,0 @@
-minishell$ unset PATH
-minishell$ 
-minishell$ 
-minishell$ ls
-minishell$ exit

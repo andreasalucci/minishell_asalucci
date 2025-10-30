@@ -1,3 +1,0 @@
-minishell$ echo "" $HOME
- /home/eltiob
-minishell$ exit

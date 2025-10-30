@@ -1,1 +1,1 @@
-execve: Permission denied
+valgrind: ./minishell: Permission denied

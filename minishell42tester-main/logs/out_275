@@ -1,5 +1,0 @@
-minishell$ export HOLA="s -la" 
-minishell$ 
-minishell$ 
-minishell$ l$HOLA
-minishell$ exit

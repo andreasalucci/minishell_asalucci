@@ -1,3 +1,0 @@
-minishell$ export hola | unset hola | echo $?
-0
-minishell$ exit

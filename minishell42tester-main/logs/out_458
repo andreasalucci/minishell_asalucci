@@ -1,3 +1,0 @@
-minishell$ exit -'666'"666"666
-minishell: syntax error near unexpected EOF
-minishell$ exit

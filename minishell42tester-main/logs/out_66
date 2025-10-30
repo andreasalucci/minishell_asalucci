@@ -1,3 +1,0 @@
-minishell$ echo Hola -n
-Hola -n
-minishell$ exit

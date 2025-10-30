@@ -1,4 +1,0 @@
-minishell$ export HOLA=bonjour
-minishell$ 
-minishell$ 
-minishell$ export HOLA=" hola et $HOLA"

@@ -1,3 +1,0 @@
-a: Is a directory
-cat: a: Is a directory
-rm: cannot remove 'a': Is a directory

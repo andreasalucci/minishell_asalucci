@@ -1,3 +1,0 @@
-minishell$ export | echo hola
-hola
-minishell$ exit

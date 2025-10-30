@@ -1,3 +1,0 @@
-minishell$ echo hola | echo que tal
-que tal
-minishell$ exit
