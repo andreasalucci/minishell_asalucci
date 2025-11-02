@@ -177,7 +177,7 @@ void	apply_redir_out1(t_redir *r, t_env *env, t_command *cmd);
 void	apply_redir_out2(t_redir *r, t_command *cmd, t_env *env);
 void apply_redir_heredoc(t_command *cmd, t_env *env);
 void	create_heredoc_effective(const char *delimiter, t_command *cmd, t_env *env);
-void	create_heredoc_open(const char *delimiter, t_command *cmd, t_env *env, bool *g);
+void	create_heredoc_open(const char *delimiter, t_command *cmd, t_env *env, bool *hrd_interrupted);
 
 void	free_env(t_env *env);
 char *mini_getline(const char *prompt);
@@ -187,7 +187,7 @@ void handle_parent_process(int *prev_fd, int pipe_fd[]);
 void	setup_pipe(t_command *cmd, int pipe_fd[], t_env *env);
 void fork_process(pid_t *pid);
 void wait_for_children(pid_t last_pid);
-void exec_command_list(t_command *cmd_list, t_env *env, bool *g);
+void exec_command_list(t_command *cmd_list, t_env *env, bool *hrd_interrupted);
 char *get_command_path(char *cmd, t_env *env);
 char	**convert_env_list_to_array(t_env *env);
 bool is_builtin(t_command *cmd);

@@ -351,7 +351,7 @@ int	handle_eof(char *input)
 {
 	if (!input)
 	{
-		printf("exit\n");
+		//printf("exit\n");
 		free(input);//////////////////////////////
 		return (1);
 	}
@@ -378,7 +378,7 @@ t_command *parse_input_to_commands(char *input, bool *free_input, t_env *env)
 	return (cmd);
 }
 
-void	execute_single_command(t_command *cmds, t_env **env)//AGGIUNTA g
+void	exec_single_command(t_command *cmds, t_env **env)//AGGIUNTA g
 {
 	if (is_builtin(cmds))
 		exec_builtin(cmds, env);
@@ -396,7 +396,7 @@ void process_commands(t_command *cmds, t_env **env, bool *hrd_interrupted)
 		builtin_exit(cmds);
 	}
 	if (!has_pipe_or_redir(cmds))
-		execute_single_command(cmds, env);  // Passa env come doppio puntatore
+		exec_single_command(cmds, env);  // Passa env come doppio puntatore
 	else
 		exec_command_list(cmds, *env, hrd_interrupted);  // Dereferenzia env	
 	free_command_l(cmds);
@@ -457,14 +457,17 @@ int main_loop(t_env **env, bool *hrd_interrupted)
 	t_command	*cmds;
 	int			open_type;
 	bool		free_input;
+	char 		*prompt;
 
+	prompt = "\001\033[1;36m\002minishell\001\033[0m\002$ ";
+	//prompt = "\001\033[1;36m\002minishell$ \001\033[0m\002";		Se deve essere verde
 	free_input = 0;
 	while (1)
 	{
-		input = readline("minishell$ ");
+		input = readline(prompt);
 		if (input == NULL)
 		{
-			printf("exit\n");
+			//printf("exit\n");
 			break ;
 		}
 		open_type = input_is_open(input);

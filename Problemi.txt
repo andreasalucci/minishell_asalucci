@@ -1,19 +1,16 @@
-PROBLEMI IRRISOLTI:
-
-stampa exit
-
-
-
-LEAKS
 valgrind --leak-check=full --show-leak-kinds=all --suppressions=readline.supp --suppressions=executables.supp ./minishell
 
-<< a
-b
-a
 
-<<a
-b
-a
+
+PROBLEMI IRRISOLTI:
+
+
+heredoc ^C   leaka
+
+echo asd'asd'asd'asd'asd
+
+stampare ": command not found" con heredoc chiuso senza comandi reali ??
+
 
 
 
@@ -58,7 +55,6 @@ non gestire parentesi vuol dire con echo stamparle come fossero caratteri ?
 
 
 ( PROBLEMI ORIGINALI per suggerire test ai testatori : )
-
 
 
 

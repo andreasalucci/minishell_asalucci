@@ -169,7 +169,7 @@ void	heredoc_open_interrupted(int status, bool *hrd_interrupted)////////////////
 	}
 }
 
-void	create_heredoc_open(const char *delimiter, t_command *cmd, t_env *env, bool *g)//aggiunti cmd env
+void	create_heredoc_open(const char *delimiter, t_command *cmd, t_env *env, bool *hrd_interrupted)//aggiunti cmd env
 {
 	pid_t	pid;
 	int		status;
@@ -185,8 +185,61 @@ void	create_heredoc_open(const char *delimiter, t_command *cmd, t_env *env, bool
 		create_heredoc_effective(delimiter, cmd, env);//aggiunti cmd env
 	waitpid(pid, &status, 0);
 	signal(SIGINT, sigint_handler);
-	heredoc_open_interrupted(status, g);
+	heredoc_open_interrupted(status, hrd_interrupted);
 }
+
+// void	heredoc_open_interrupted(int status, bool *hrd_interrupted, t_command *cmd, t_env **env)
+// {
+// 	if (WIFEXITED(status) && WEXITSTATUS(status) == 130)
+// 	{
+// 		*hrd_interrupted = true;
+// 		g_exit_status = 130;
+// 		unlink(".heredoc_tmp");
+		
+// 		// PULIZIA MEMORIA
+// 		if (cmd)
+// 			free_command_l(cmd);
+// 		if (env && *env)
+// 		{
+// 			free_env(*env);
+// 			*env = NULL;
+// 		}
+// 	}
+// 	else if (WIFSIGNALED(status) && WTERMSIG(status) == SIGINT)
+// 	{
+// 		*hrd_interrupted = true;
+// 		g_exit_status = 130;
+// 		unlink(".heredoc_tmp");
+		
+// 		// PULIZIA MEMORIA
+// 		if (cmd)
+// 			free_command_l(cmd);
+// 		if (env && *env)
+// 		{
+// 			free_env(*env);
+// 			*env = NULL;
+// 		}
+// 	}
+// }
+
+// void	create_heredoc_open(const char *delimiter, t_command *cmd, t_env **env, bool *hrd_interrupted)
+// {
+// 	pid_t	pid;
+// 	int		status;
+
+// 	signal(SIGINT, SIG_IGN);
+// 	pid = fork();
+// 	if (pid < 0)
+// 	{
+// 		perror("fork");
+// 		return ;
+// 	}
+// 	if (pid == 0)
+// 		create_heredoc_effective(delimiter, cmd, *env);
+// 	waitpid(pid, &status, 0);
+// 	signal(SIGINT, sigint_handler);
+// 	heredoc_open_interrupted(status, hrd_interrupted, cmd, env);
+// }
 
 void	command_not_found(t_command *cmd, t_env *env) // aggiunti g e env
 {
@@ -241,41 +294,6 @@ void	filter_args(t_command *cmd, char ***argv_filtered, t_env *env)// aggiunti i
 	filter_args_fill(cmd, argv_filtered, count, &j);
 	(*argv_filtered)[j] = NULL;
 }
-
-// void	handle_child_cmd_path(t_command *cmd, t_env *env)
-// {
-//     char	*cmd_path;
-//     char	**argv_filtered;
-
-//     if (cmd->argv)
-//         cmd_path = get_command_path(cmd->argv[0], env);
-//     else
-//         cmd_path = NULL;
-        
-//     if (!cmd_path && !is_builtin(cmd))  // Solo se non è builtin
-//         command_not_found(cmd, env);
-    
-//     if (is_builtin(cmd))
-//     {
-//         // PER BUILTIN: esegui e esci, ma NON liberare env globale
-//         if (cmd_path)
-//             free(cmd_path);
-//         exec_builtin(cmd, &env);
-//         // NON free_env(env) - perché è una copia del riferimento
-//         // NON free_command_l(cmd) - perché è una copia del riferimento
-//         exit(g_exit_status);
-//     }
-//     else
-//     {
-//         // PER COMANDI ESTERNI: procedi normalmente
-//         filter_args(cmd, &argv_filtered, env);
-//         execve(cmd_path, argv_filtered, convert_env_list_to_array(env));
-//         perror("execve");
-//         free(argv_filtered);
-//         free(cmd_path);
-//         exit(126);
-//     }
-// }
 
 void	handle_child_cmd_path(t_command *cmd, t_env *env)
 {
@@ -432,18 +450,6 @@ void	if_pid_minus_one(pid_t pid, int prev_fd, int *pipe_fd)
 		return ;
 	}
 }
-
-/*void	sigdfl_handle_child_process(t_command *cmd, int prev_fd, int *pipe_fd,
-		t_env *env)
-{
-	signal(SIGINT, SIG_DFL);
-	signal(SIGQUIT, SIG_DFL);
-	
-	handle_child_process(cmd, prev_fd, pipe_fd, env);
-}*/
-
-
-
 
 void exec_command_list(t_command *cmd_list, t_env *env, bool *g)
 {
