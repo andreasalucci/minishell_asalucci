@@ -17,11 +17,20 @@ int	is_option_n(const char *str)
 	return (1);
 }
 
-int builtin_echo(t_command *cmd)
+void	init_builtin_echo_vars(int *i, int *newline, int *first)
 {
-	int i = 1;
-	int newline = 1;
-	int first = 1; 
+	*i = 1;
+	*newline = 1;
+	*first = 1;
+}
+
+int	builtin_echo(t_command *cmd)
+{
+	int	i;
+	int	newline;
+	int	first;
+
+	init_builtin_echo_vars(&i, &newline, &first);
 	while (cmd->argv[i] && is_option_n(cmd->argv[i]))
 	{
 		newline = 0;
@@ -34,17 +43,12 @@ int builtin_echo(t_command *cmd)
 			if (!first)
 				write(1, " ", 1);
 			write(1, cmd->argv[i], ft_strlen(cmd->argv[i]));
-
 			first = 0;
 		}
 		i++;
-		
-
 	}
-
 	if (newline)
 		write(1, "\n", 1);
 	g_exit_status = 0;
 	return (0);
 }
-

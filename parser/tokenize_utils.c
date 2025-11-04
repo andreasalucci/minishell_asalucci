@@ -5,26 +5,21 @@ void quotes(t_t *t)
 {
 	if ((t->input[t->pos] == '\'' && !t->double_quote) && (t->start == t->input || t->input[t->pos - 1] != '\\'))
 	{
-		
 		t->single_quote = !t->single_quote;
 		if (t->input[t->anchor_pos] == ' ')
 			t->anchor_pos++;
 		t->quote = t->pos; // marca la virgoletta
 		if(t->input[t->pos])
-    		t->pos++;
+			t->pos++;
 	}
 	else if ((t->input[t->pos] == '\"' && !t->single_quote) && (t->start == t->input || t->input[t->pos - 1] != '\\'))
 	{
-		
 		t->double_quote = !t->double_quote;
-		
 		if (t->input[t->anchor_pos] == ' ')
 			t->anchor_pos++;
 		t->quote = t->pos; // marca la virgoletta
-		
 		if(t->input[t->pos])
-    		t->pos++;
-		
+			t->pos++;
 	}
 }
 
@@ -47,11 +42,9 @@ void	metacharacters(t_t *t, t_t **token_list)
 				
 		else if (t->input[t->pos] == '>' && t->input[t->pos +1] != '>')
 		{
-			
 			if (t->pos == t->anchor_pos)
 				t->pos++;
 			add_token(t, token_list);
-			
 		}
 		else if (t->input[t->pos] == '<' && t->input[t->pos +1] == '<'
 		&& t->input[t->pos +2] != '<' )
@@ -66,7 +59,6 @@ void	metacharacters(t_t *t, t_t **token_list)
 				t->pos += 2;
 				add_token(t, token_list);
 				t->anchor_pos = t->pos;
-
 			}
 		else
 			triple_meta(t, token_list);
@@ -74,15 +66,11 @@ void	metacharacters(t_t *t, t_t **token_list)
 			return ;
 		if (t->input[t->pos] != '"' && t->input[t->pos] != '\'')
 			t->pos++;
-		
-
-
 	}
 }
 
 void open_quotes(t_t *t, t_t **token_list, bool *free_input)
 {
-	
 	if (t->single_quote || t->double_quote)
 	{
 		if (t->double_quote)
@@ -108,7 +96,7 @@ void open_quotes(t_t *t, t_t **token_list, bool *free_input)
 					}
 				}
 				if(t->input[t->pos])
-    				t->pos++;
+					t->pos++;
 				return;
 			}
 			else if (t->double_quote && t->input[t->pos] == '\"' && t->input[t->pos - 1] != '\\')
@@ -128,7 +116,7 @@ void open_quotes(t_t *t, t_t **token_list, bool *free_input)
 							t->anchor_pos++;
 						prepare_str(t, token_list);
 						if(t->input[t->pos])
-    						t->pos++;
+							t->pos++;
 						t->anchor_pos = t->pos;
 						
 					}	
@@ -139,11 +127,11 @@ void open_quotes(t_t *t, t_t **token_list, bool *free_input)
 				return;
 			}
 			if(t->input[t->pos])
-    			t->pos++;
+				t->pos++;
 		}
 	}
 	if(t->input[t->pos])
-    	t->pos++;
+		t->pos++;
 }
 
 void prepare_quotes(t_t *t, t_t **token_list, bool *free_input)
@@ -158,13 +146,12 @@ void prepare_quotes(t_t *t, t_t **token_list, bool *free_input)
 	end_str = NULL;
 	if (t->pos > t->quote)
 	{
-		
 		if (t->pos == t->quote +1)
 		{
 			ft_strlcpy(begin_quote, t->input, t->quote +1);
-			if(t->input[t->pos])
-    			t->pos++;
-			while(t->input[t->pos])
+			if (t->input[t->pos])
+				t->pos++;
+			while (t->input[t->pos])
 				t->pos++;
 			after_quote = malloc((t->pos - t->quote +1) +1);
 			ft_strlcpy(after_quote, t->input + (t->quote +2), t->pos - (t->quote));
@@ -180,18 +167,17 @@ void prepare_quotes(t_t *t, t_t **token_list, bool *free_input)
 		}
 		else
 		{
-			
 			ft_strlcpy(begin_quote, t->input + t->anchor_pos, (t->quote - t->anchor_pos) +1);
 			after_quote = malloc((t->pos - t->quote) +1);
 			ft_strlcpy(after_quote, t->input + (t->quote +1), t->pos - (t->quote));
 			end_str = ft_strjoin(begin_quote, after_quote);
 			free(begin_quote);
 			free(after_quote);
-			if (t->input[t->pos +1] == t->input[t->quote])
+			//ft_printf("t->pos:: %i, t->quote:: %i\n", t->pos, t->quote);
+			if (t->input[t->pos +1] && (t->input[t->pos +1] != ' ' || t->input[t->pos +1] == t->input[t->quote]))
 				temp_token(t, end_str);
 			else
 			{
-				
 				if (t->tmp_token)
 					last_str(t, end_str, token_list);
 				else
@@ -201,12 +187,11 @@ void prepare_quotes(t_t *t, t_t **token_list, bool *free_input)
 				}
 			}
 			if(t->input[t->pos])
-    			t->pos++;
+				t->pos++;
 		}
 	}
 	else
 		{
-			
 			ft_strlcpy(begin_quote, t->input, t->quote +1);
 			free(t->input);
 			t->input = ft_strdup(begin_quote);
@@ -295,7 +280,7 @@ void add_token(t_t *t, t_t **token_list)
 		if (t->input[t->pos +1] == '<' || t->input[t->pos +1] == '>')
 			return ;
 		if(t->input[t->pos])
-    		t->pos++;
+			t->pos++;
 		redir_control = 1;
 	}
 		

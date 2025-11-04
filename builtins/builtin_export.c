@@ -6,10 +6,7 @@ int	handle_no_args(t_env *env)
 
 	sorted = copy_env_list_sorted(env);
 	if (!sorted)
-	{
-		// g_exit_status = 1;
 		return (1);
-	}
 	print_export(sorted);
 	free_env(sorted);
 	return (0);

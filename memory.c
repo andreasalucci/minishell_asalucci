@@ -99,12 +99,23 @@ void free_paths(char **paths)
 
 void free_command_l(t_command *cmd_list)
 {
+	
 	t_command	*tmp;
-
 	while (cmd_list)
 	{
 		tmp = cmd_list->next;
 		free_command(cmd_list);
 		cmd_list = tmp;
+	}
+}
+
+void free_env_cmdl_null(t_env *env, t_command **cmd_list)
+{
+	if (env)
+		free_env(env);
+	if (*cmd_list)
+	{
+		free_command_l(*cmd_list);
+		*cmd_list = NULL;
 	}
 }

@@ -142,7 +142,7 @@ void		temp_token(t_t *t, char *str);
 bool		check_redirs(char pos);
 void		free_command_args(t_command *cmd);
 void		free_paths(char **paths);
-void        free_command_l(t_command *cmd_list);
+void		free_command_l(t_command *cmd_list);
 void		free_env_list(t_env *head);
 
 int	builtin_cd(char **args, t_env **env);
@@ -158,7 +158,7 @@ int	builtin_export(char **args, t_env **env);
 int	is_valid_identifier(const char *str);
 int	unset_env(t_env **env, char *key);
 int	builtin_unset(char **args, t_env **env);
-void	free_env(t_env *env);
+
 char	*get_env_value(t_env *env, const char *key);
 int	mark_as_exportable(t_env **env, char *key);
 t_env	*create_env_node(char *key, char *value, int exportable);
@@ -191,7 +191,6 @@ void exec_command_list(t_command *cmd_list, t_env *env, bool *hrd_interrupted);
 char *get_command_path(char *cmd, t_env *env);
 char	**convert_env_list_to_array(t_env *env);
 bool is_builtin(t_command *cmd);
-//void	exec_single_simple_command(t_command *cmds, t_env **env);
 void	exec_builtin(t_command *cmds, t_env **env);
 void	exec_single_non_builtin(t_command *cmds, t_env **env);
 void	builtin_exit(t_command *cmd);
@@ -210,5 +209,9 @@ void init_shlvl(t_env **env);
 t_command *init_command(void);
 
 void	free_env_array(char **envp);
+
+void	free_env_cmdl_null(t_env *env, t_command **cmd_list);
+
+int	is_edge_case(t_command *cmds);
 
 # endif

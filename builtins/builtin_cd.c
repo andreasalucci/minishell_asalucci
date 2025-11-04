@@ -1,7 +1,8 @@
 #include "../minishell.h"
 
-int	too_many(void)
+int	too_many(char *oldpwd)
 {
+	free(oldpwd);
 	ft_putstr_fd(" too many arguments\n", 2);
 	g_exit_status = 1;
 	return (1);
@@ -15,11 +16,7 @@ int	builtin_cd(char **args, t_env **env)
 
 	oldpwd = getcwd(NULL, 0);
 	if (args[2])
-	{
-		free(oldpwd);
-		return (too_many());
-	}
-		
+		return (too_many(oldpwd));
 	if (!args[1])
 		target = get_env_value(*env, "HOME");
 	else

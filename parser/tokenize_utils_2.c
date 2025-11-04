@@ -149,10 +149,8 @@ void is_var(t_t *t, t_t **token_list, t_env *env)
 				free(t->tmp_token);
 				t->tmp_token = NULL;
 			}
-			
-			return;
+			return ;
 		}
-
 		var_word = ft_strdup(var);
 		if (t->tmp_token)
 			last_str(t, var_word, token_list);
@@ -160,9 +158,7 @@ void is_var(t_t *t, t_t **token_list, t_env *env)
 		{
 			add_custom_token(var_word, TOKEN_VAR, token_list);
 			free(var_word);
-		}		
-			
-		
+		}
 		free(var_temp);
 		t->anchor_pos = t->pos;
 	}

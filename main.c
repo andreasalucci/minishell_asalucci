@@ -23,20 +23,6 @@ t_command *init_command(void)
 	return (cmd);
 }
 
-/*
-t_env	*init_env(void)
-{
-	t_env	*env;
-
-	env = NULL;
-	add_env(&env, "PWD", "/home/user", 1);
-	add_env(&env, "HOME", "/home/user", 1);
-	add_env(&env, "PATH", "/bin:/usr/bin", 1);
-	//add_env(&env, "SHLVL", "0", 1);
-	return (env);
-}
-*/
-
 t_env *copy_env(char **envp)
 {
 	t_env *env = NULL;
@@ -48,27 +34,15 @@ t_env *copy_env(char **envp)
 		eq = ft_strchr(envp[i], '=');
 		if (eq)
 		{
-			// char *key = ft_substr(envp[i], 0, eq - envp[i]); // non fa malloc, quindi sta usando l'iput del main
-			// char *value = ft_substr(eq, 1, ft_strlen(eq + 1));
-			// //char *value = ft_strdup(eq + 1); // fa malloc, quindi copia l'input del main
-			// add_env(&env, key, value, 1);
-			// //		free(key);
-			// //		free(value);
-
-			// char *key = ft_substr(envp[i], 0, eq - envp[i]); // mallocato, quindi copia l'input del main
-			// char *value = eq + 1; // non mallocato
-			// add_env(&env, key, value, 1);
-			// free(key);
-
-			char *key = ft_substr(envp[i], 0, eq - envp[i]); // key: allocata copia di input main
-			char *value = ft_strdup(eq + 1); // value: allocata copia di input main
+			char *key = ft_substr(envp[i], 0, eq - envp[i]);
+			char *value = ft_strdup(eq + 1);
 			add_env(&env, key, value, 1);
 			free(key);
 			free(value);
 		}
 		i++;
 	}
-	return env;
+	return (env);
 }
 
 char	*ft_strjoin_3(const char *s1, const char *s2, const char *s3)
@@ -122,10 +96,10 @@ bool	is_builtin(t_command *cmd)
 	if (!cmd || !cmd->argv || !cmd->argv[0])
 		return (false);
 	return (ft_strcmp(cmd->argv[0], "cd") == 0 || ft_strcmp(cmd->argv[0],
-			"export") == 0 || ft_strcmp(cmd->argv[0], "unset") == 0
-		/*|| ft_strcmp(cmd->argv[0], "exit") == 0*/ || ft_strcmp(cmd->argv[0],
-			"echo") == 0 || ft_strcmp(cmd->argv[0], "env") == 0
-		|| ft_strcmp(cmd->argv[0], "pwd") == 0);
+			"export") == 0 || ft_strcmp(cmd->argv[0], "unset") == 0 
+			|| ft_strcmp(cmd->argv[0],
+			"echo") == 0 || ft_strcmp(cmd->argv[0], "env") == 0 
+			|| ft_strcmp(cmd->argv[0], "pwd") == 0);
 }
 
 bool	has_pipe_or_redir(t_command *cmd)
@@ -214,8 +188,6 @@ void	exec_builtin(t_command *cmds, t_env **env)
 		builtin_pwd();
 	else if (ft_strcmp(cmds->argv[0], "echo") == 0)
 		builtin_echo(cmds);
-	// else if (ft_strcmp(cmds->argv[0], "exit") == 0)
-	// 	builtin_exit(cmds->argv);
 }
 
 bool	expand_exit_status(t_t *t)
@@ -246,7 +218,7 @@ bool	expand_exit_status(t_t *t)
 		return (0);
 }
 
-int	exec_and_wait(t_command *cmds, char *cmd_path, char **envp)
+int	exec_and_wait(t_command *cmds, char *cmd_path, char **envp, t_env *env)
 {
 	int		status;
 	pid_t	pid;
@@ -259,10 +231,9 @@ int	exec_and_wait(t_command *cmds, char *cmd_path, char **envp)
 		if (envp)
 			free_env_array(envp);
 		free(cmd_path);
-
+		free_env(env);
 		free_command_l(cmds);
-		//free_env(*env);
-
+		cmds = NULL;
 		exit(EXIT_FAILURE);
 		return (1);
 	}
@@ -280,7 +251,7 @@ int	exec_and_wait(t_command *cmds, char *cmd_path, char **envp)
 	return 0;
 }
 
-void	exec_single_non_builtin(t_command *cmds, t_env **env)//aggiunta hrd_interrupted
+void	exec_single_non_builtin(t_command *cmds, t_env **env)
 {
 	char	*cmd_path;
 	char	**envp;
@@ -289,21 +260,11 @@ void	exec_single_non_builtin(t_command *cmds, t_env **env)//aggiunta hrd_interru
 	cmd_path = get_command_path(cmds->argv[0], *env);
 	if (cmd_path)
 	{
-		if(exec_and_wait(cmds, cmd_path, envp))
+		if(exec_and_wait(cmds, cmd_path, envp, *env))
 		{
 			free_env(*env);
 			return;
 		}
-	}
-	else if (ft_strcmp(cmds->argv[0], ".") == 0)
-	{
-		ft_putstr_fd(".: filename argument required\n", 2);
-		g_exit_status = 2;
-	}
-	else if (ft_strcmp(cmds->argv[0], "./") == 0)
-	{
-		ft_putstr_fd("./: Is a directory\n", 2);
-		g_exit_status = 126;
 	}
 	else
 	{
@@ -351,8 +312,7 @@ int	handle_eof(char *input)
 {
 	if (!input)
 	{
-		//printf("exit\n");
-		free(input);//////////////////////////////
+		free(input);
 		return (1);
 	}
 	return (0);
@@ -378,8 +338,11 @@ t_command *parse_input_to_commands(char *input, bool *free_input, t_env *env)
 	return (cmd);
 }
 
-void	exec_single_command(t_command *cmds, t_env **env)//AGGIUNTA g
+void	exec_single_command(t_command *cmds, t_env **env)
 {
+	// if (is_edge_case(cmds))
+	// 	return ;
+	//is_edge_case(cmds);
 	if (is_builtin(cmds))
 		exec_builtin(cmds, env);
 	else
@@ -390,6 +353,11 @@ void process_commands(t_command *cmds, t_env **env, bool *hrd_interrupted)
 {
 	if (!cmds)
 		return;
+	// if (is_edge_case(cmds))
+	// {
+	// 	free_env_cmdl_null(*env, &cmds);
+	//	return;
+	// }
 	if (cmds->argv && ft_strcmp(cmds->argv[0], "exit") == 0)
 	{
 		free_env(*env);
@@ -451,6 +419,58 @@ int	input_is_open(char *input)
 	return (0);
 }
 
+
+
+int	is_edge_case(t_command *cmds)
+{
+	if (ft_strcmp(cmds->argv[0], ".") == 0)
+	{
+		ft_putstr_fd(".: filename argument required\n", 2);
+		g_exit_status = 2;
+		return (1);
+	}
+	else if (ft_strcmp(cmds->argv[0], "..") == 0)
+	{
+		ft_putstr_fd("..: command not found\n", 2);
+		g_exit_status = 127;
+		return (1);
+	}
+	else if (ft_strcmp(cmds->argv[0], "./") == 0)
+	{
+		ft_putstr_fd("./: Is a directory\n", 2);
+		g_exit_status = 126;
+		return (1);
+	}
+	else if (ft_strcmp(cmds->argv[0], "./.") == 0)
+	{
+		ft_putstr_fd("./.: Is a directory\n", 2);
+		g_exit_status = 126;
+		return (1);
+	}
+	else if (ft_strcmp(cmds->argv[0], "./..") == 0)
+	{
+		ft_putstr_fd("./..: Is a directory\n", 2);
+		g_exit_status = 126;
+		return (1);
+	}
+	else if (ft_strcmp(cmds->argv[0], "../.") == 0)
+	{
+		ft_putstr_fd("../.: Is a directory\n", 2);
+		g_exit_status = 126;
+		return (1);
+	}
+	return (0);
+}
+
+
+// starting_with_dots_and_slashes(input)
+// {
+// if (input inizia (dopo i " ") con ../.. o sottoinsiemi di questo   e    ha altro dopo,  tutto normale, cerca comando)
+// else if (is_edge_case(---))
+// }
+
+
+
 int main_loop(t_env **env, bool *hrd_interrupted)
 {
 	char		*input = NULL;
@@ -494,7 +514,7 @@ int main_loop(t_env **env, bool *hrd_interrupted)
 		if(!cmds)
 		{
 			free_command_l(cmds);
-			
+			cmds = NULL;
 		}
 		process_commands(cmds, env, hrd_interrupted);
 		if (free_input)
@@ -515,49 +535,44 @@ int main(int argc, char **argv, char **envp)
 {
 	t_env *env = copy_env(envp);
 	bool hrd_interrupted;
+	char *input;
+	char *input_copy;
+	int open_type;
 
 	init_shlvl(&env);
 	hrd_interrupted = false;
 	setup_shell_signals();
-
 	// Modo no interactivo con -c
 	if (argc >= 3 && !ft_strncmp(argv[1], "-c", 3))
 	{
-		char *input = argv[2];
-		char *input_copy = strdup(input); // Duplica para evitar modificar argv[2]
+		input = argv[2];
+		input_copy = strdup(input);
 		if (!input_copy)
 		{
 			perror("strdup");
 			free_env(env);
-			return 1;
+			return (1);
 		}
-
-		int open_type = input_is_open(input_copy);
+		open_type = input_is_open(input_copy);
 		if (open_type == 1)
 		{
 			ft_putstr_fd("minishell: Syntax error: unclosed quotes\n", 2);
 			free(input_copy);
 			free_env(env);
-			return 2;
+			return (2);
 		}
-
 		process_input_history(input_copy);
 		bool free_input = false;
 		t_command *cmds = parse_input_to_commands(input_copy, &free_input, env);
 		process_commands(cmds, &env, &hrd_interrupted);
-
 		if (free_input)
 			free(input_copy);
 		free_env(env);
 		return g_exit_status;
-
 	}
-	
 	// Modo interactivo normal
 	main_loop(&env, &hrd_interrupted);
-
 	free_env(env);
-	
 	return 0;
 }
 
