@@ -493,12 +493,14 @@ int	is_edge_case(t_command *cmds)
 {
 	if (ft_strcmp(cmds->argv[0], ".") == 0)
 	{
+		write(2, "minishell: ", 11);
 		ft_putstr_fd(".: filename argument required\n", 2);
 		g_exit_status = 2;
 		return (1);
 	}
 	else if (is_all_dots(cmds->argv[0]))
 	{
+		write(2, "minishell: ", 11);
 		write(2, cmds->argv[0], ft_strlen(cmds->argv[0]));
 		ft_putstr_fd(": command not found\n", 2);
 		g_exit_status = 127;
@@ -506,6 +508,7 @@ int	is_edge_case(t_command *cmds)
 	}
 	else if (edge_case_is_a_directory(cmds->argv[0]))
 	{
+		write(2, "minishell: ", 11);
 		write(2, cmds->argv[0], ft_strlen(cmds->argv[0]));
 		ft_putstr_fd(": Is a directory\n", 2);
 		g_exit_status = 126;
