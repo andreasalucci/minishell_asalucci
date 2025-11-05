@@ -340,8 +340,8 @@ t_command *parse_input_to_commands(char *input, bool *free_input, t_env *env)
 
 void	exec_single_command(t_command *cmds, t_env **env)
 {
-	// if (is_edge_case(cmds))
-	// 	return ;
+	if (is_edge_case(cmds))
+		return ;
 	//is_edge_case(cmds);
 	if (is_builtin(cmds))
 		exec_builtin(cmds, env);
@@ -421,6 +421,101 @@ int	input_is_open(char *input)
 
 
 
+
+bool is_all_dots(char *arg)
+{
+	size_t	i;
+
+	i = 0;
+	while (arg[i] == '.')
+		i++;
+	if (arg[0] == '.' && arg[i] == '\0')// puoi fare controllo che sia almeno un ounto, o almeno due, o anche nessun tpo di controllo cosi, stringa vuota accettata, tanto controlla chaiamante
+		return true;
+	return false;
+}
+
+// bool is_max_two_consecutive_dots(char *arg)
+// {
+// 	char *dotpos;
+
+// 	dotpos = ft_strchr(arg, '.');
+// 	while (*dotpos != '\0')
+// 	{
+// 		dotpos = ft_strchr(dotpos, '.');
+// 		if (ft_strlen(dotpos) > 2)
+// 			if(dotpos[1] == '.' && dotpos[2] == '.')
+// 			{
+// 				printf("3\n");
+// 				return (false);
+// 			}
+// 		dotpos++;
+// 	}
+// 	printf("<3\n");
+// 	return (true); //ora testiamo
+// }
+
+bool is_max_two_consecutive_dots(char *arg)
+{
+	size_t i;
+
+	i = 0;
+	while (arg[i] != '\0' && arg[i + 1] != '\0' && arg[i + 2] != '\0')
+	{
+		if (arg[i] == '.' && arg[i + 1] == '.' && arg[i + 2] == '.')
+			return (false);
+		i++;
+	}
+	return (true);
+}
+
+bool is_only_dots_and_slashes(char *arg)
+{
+	size_t	i;
+
+	i = 0;
+	while (arg[i] != '\0')
+	{
+		if (arg[i] != '/' && arg[i] != '.')
+			return (false);
+		i++;
+	}
+	return (true);
+}
+
+bool edge_case_is_a_directory(char *arg)
+{
+	if (is_only_dots_and_slashes(arg) && ft_strchr(arg, '/') && is_max_two_consecutive_dots(arg))
+		return (true);
+	return (false);
+}
+
+int	is_edge_case(t_command *cmds)
+{
+	if (ft_strcmp(cmds->argv[0], ".") == 0)
+	{
+		ft_putstr_fd(".: filename argument required\n", 2);
+		g_exit_status = 2;
+		return (1);
+	}
+	else if (is_all_dots(cmds->argv[0]))
+	{
+		write(2, cmds->argv[0], ft_strlen(cmds->argv[0]));
+		ft_putstr_fd(": command not found\n", 2);
+		g_exit_status = 127;
+		return (1);
+	}
+	else if (edge_case_is_a_directory(cmds->argv[0]))
+	{
+		write(2, cmds->argv[0], ft_strlen(cmds->argv[0]));
+		ft_putstr_fd(": Is a directory\n", 2);
+		g_exit_status = 126;
+		return (1);
+	}
+	return (0);
+}
+
+
+/*
 int	is_edge_case(t_command *cmds)
 {
 	if (ft_strcmp(cmds->argv[0], ".") == 0)
@@ -435,9 +530,39 @@ int	is_edge_case(t_command *cmds)
 		g_exit_status = 127;
 		return (1);
 	}
+	else if (ft_strcmp(cmds->argv[0], "/") == 0)
+	{
+		ft_putstr_fd("/: Is a directory\n", 2);
+		g_exit_status = 126;
+		return (1);
+	}
+	else if (ft_strcmp(cmds->argv[0], "//") == 0)
+	{
+		ft_putstr_fd("//: Is a directory\n", 2);
+		g_exit_status = 126;
+		return (1);
+	}
 	else if (ft_strcmp(cmds->argv[0], "./") == 0)
 	{
 		ft_putstr_fd("./: Is a directory\n", 2);
+		g_exit_status = 126;
+		return (1);
+	}
+	else if (ft_strcmp(cmds->argv[0], "../") == 0)
+	{
+		ft_putstr_fd("../: Is a directory\n", 2);
+		g_exit_status = 126;
+		return (1);
+	}
+	else if (ft_strcmp(cmds->argv[0], ".//") == 0)
+	{
+		ft_putstr_fd(".//: Is a directory\n", 2);
+		g_exit_status = 126;
+		return (1);
+	}
+	else if (ft_strcmp(cmds->argv[0], "..//") == 0)
+	{
+		ft_putstr_fd("..//: Is a directory\n", 2);
 		g_exit_status = 126;
 		return (1);
 	}
@@ -459,16 +584,21 @@ int	is_edge_case(t_command *cmds)
 		g_exit_status = 126;
 		return (1);
 	}
+	else if (ft_strcmp(cmds->argv[0], "../..") == 0)
+	{
+		ft_putstr_fd("../..: Is a directory\n", 2);
+		g_exit_status = 126;
+		return (1);
+	}
+	else if (ft_strcmp(cmds->argv[0], "..//..") == 0)
+	{
+		ft_putstr_fd("..//..: Is a directory\n", 2);
+		g_exit_status = 126;
+		return (1);
+	}
 	return (0);
 }
-
-
-// starting_with_dots_and_slashes(input)
-// {
-// if (input inizia (dopo i " ") con ../.. o sottoinsiemi di questo   e    ha altro dopo,  tutto normale, cerca comando)
-// else if (is_edge_case(---))
-// }
-
+*/
 
 
 int main_loop(t_env **env, bool *hrd_interrupted)
