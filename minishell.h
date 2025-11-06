@@ -212,6 +212,9 @@ void	free_env_array(char **envp);
 
 void	free_env_cmdl_null(t_env *env, t_command **cmd_list);
 
-int	is_edge_case(t_command *cmds);
+//int	is_edge_case(t_command *cmds);
+bool first_arg_is_one_dot(char *arg);
+bool first_arg_is_all_dots(char *arg);
+bool first_arg_is_dot_slash(char *arg);
 
 # endif

@@ -35,9 +35,27 @@ void	apply_redir_in1(t_redir *r, t_env *env, t_command *cmd)
 	fd = open(r->filename, O_RDONLY);
 	if (fd < 0)
 	{
-		perror(r->filename);
+		if (errno == ENOENT)
+		{
+			ft_putstr_fd("minishell: ", 2);
+			ft_putstr_fd(r->filename, 2);
+			ft_putstr_fd(": No such file or directory\n", 2);
+			g_exit_status = 1;
+		}
+		else if (errno == ENOTDIR)
+		{
+			ft_putstr_fd("minishell: ", 2);
+			ft_putstr_fd(r->filename, 2);
+			ft_putstr_fd(": Not a directory\n", 2);
+			g_exit_status = 1;
+		}
+		else
+		{
+			perror(r->filename);
+			g_exit_status = 1;
+		}
 		free_env_cmdl_null(env, &cmd);
-		exit(EXIT_FAILURE);
+		exit(g_exit_status);
 	}
 	dup2(fd, STDIN_FILENO);
 	close(fd);
@@ -50,9 +68,20 @@ void	apply_redir_out1(t_redir *r, t_env *env, t_command *cmd)
 	fd = open(r->filename, O_CREAT | O_WRONLY | O_TRUNC, 0644);
 	if (fd < 0)
 	{
-		perror(r->filename);
+		if (errno == ENOTDIR)
+		{
+			ft_putstr_fd("minishell: ", 2);
+			ft_putstr_fd(r->filename, 2);
+			ft_putstr_fd(": Not a directory\n", 2);
+			g_exit_status = 1;
+		}
+		else
+		{
+			perror(r->filename);
+			g_exit_status = 1;
+		}
 		free_env_cmdl_null(env, &cmd);
-		exit(EXIT_FAILURE);
+		exit(g_exit_status);
 	}
 	if (r->next && (r->next->type == REDIR_OUT || r->next->type == REDIR_APPEND))
 		close(fd);
@@ -70,9 +99,20 @@ void	apply_redir_out2(t_redir *r, t_command *cmd, t_env *env)
 	fd = open(r->filename, O_WRONLY | O_CREAT | O_APPEND, 0644);
 	if (fd < 0)
 	{
-		perror(r->filename);
+		if (errno == ENOTDIR)
+		{
+			ft_putstr_fd("minishell: ", 2);
+			ft_putstr_fd(r->filename, 2);
+			ft_putstr_fd(": Not a directory\n", 2);
+			g_exit_status = 1;
+		}
+		else
+		{
+			perror(r->filename);
+			g_exit_status = 1;
+		}
 		free_env_cmdl_null(env, &cmd);
-		exit(EXIT_FAILURE);
+		exit(g_exit_status);
 	}
 	if (r->next && (r->next->type == REDIR_OUT || r->next->type == REDIR_APPEND))
 		close(fd);
@@ -231,13 +271,46 @@ void	filter_args(t_command *cmd, char ***argv_filtered, t_env *env)
 	(*argv_filtered)[j] = NULL;
 }
 
-void	handle_child_cmd_path_exec_non_builtin(t_command *cmd, t_env *env, char *cmd_path, char **argv_filtered)
+void handle_child_cmd_path_exec_non_builtin(t_command *cmd, t_env *env, 
+		char *cmd_path, char **argv_filtered)
 {
+	struct stat statbuf;
+	
+	if (stat(cmd_path, &statbuf) != 0)
+	{
+		ft_putstr_fd("minishell: ", 2);
+		ft_putstr_fd(cmd_path, 2);
+		ft_putstr_fd(": No such file or directory\n", 2);
+		free(argv_filtered);
+		free(cmd_path);
+		exit(127);
+	}
+	if (S_ISDIR(statbuf.st_mode))
+	{
+		ft_putstr_fd("minishell: ", 2);
+		ft_putstr_fd(cmd_path, 2);
+		ft_putstr_fd(": Is a directory\n", 2);
+		free(argv_filtered);
+		free(cmd_path);
+		exit(126);
+	}
+	if (access(cmd_path, X_OK) != 0)
+	{
+		ft_putstr_fd("minishell: ", 2);
+		ft_putstr_fd(cmd_path, 2);
+		ft_putstr_fd(": Permission denied\n", 2);
+		free(argv_filtered);
+		free(cmd_path);
+		exit(126);
+	}
 	filter_args(cmd, &argv_filtered, env);
 	execve(cmd_path, argv_filtered, convert_env_list_to_array(env));
-	perror("execve");
+
+	perror(cmd_path);  // Cambia "execve" in cmd_path777777777777777777777777777777777777777777777777777777777777777
+	
 	free(argv_filtered);
 	free(cmd_path);
+	exit(1);
 }
 
 void	handle_child_cmd_path(t_command *cmd, t_env *env)
@@ -250,8 +323,9 @@ void	handle_child_cmd_path(t_command *cmd, t_env *env)
 		cmd_path = get_command_path(cmd->argv[0], env);
 	else
 		cmd_path = NULL;
+	
 	if (!cmd_path)
-		command_not_found(cmd, env);
+		command_not_found(cmd, env);  // Exit 127
 	if (is_builtin(cmd))
 	{
 		free(cmd_path);
@@ -260,11 +334,7 @@ void	handle_child_cmd_path(t_command *cmd, t_env *env)
 		exit(g_exit_status);
 	}
 	else
-	{
-		handle_child_cmd_path_exec_non_builtin(cmd, env, cmd_path, argv_filtered);//l'attuale exec_single_non_builtin(cmd, &env) darebbe problemi
-		free_env_cmdl_null(env, &cmd);
-		exit(126);
-	}
+		handle_child_cmd_path_exec_non_builtin(cmd, env, cmd_path, argv_filtered);
 }
 
 void	handle_child_process(t_command *cmd, t_p_fd p_fd, t_env *env)
