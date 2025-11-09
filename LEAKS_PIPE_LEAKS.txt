@@ -1,14 +1,11 @@
 
-extern | extern                            .
-extern | builtin                           69
-builtin | extern                           .
-builtin (echo a) | builtin (echo a)        82 ; .
-builtin (pwd) | builtin (pwd)              70 ; .
-extern | invalid_blabla                    69
-invalid_blabla | extern                    .
-invalid_blabla | invaa                     72
-invalid_blabla | builtin (echo a)          72 ; .
-invalid_blabla | builtin (pwd)             .  ; 72
-builtin (echo a) | invalid_blabla          .  ; 82
-builtin (pwd) | invalid_blabla             70 ; .
+extern | extern        .
+extern | builtin       Leaks
+builtin | extern       .
+builtin | builtin      Leaks ; .
+extern | invalid       Leaks
+invalid | extern       .
+invalid | invalid      Leaks
+invalid | builtin      Leaks ; .
+builtin | invalid      Leaks ; .
 
