@@ -1,0 +1,16 @@
+
+extern (ls) | extern (ls)			.
+extern (ls) | builtin (echo a)		 	69
+extern (ls) | builtin (pwd)			69
+builtin (echo a) | extern (ls)			.
+builtin (pwd) | extern (ls)		 	.
+builtin (echo a) | builtin (echo a)		82 ; .
+builtin (pwd) | builtin (pwd)			70 ; .
+extern (ls) | invaa			 	69
+invaa | extern (ls)				.
+invaa | invaa			 		72
+invaa | builtin (echo a)			72 ; .
+invaa | builtin (pwd)				.  ; 72
+builtin (echo a) | invaa			.  ; 82
+builtin (pwd) | invaa				70 ; .
+

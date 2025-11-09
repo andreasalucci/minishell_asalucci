@@ -29,23 +29,21 @@ bool	check_errornclose(t_command **head, t_command *current, bool error)
 	return (error);
 }
 
-char	*extract_quoted_string(const char *src, int *i)
+void	handle_redir_token(t_command **current, t_command **head,
+	t_t **token)
 {
-	char quote = src[*i]; // può essere ' o "
-	int start = ++(*i);   // salta la prima virgoletta
-	int len = 0;
+	parse_commands_2(current, head, *token);
+	if ((*token)->next)
+		*token = (*token)->next;
+}
 
-	while (src[*i] && src[*i] != quote)
-	{
-		(*i)++;
-		len++;
-	}
-	char *result = malloc(len + 1);
-	if (!result)
-		return (NULL);
-	strncpy(result, src + start, len);
-	result[len] = '\0';
-	if (src[*i] == quote)
-		(*i)++;
-	return (result);
+void	handle_pipe_token(t_command **current, t_command **head, t_t *token)
+{
+	parse_commands_2(current, head, token);
+}
+
+void	handle_word_or_var(t_command *current, t_t *token, t_t *prev)
+{
+	if (!prev || !is_redir_token(prev->type))
+		add_argument(current, token->value, false);
 }

@@ -1,7 +1,7 @@
 #include "../minishell.h"
 #include "../libft/libft.h"
 
-void	initStruct(t_t *t)
+void	init_struct(t_t *t)
 {
 	t->value = NULL;
 	t->type = TOKEN_DEFAULT;
@@ -17,142 +17,73 @@ void	initStruct(t_t *t)
 	t->continue_var = false;
 	t->tmp_token = NULL;
 	t->free_input = 0;
-	
 }
 
-t_t		*tokens(char *input, bool *free_input, t_env *env)
+static void	handle_quotes_and_vars(t_t *t, t_t **token_list,
+	bool *free_input, t_env *env)
 {
-	t_t t;
-	t_t *token_list;
-	
-	initStruct(&t);
+	if (t->single_quote || t->double_quote)
+		open_quotes(t, token_list, free_input);
+	if (t->continue_var)
+	{
+		t->continue_var = !t->continue_var;
+		return ;
+	}
+	if (t->input[t->pos])
+	{
+		if (t->input[t->pos] == '$')
+		{
+			is_var(t, token_list, env);
+			if (t->input[t->pos] == '\'')
+				return ;
+		}
+		metacharacters(t, token_list);
+	}
+}
+
+static int	handle_token_end(t_t *t, t_t **token_list)
+{
+	if (!t->input[t->pos] && t->pos != t->anchor_pos)
+		add_token(t, token_list);
+	if (t->single_quote || t->double_quote || t->error)
+		return (0);
+	return (1);
+}
+
+static void	handle_syntax_error(t_t *t, t_t **token_list)
+{
+	if (t->single_quote || t->double_quote)
+	{
+		printf("minishell: syntax error near unexpected EOF\n");
+		g_exit_status = 2;
+	}
+	if (t->tmp_token)
+		free(t->tmp_token);
+	free_token_list(*token_list);
+	free(t->input);
+}
+
+t_t	*tokens(char *input, bool *free_input, t_env *env)
+{
+	t_t	t;
+	t_t	*token_list;
+
+	init_struct(&t);
 	token_list = NULL;
 	t.input = input;
 	t.start = input;
-
-	while(t.input[t.pos] && !t.error)
-	{	
-	
+	while (t.input[t.pos] && !t.error)
+	{
 		quotes(&t);
-		if (t.single_quote || t.double_quote)
-			open_quotes(&t, &token_list, free_input);
-		
-		if (t.continue_var)
-		{
-			t.continue_var = !t.continue_var;
-			continue;
-		}
-		if(t.input[t.pos])
-		{
-			if (t.input[t.pos] == '$'){
-				is_var(&t, &token_list, env);
-				if(t.input[t.pos] == '\'')
-					continue;
-				}
-			//if (t.input[t.pos] == ' ')
-			//	add_token(&t, &token_list);
-			metacharacters(&t, &token_list);
-		}
+		handle_quotes_and_vars(&t, &token_list, free_input, env);
 		if (!t.input[t.pos] && t.pos != t.anchor_pos)
 			add_token(&t, &token_list);
 	}
-	if (t.single_quote || t.double_quote || t.error)
+	if (!handle_token_end(&t, &token_list))
 	{
-		if (t.single_quote || t.double_quote)
-		{
-			printf("minishell: syntax error near unexpected EOF\n");
-			g_exit_status = 2;
-		}
-		if (t.tmp_token)
-			free(t.tmp_token);
-		free_token_list(token_list);
-		free(t.input);
-		return (0);
+		handle_syntax_error(&t, &token_list);
+		return (NULL);
 	}
 	free(t.input);
 	return (set_metachar_type(&token_list));
 }
-
-t_t	*set_metachar_type(t_t **token_list)
-{
-	t_t *temp;
-
-	temp = *token_list;
-	while(temp)
-	{
-		if (temp->type == METACHAR)
-		{
-			if (ft_strncmp(temp->value, "|", 1) == 0)
-				temp->type = TOKEN_PIPE;
-			else if (ft_strncmp(temp->value, "<<", 3) == 0)
-			{
-				temp->type = TOKEN_DOUBLE_REDIR_IN;
-			}
-				
-			else if (ft_strncmp(temp->value, "<", 1) == 0)
-			{
-				temp->type = TOKEN_REDIR_IN;
-			}
-				
-			else if (ft_strncmp(temp->value, ">>", 3) == 0)
-				temp->type = TOKEN_DOUBLE_REDIR_OUT;
-			else if (ft_strncmp(temp->value, ">", 1) == 0)
-				temp->type = TOKEN_REDIR_OUT;
-			
-		}
-		temp = temp->next;
-	}
-	return (*token_list);
-}
-void	triple_meta(t_t *t, t_t **token_list)
-{
-	if (t->input[t->pos] == '<')
-	{
-		if (t->input[t->pos + 1] == '<' && t->input[t->pos + 2] == '<')
-		{
-			printf("minishell: syntax error near unexpected token\n");
-			t->pos += 2;
-			t->error = true;
-			add_token(t, token_list);
-			g_exit_status = 2;
-			return ;
-		}
-	}
-	 
-	else if (t->input[t->pos] == '>')
-	{
-		if (t->input[t->pos + 1] == '>' && t->input[t->pos + 2] == '>')
-		{
-			printf("minishell: syntax error near unexpected token\n");
-			t->pos += 2;
-			t->error = true;
-			add_token(t, token_list);
-			g_exit_status = 2;
-			return ;
-		}
-	}
-}
-
-void    check_pipes(t_t *t, t_t **token_list)
-{
-    size_t  start;
-    char    *word;
-
-    start = t->pos;
-    word = NULL;
-    if (t->input[t->pos] == '|')
-    {
-
-        while (start > 0 && t->input[start - 1] != ' ' &&
-               t->input[start - 1] != '|' && t->input[start - 1] != '<' &&
-               t->input[start - 1] != '>')
-            start--;
-		check_pipes_2(t, token_list, start, word);
-    }
-    else
-        add_token(t, token_list);
-	
-}
-
-
-

@@ -99,8 +99,8 @@ void free_paths(char **paths)
 
 void free_command_l(t_command *cmd_list)
 {
-	
 	t_command	*tmp;
+
 	while (cmd_list)
 	{
 		tmp = cmd_list->next;

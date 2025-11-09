@@ -16,17 +16,11 @@ t_command	*parse(t_t *token)
 	return (cmd_list);
 }
 
-
-
-
-
-// funzione di prova da cancellare alla fine
-
-void print_commands(t_command *cmd)
+void	print_commands(t_command *cmd)
 {
-	int i;
-	int index = 1;
-	t_redir *r;
+	int	i;
+	int	index = 1;
+	t_redir	*r;
 
 	while (cmd)
 	{

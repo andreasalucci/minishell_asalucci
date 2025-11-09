@@ -281,7 +281,7 @@ void handle_child_cmd_path_exec_non_builtin(t_command *cmd, t_env *env,
 		ft_putstr_fd("minishell: ", 2);
 		ft_putstr_fd(cmd_path, 2);
 		ft_putstr_fd(": No such file or directory\n", 2);
-		free(argv_filtered);
+		free(argv_filtered);///
 		free(cmd_path);
 		exit(127);
 	}
@@ -290,7 +290,7 @@ void handle_child_cmd_path_exec_non_builtin(t_command *cmd, t_env *env,
 		ft_putstr_fd("minishell: ", 2);
 		ft_putstr_fd(cmd_path, 2);
 		ft_putstr_fd(": Is a directory\n", 2);
-		free(argv_filtered);
+		free(argv_filtered);///
 		free(cmd_path);
 		exit(126);
 	}
@@ -299,7 +299,7 @@ void handle_child_cmd_path_exec_non_builtin(t_command *cmd, t_env *env,
 		ft_putstr_fd("minishell: ", 2);
 		ft_putstr_fd(cmd_path, 2);
 		ft_putstr_fd(": Permission denied\n", 2);
-		free(argv_filtered);
+		free(argv_filtered);///
 		free(cmd_path);
 		exit(126);
 	}
@@ -318,7 +318,7 @@ void	handle_child_cmd_path(t_command *cmd, t_env *env)
 	char	*cmd_path;
 	char	**argv_filtered;
 
-	argv_filtered = NULL;
+	argv_filtered = NULL;///
 	if (cmd->argv)
 		cmd_path = get_command_path(cmd->argv[0], env);
 	else
@@ -453,20 +453,20 @@ void	if_pid_minus_one(pid_t pid, int prev_fd, int *pipe_fd)
 	}
 }
 
-void exec_command_list(t_command *cmd_list, t_env *env, bool *g)
+void exec_command_list(t_command *cmd_list, t_env *env, bool *hdc_interrupted)
 {
-	t_command *cmd = cmd_list;
-	t_p_fd p_fd;
-	p_fd.prev_fd = -1;
-	pid_t pid;
-	pid_t last_pid = -1;
+	t_command	*cmd;
+	t_p_fd		p_fd;
+	pid_t		pid;
+	pid_t		last_pid;
 
+	p_fd.prev_fd = -1;
+	last_pid = -1;
+	cmd = cmd_list;
 	while (cmd)
 	{
-		if (is_cmd_redir_in_2(cmd, p_fd.prev_fd, env, g))
-		{
+		if (is_cmd_redir_in_2(cmd, p_fd.prev_fd, env, hdc_interrupted))
 			return ;
-		}
 		p_fd.pipe_fd[0] = -1;
 		p_fd.pipe_fd[1] = -1;
 		if (cmd->next && pipe(p_fd.pipe_fd) == -1)
