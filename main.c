@@ -1,11 +1,7 @@
 #include "libft/libft.h"
 #include "minishell.h"
 
-#ifndef MAX_INPUT
-# define MAX_INPUT 1024
-#endif
-
-int	g_exit_status = 0;
+int g_exit_status = 0;////////////////
 
 t_command *init_command(void)
 {
@@ -335,6 +331,7 @@ int	handle_input_interruption(bool *hrd_interrupted, char *input)
 	{
 		*hrd_interrupted = false;
 		free(input);
+		input = NULL;
 		return (1);
 	}
 	return (0);
@@ -345,6 +342,7 @@ int	handle_eof(char *input)
 	if (!input)
 	{
 		free(input);
+		input = NULL;
 		return (1);
 	}
 	return (0);
@@ -404,262 +402,85 @@ void process_commands(t_command *cmds, t_env **env, bool *hrd_interrupted)
     free_command_l(cmds);
 }
 
-bool	only_spaces_after_pipe(char *pp)
+void	process_loop(char **input, t_env **env, bool *free_input, bool *hrd_interrupted)
 {
-	size_t i;
+	t_command	*cmds;
 
-	i = 1;
-	while (pp[i])
+	process_input_history(*input);
+	cmds = parse_input_to_commands(*input, free_input, *env);
+	if(!cmds)
+		free_env_cmdl_null(NULL, &cmds);
+	process_commands(cmds, env, hrd_interrupted);
+	if (*free_input)
 	{
-		if (!(pp[i] == ' ' || pp[i] == '\t'))
-			return (0);
-		i++;
+		*input = NULL;
+		*free_input = false;
 	}
-	return (1);
 }
-
-bool quotes_closed(char *input)
-{
-	bool in_single;
-	bool in_double;
-	char *p;
-
-	in_single = false;
-	in_double = false;
-	p = input;
-	while (*p)
-	{
-		if (*p == '\'' && !in_double)
-			in_single = !in_single;
-		else if (*p == '"' && !in_single)
-			in_double = !in_double;
-		else if (*p == '\\')
-			if (*(p + 1))
-				p++;
-		p++;
-	}
-	return (!in_single && !in_double);
-}
-
-int	input_is_open(char *input)
-{
-	char *pp;
-
-	pp = ft_strchr(input, '|');
-	if (!quotes_closed(input))
-		return (1);
-	if (pp && only_spaces_after_pipe(pp))
-		return (2);
-	return (0);
-}
-
-bool first_arg_is_one_dot(char *arg)
-{
-	if (ft_strcmp(arg, ".") == 0)
-	{
-		write(2, "minishell: ", 11);
-		ft_putstr_fd(".: filename argument required\n", 2);
-		g_exit_status = 2;
-		return (true);
-	}
-	return (false);
-}
-
-bool first_arg_is_dot_slash(char *arg)
-{
-	if (ft_strcmp(arg, "./") == 0)
-	{
-		write(2, "minishell: ", 11);
-		ft_putstr_fd("./: filename argument required\n", 2);
-		g_exit_status = 2;
-		return (true);
-	}
-	return (false);
-}
-
-bool first_arg_is_all_dots(char *arg)
-{
-	size_t	i;
-
-	i = 0;
-	while (arg[i] == '.')
-		i++;
-	if (arg[0] == '.' && arg[i] == '\0')// puoi fare controllo che sia almeno un ounto, o
-	//almeno due, o anche nessun tpo di controllo cosi, stringa vuota accettata, tanto controlla chaiamante
-	{
-		write(2, "minishell: ", 11);
-		write(2, arg, ft_strlen(arg));
-		ft_putstr_fd(": command not found\n", 2);
-		g_exit_status = 127;
-		return (true);
-	}
-	return false;
-}
-
-// bool is_max_two_consecutive_dots(char *arg)
-// {
-// 	size_t i;
-
-// 	i = 0;
-// 	while (arg[i] != '\0' && arg[i + 1] != '\0' && arg[i + 2] != '\0')
-// 	{
-// 		if (arg[i] == '.' && arg[i + 1] == '.' && arg[i + 2] == '.')
-// 			return (false);
-// 		i++;
-// 	}
-// 	return (true);
-// }
-
-// bool is_only_dots_and_slashes(char *arg)
-// {
-// 	size_t	i;
-
-// 	i = 0;
-// 	while (arg[i] != '\0')
-// 	{
-// 		if (arg[i] != '/' && arg[i] != '.')
-// 			return (false);
-// 		i++;
-// 	}
-// 	return (true);
-// }
-
-// bool edge_case_is_a_directory(char *arg)
-// {
-// 	if (is_only_dots_and_slashes(arg) && ft_strchr(arg, '/') && is_max_two_consecutive_dots(arg))
-// 		return (true);
-// 	return (false);
-// }
-
-// int	is_edge_case(t_command *cmds)
-// {
-// 	if (ft_strcmp(cmds->argv[0], ".") == 0)
-// 	{
-// 		write(2, "minishell: ", 11);
-// 		ft_putstr_fd(".: filename argument required\n", 2);
-// 		g_exit_status = 2;
-// 		return (1);
-// 	}
-// 	else if (is_all_dots(cmds->argv[0]))
-// 	{
-// 		write(2, "minishell: ", 11);
-// 		write(2, cmds->argv[0], ft_strlen(cmds->argv[0]));
-// 		ft_putstr_fd(": command not found\n", 2);
-// 		g_exit_status = 127;
-// 		return (1);
-// 	}
-// 	else if (edge_case_is_a_directory(cmds->argv[0]))
-// 	{
-// 		write(2, "minishell: ", 11);
-// 		write(2, cmds->argv[0], ft_strlen(cmds->argv[0]));
-// 		ft_putstr_fd(": Is a directory\n", 2);
-// 		g_exit_status = 126;
-// 		return (1);
-// 	}
-// 	return (0);
-// }
-
 
 int main_loop(t_env **env, bool *hrd_interrupted)
 {
-	char		*input = NULL;
-	t_command	*cmds;
-	int			open_type;
+	char		*input;
 	bool		free_input;
 	char 		*prompt;
 
-	prompt = "\001\033[1;36m\002minishell\001\033[0m\002$ ";
-	//prompt = "\001\033[1;36m\002minishell$ \001\033[0m\002";		Se deve essere verde
+	input = NULL;
 	free_input = 0;
+	prompt = "\001\033[1;36m\002minishell\001\033[0m\002$ "; //prompt = "\001\033[1;36m\002minishell$ \001\033[0m\002";		Se deve essere verde
 	while (1)
 	{
 		input = readline(prompt);
-		if (input == NULL)
-		{
-			//printf("exit\n");
+		if (input == NULL) //exit
 			break ;
-		}
-		open_type = input_is_open(input);
-		if (open_type == 1)
-		{
-			ft_putstr_fd("minishell: Syntax error: unclosed quotes\n", 2);
-			g_exit_status = 2;
-			free(input);
-			input = NULL;
-			continue ;
-		}
+		if (input_is_open(input, env))
+			return (2);
 		if (handle_input_interruption(hrd_interrupted, input))
-		{
-			input = NULL;
 			continue ;
-		}
 		if (handle_eof(input))
-		{
-			input = NULL;
 			break ;
-		}
-		process_input_history(input);
-		cmds = parse_input_to_commands(input, &free_input, *env);
-		if(!cmds)
-		{
-			free_command_l(cmds);
-			cmds = NULL;
-		}
-		process_commands(cmds, env, hrd_interrupted);
-		if (free_input)
-		{
-			input = NULL;
-			free_input = false;
-		}
+		process_loop(&input, env, &free_input, hrd_interrupted);
 	}
 	rl_clear_history();
-
-
 	return 0;
 }
 
+int	c_mode(char **argv, t_env **env, bool *hrd_interrupted)
+{
+	char *input;
+	char *input_copy;
+	t_command *cmds;
 
+	input = argv[2];
+	input_copy = strdup(input);
+	if (!input_copy)
+	{
+		perror("strdup");
+		free_env(*env);
+		return (1);
+	}
+	if (input_is_open(input_copy, env))
+		return (2);
+	process_input_history(input_copy);
+	bool free_input = false;
+	cmds = parse_input_to_commands(input_copy, &free_input, *env);
+	process_commands(cmds, env, hrd_interrupted);
+	if (free_input)
+		free(input_copy);
+	free_env(*env);
+	return (g_exit_status);
+}
 
 int main(int argc, char **argv, char **envp)
 {
-	t_env *env = copy_env(envp);
+	t_env *env;
 	bool hrd_interrupted;
-	char *input;
-	char *input_copy;
-	int open_type;
 
+	env = copy_env(envp);
 	init_shlvl(&env);
 	hrd_interrupted = false;
 	setup_shell_signals();
-	// Modo no interactivo con -c
 	if (argc >= 3 && !ft_strncmp(argv[1], "-c", 3))
-	{
-		input = argv[2];
-		input_copy = strdup(input);
-		if (!input_copy)
-		{
-			perror("strdup");
-			free_env(env);
-			return (1);
-		}
-		open_type = input_is_open(input_copy);
-		if (open_type == 1)
-		{
-			ft_putstr_fd("minishell: Syntax error: unclosed quotes\n", 2);
-			free(input_copy);
-			free_env(env);
-			return (2);
-		}
-		process_input_history(input_copy);
-		bool free_input = false;
-		t_command *cmds = parse_input_to_commands(input_copy, &free_input, env);
-		process_commands(cmds, &env, &hrd_interrupted);
-		if (free_input)
-			free(input_copy);
-		free_env(env);
-		return g_exit_status;
-	}
-	// Modo interactivo normal
+		return (c_mode(argv, &env, &hrd_interrupted));
 	main_loop(&env, &hrd_interrupted);
 	free_env(env);
 	return 0;

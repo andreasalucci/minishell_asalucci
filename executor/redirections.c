@@ -323,7 +323,6 @@ void	handle_child_cmd_path(t_command *cmd, t_env *env)
 		cmd_path = get_command_path(cmd->argv[0], env);
 	else
 		cmd_path = NULL;
-	
 	if (!cmd_path)
 		command_not_found(cmd, env);  // Exit 127
 	if (is_builtin(cmd))

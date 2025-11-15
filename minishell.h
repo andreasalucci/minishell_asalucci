@@ -19,6 +19,8 @@
 
 #include <sys/stat.h>
 
+#define MAX_INPUT 1024
+
 extern int g_exit_status;
 
 typedef struct s_p_fd
@@ -67,7 +69,7 @@ typedef enum e_redir_type
     REDIR_IN,      // <
     REDIR_OUT,     // >
     REDIR_APPEND,  // >>
-    REDIR_HEREDOC  // <<
+    REDIR_HEREDOC
 }   t_redir_type;
 
 typedef struct s_redir
@@ -230,9 +232,9 @@ void	free_env_array(char **envp);
 
 void	free_env_cmdl_null(t_env *env, t_command **cmd_list);
 
-//int	is_edge_case(t_command *cmds);
-bool first_arg_is_one_dot(char *arg);
-bool first_arg_is_all_dots(char *arg);
-bool first_arg_is_dot_slash(char *arg);
+bool	first_arg_is_one_dot(char *arg);
+bool	first_arg_is_all_dots(char *arg);
+bool	first_arg_is_dot_slash(char *arg);
+bool	input_is_open(char *input, t_env **env);
 
 # endif
