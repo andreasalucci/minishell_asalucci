@@ -1,5 +1,4 @@
 #include "../minishell.h"
-#include "../libft/libft.h"
 
 bool	is_redir_token(int type)
 {
@@ -9,7 +8,7 @@ bool	is_redir_token(int type)
 		|| type == TOKEN_DOUBLE_REDIR_OUT);
 }
 
-static void	handle_token(t_command **current, t_command **head, t_t **token,
+void	handle_token(t_command **current, t_command **head, t_t **token,
 	t_t *prev)
 {
 	if (is_redir_token((*token)->type))

@@ -1,5 +1,4 @@
 #include "../minishell.h"
-#include "../libft/libft.h"
 
 void	add_pipe(t_command **head, t_command *new_node)
 {

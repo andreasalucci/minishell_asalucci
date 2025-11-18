@@ -1,5 +1,4 @@
 #include "../minishell.h"
-#include "../libft/libft.h"
 
 t_command	*parse(t_t *token)
 {
@@ -14,6 +13,19 @@ t_command	*parse(t_t *token)
 		cmd_list->argv = NULL;
 	//print_commands(cmd_list);
 	return (cmd_list);
+}
+
+t_command *parse_input_to_commands(char *input, bool *free_input, t_env *env)
+{
+	t_t *token;
+	t_command *cmd;
+
+	token = tokens(input, free_input, env);
+	if (!token)
+		return (NULL);
+	cmd = parse(token);
+   	free_token_list(token);
+	return (cmd);
 }
 
 void	print_commands(t_command *cmd)

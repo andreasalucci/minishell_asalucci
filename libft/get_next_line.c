@@ -76,9 +76,9 @@ char	*get_next_line_2(int fd, char *constr, char *buf, char **remainings)
 
 char	*get_next_line(int fd)
 {
-	char		*buf;
-	char		*constr;
-	static char	*remainings;
+	char	*buf;
+	char	*constr;
+	char	*remainings;
 
 	if (fd < 0 || BUFFER_SIZE <= 0)
 		return (NULL);

@@ -12,10 +12,11 @@
 
 #include "libft.h"
 
-int str_is_numeric(const char *str)
+int	str_is_numeric(const char *str)
 {
-	int i = 0;
+	int	i;
 
+	i = 0;
 	if (str[0] == '-' || str[0] == '+')
 		i++;
 	while (str[i])

@@ -1,5 +1,4 @@
 #include "../minishell.h"
-#include "../libft/libft.h"
 
 void	init_struct(t_t *t)
 {
@@ -19,7 +18,7 @@ void	init_struct(t_t *t)
 	t->free_input = 0;
 }
 
-static void	handle_quotes_and_vars(t_t *t, t_t **token_list,
+void	handle_quotes_and_vars(t_t *t, t_t **token_list,
 	bool *free_input, t_env *env)
 {
 	if (t->single_quote || t->double_quote)
@@ -41,7 +40,7 @@ static void	handle_quotes_and_vars(t_t *t, t_t **token_list,
 	}
 }
 
-static int	handle_token_end(t_t *t, t_t **token_list)
+int	handle_token_end(t_t *t, t_t **token_list)
 {
 	if (!t->input[t->pos] && t->pos != t->anchor_pos)
 		add_token(t, token_list);
@@ -50,7 +49,7 @@ static int	handle_token_end(t_t *t, t_t **token_list)
 	return (1);
 }
 
-static void	handle_syntax_error(t_t *t, t_t **token_list)
+void	handle_syntax_error(t_t *t, t_t **token_list)
 {
 	if (t->single_quote || t->double_quote)
 	{

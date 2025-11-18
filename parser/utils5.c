@@ -24,7 +24,7 @@ void	prepare_quotes(t_t *t, t_t **token_list, bool *free_input)
 	t->anchor_pos = t->pos;
 }
 
-static int	skip_spaces_and_check_redir(t_t *t, int *redir_control)
+int	skip_spaces_and_check_redir(t_t *t, int *redir_control)
 {
 	*redir_control = 0;
 	while (t->input[t->anchor_pos] == ' ' && t->anchor_pos < t->pos)
@@ -41,7 +41,7 @@ static int	skip_spaces_and_check_redir(t_t *t, int *redir_control)
 	return (1);
 }
 
-static int	create_new_token(t_t *t, t_t **new_token, size_t len)
+int	create_new_token(t_t *t, t_t **new_token, size_t len)
 {
 	int	check_memory;
 
@@ -52,7 +52,7 @@ static int	create_new_token(t_t *t, t_t **new_token, size_t len)
 	return (1);
 }
 
-static int	handle_tmp_token_case(t_t *t, t_t **token_list, t_t *new_token)
+int	handle_tmp_token_case(t_t *t, t_t **token_list, t_t *new_token)
 {
 	if (t->tmp_token)
 	{

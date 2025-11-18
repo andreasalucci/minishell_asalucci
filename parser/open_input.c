@@ -1,9 +1,8 @@
-#include "../libft/libft.h"
 #include "../minishell.h"
 
 bool	only_spaces_after_pipe(char *pp)
 {
-	size_t i;
+	size_t	i;
 
 	i = 1;
 	while (pp[i])
@@ -15,11 +14,11 @@ bool	only_spaces_after_pipe(char *pp)
 	return (1);
 }
 
-bool quotes_closed(char *input)
+bool	quotes_closed(char *input)
 {
-	bool in_single;
-	bool in_double;
-	char *p;
+	bool	in_single;
+	bool	in_double;
+	char	*p;
 
 	in_single = false;
 	in_double = false;
@@ -38,28 +37,26 @@ bool quotes_closed(char *input)
 	return (!in_single && !in_double);
 }
 
-bool	input_is_open(char *input, t_env **env)
+bool	input_is_open(char *input)
 {
-	//char *pp;
+	char	*pp;
 
 	if (!quotes_closed(input))
 	{
 		ft_putstr_fd("minishell: Syntax error: unclosed quotes\n", 2);
-		free(input);
-		input = NULL;
-		free_env(*env);
+		//free(input);
+		//input = NULL;
 		g_exit_status = 2;
 		return (true);
 	}
-	// pp = ft_strchr(input, '|');
-	// if (pp && only_spaces_after_pipe(pp))
-	// {
-	// 	ft_putstr_fd("minishell: Syntax error: unspecified pipe\n", 2);
-	// 	free(input);
-	// 	input = NULL;
-	// 	free_env(*env);
-	// 	g_exit_status = 2;
-	// 	return (true);
-	// }
+	pp = ft_strchr(input, '|');
+	if (pp && only_spaces_after_pipe(pp))
+	{
+		ft_putstr_fd("minishell: Syntax error: unspecified pipe\n", 2);
+		//free(input);
+		//input = NULL;
+		g_exit_status = 2;
+		return (true);
+	}
 	return (false);
 }

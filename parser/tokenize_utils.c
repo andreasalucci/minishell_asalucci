@@ -1,5 +1,4 @@
 #include "../minishell.h"
-#include "../libft/libft.h"
 
 void	quotes(t_t *t)
 {

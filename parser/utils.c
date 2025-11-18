@@ -1,6 +1,6 @@
 #include "../minishell.h"
 
-static void	handle_variable_expansion(t_t *t, int *count)
+void	handle_variable_expansion(t_t *t, int *count)
 {
 	int		dollar;
 	char	*var;

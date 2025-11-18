@@ -1,6 +1,6 @@
 #include "../minishell.h"
 
-static void	handle_var_result(t_t *t, t_t **token_list,
+void	handle_var_result(t_t *t, t_t **token_list,
 			char *prefix, char *var)
 {
 	char	*end_var;

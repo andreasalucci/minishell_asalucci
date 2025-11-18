@@ -1,5 +1,4 @@
 #include "../minishell.h"
-#include "../libft/libft.h"
 
 void	check_pipes_2(t_t *t, t_t **token_list, size_t start, char *word)
 {

@@ -1,7 +1,6 @@
-#include "../libft/libft.h"
 #include "../minishell.h"
 
-bool first_arg_is_one_dot(char *arg)
+bool	first_arg_is_one_dot(char *arg)
 {
 	if (ft_strcmp(arg, ".") == 0)
 	{
@@ -13,7 +12,7 @@ bool first_arg_is_one_dot(char *arg)
 	return (false);
 }
 
-bool first_arg_is_dot_slash(char *arg)
+bool	first_arg_is_dotslash(char *arg)
 {
 	if (ft_strcmp(arg, "./") == 0)
 	{
@@ -25,7 +24,7 @@ bool first_arg_is_dot_slash(char *arg)
 	return (false);
 }
 
-bool first_arg_is_all_dots(char *arg)
+bool	first_arg_is_all_dots(char *arg)
 {
 	size_t	i;
 
@@ -40,5 +39,5 @@ bool first_arg_is_all_dots(char *arg)
 		g_exit_status = 127;
 		return (true);
 	}
-	return false;
+	return (false);
 }
