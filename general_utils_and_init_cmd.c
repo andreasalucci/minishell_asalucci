@@ -13,6 +13,7 @@ t_command	*init_command(void)
 	cmd->outfile = NULL;
 	cmd->redirs = NULL;
 	cmd->next = NULL;
+	cmd->in_hdc = false;
 	return (cmd);
 }
 

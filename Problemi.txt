@@ -15,9 +15,6 @@ invalid | invalid      Leaks
 invalid | builtin      Leaks ; .
 builtin | invalid      Leaks ; .
 
-	Heredoc chiuso senza comandi reali dentro:
-stampare ": command not found" con heredoc chiuso senza comandi reali ??
-EXIT CODE SBAGLIATO ^ ^ ^
 
 
 
@@ -93,8 +90,6 @@ user@Andrea:~/Desktop/42cursus/minishell/_563DAQUI$
 
 
 
-
-((( non gestire parentesi vuol dire con echo stamparle come fossero caratteri ? )))
 
 
 

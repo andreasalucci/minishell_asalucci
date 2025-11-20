@@ -82,6 +82,7 @@ typedef struct s_command
 	char				*outfile;
 	t_redir				*redirs;
 	struct s_command	*next;
+	bool				in_hdc;
 }						t_command;
 
 typedef struct s_key_value
@@ -284,5 +285,6 @@ void		if_permission_denied(t_command *cmds, char *cmd_path,
 bool		its_dot_or_dotslash(char *cmd);
 bool		pipe_error(t_p_fd *p_fd, t_command *cmd);
 bool		fork_error(pid_t pid, t_p_fd *p_fd);
+void		no_command_heredoc(t_command *cmd, t_env *env);
 
 #endif

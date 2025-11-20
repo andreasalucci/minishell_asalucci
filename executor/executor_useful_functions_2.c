@@ -1,5 +1,12 @@
 #include "../minishell.h"
 
+void	no_command_heredoc(t_command *cmd, t_env *env)
+{
+	g_exit_status = 0;
+	free_env_cmdlnull_envp(env, &cmd, true, NULL);
+	exit(g_exit_status);
+}
+
 char	*get_cmd_path_build_path(char ***paths, char *cmd)
 {
 	int		i;

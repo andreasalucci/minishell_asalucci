@@ -30,7 +30,12 @@ void	handle_child_cmd_path(t_command *cmd, t_env *env)
 	else
 		cmd_path = NULL;
 	if (!cmd_path)
-		command_not_found(cmd, env);
+	{
+		if (!cmd->in_hdc)
+			command_not_found(cmd, env);
+		else
+			no_command_heredoc(cmd, env);
+	}
 	if (is_builtin(cmd))
 	{
 		free(cmd_path);

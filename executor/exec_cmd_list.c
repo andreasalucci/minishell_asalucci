@@ -28,6 +28,7 @@ int	is_cmd_redir_in_2(t_command *cmd, int prev_fd, t_env *env,
 {
 	t_redir	*r;
 
+	cmd->in_hdc = true;
 	r = cmd->redirs;
 	while (r)
 	{
