@@ -28,12 +28,12 @@ int	is_cmd_redir_in_2(t_command *cmd, int prev_fd, t_env *env,
 {
 	t_redir	*r;
 
-	cmd->in_hdc = true;
 	r = cmd->redirs;
 	while (r)
 	{
 		if (r->type == REDIR_HEREDOC)
 		{
+			cmd->in_hdc = true;
 			create_heredoc_open(r->filename, cmd, env, hdc_interrupted);
 			if (*hdc_interrupted)
 			{

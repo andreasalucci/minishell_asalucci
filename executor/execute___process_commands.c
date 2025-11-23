@@ -28,7 +28,6 @@ void	process_commands(t_command *cmds, t_env **env, bool *hdc_interrupted)
 	else
 		exec_command_list(cmds, *env, hdc_interrupted);
 	//printf("process_commands	before:   ---   %p   %p\n", &cmds, cmds);
-		//free_command_l(&cmds);
-	//oppure	free_env_cmdlnull_envp(NULL, &cmds, true, NULL);
+	//free_command_l(&cmds);
 	//printf("process_commands	after:   ---   %p   %p\n\n\n\n", &cmds, cmds);
 }

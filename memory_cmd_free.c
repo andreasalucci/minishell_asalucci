@@ -9,8 +9,8 @@ void	free_command_redirs(t_command **cmd)
 		return ;
 	if (!*cmd)
 		return ;
-	// if (!(*cmd)->redirs)
-	// 	return ;
+	if (!(*cmd)->redirs)
+	 	return ;
 	r = (*cmd)->redirs;
 	while (r)
 	{
@@ -19,6 +19,7 @@ void	free_command_redirs(t_command **cmd)
 		free(r);
 		r = tmp;
 	}
+	(*cmd)->redirs = NULL;
 	if ((*cmd)->infile)
 	{
 		free((*cmd)->infile);
@@ -59,6 +60,7 @@ void	free_command(t_command **cmd)
 	//printf("free_command 	before free:   %p   %p   %p\n", &cmd, cmd, *cmd);
 	free(*cmd);
 	(*cmd) = NULL;
+	cmd = NULL;
 	//printf("free_command	after NULL:   %p   %p   %p\n\n\n\n", &cmd, cmd, *cmd);
 }
 
@@ -82,6 +84,7 @@ void	free_command_l(t_command **cmd_list)
 			}
 			*cmd_list = NULL;
 		}
+		cmd_list = NULL;
 	}
 }
 
