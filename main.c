@@ -51,7 +51,7 @@ int	main_loop(t_env **env, bool *hdc_interrupted)
 		process_loop(&input, env, &free_input, hdc_interrupted);
 	}
 	rl_clear_history();
-	return (0);
+	return (unlink(".heredoc_tmp"), 0);
 }
 
 int	c_mode(char **argv, t_env **env, bool *hdc_interrupted)

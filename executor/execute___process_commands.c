@@ -20,13 +20,10 @@ void	process_commands(t_command *cmds, t_env **env, bool *hdc_interrupted)
 		}
 	}
 	if (!has_pipe_or_redir(cmds))
-	{	
+	{
 		exec_single_command(cmds, env);
-		//if (cmds)
-			free_env_cmdlnull_envp(NULL, &cmds, true, NULL);
+		free_env_cmdlnull_envp(NULL, &cmds, true, NULL);
 	}
 	else
 		exec_command_list(cmds, *env, hdc_interrupted);
-	// if (cmds)
-	// 	free_env_cmdlnull_envp(NULL, &cmds, true, NULL);
 }

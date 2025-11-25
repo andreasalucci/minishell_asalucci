@@ -51,6 +51,8 @@ int	is_cmd_redir_in_2(t_command *cmd, int prev_fd, t_env *env,
 void	child_and_parent_process(pid_t pid, t_command **cmd, t_p_fd *p_fd,
 		t_env *env)
 {
+	t_command	*tmp;
+
 	if (pid == 0)
 	{
 		signal(SIGINT, SIG_DFL);
@@ -70,14 +72,9 @@ void	child_and_parent_process(pid_t pid, t_command **cmd, t_p_fd *p_fd,
 		}
 		else if ((*p_fd).pipe_fd[0] != -1)
 			close((*p_fd).pipe_fd[0]);
-		t_command *tmp;
 		tmp = (*cmd)->next;
-		//printf("child and parent process	before:   %p   %p   %p\n", &cmd, cmd, *cmd);
 		free_command(*cmd);
-		//printf("child and parent process	after:   %p   %p   %p\n\n\n\n", &cmd, cmd, *cmd);
 		*cmd = tmp;
-		//cmd = &tmp;	non cambia niente	perche infatti free_command non distrugge t_command **cmd
-		//NO FREE:	*cmd = (*cmd)->next;
 	}
 }
 

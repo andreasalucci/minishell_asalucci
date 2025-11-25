@@ -109,4 +109,5 @@ void	apply_redir_heredoc(t_command *cmd, t_env *env)
 	}
 	dup2(fd, STDIN_FILENO);
 	close(fd);
+	unlink(".heredoc_tmp");
 }

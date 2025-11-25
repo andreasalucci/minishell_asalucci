@@ -44,8 +44,6 @@ bool	input_is_open(char *input)
 	if (!quotes_closed(input))
 	{
 		ft_putstr_fd("minishell: Syntax error: unclosed quotes\n", 2);
-		//free(input);
-		//input = NULL;
 		g_exit_status = 2;
 		return (true);
 	}
@@ -53,8 +51,6 @@ bool	input_is_open(char *input)
 	if (pp && only_spaces_after_pipe(pp))
 	{
 		ft_putstr_fd("minishell: Syntax error: unspecified pipe\n", 2);
-		//free(input);
-		//input = NULL;
 		g_exit_status = 2;
 		return (true);
 	}

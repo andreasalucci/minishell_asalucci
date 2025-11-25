@@ -11,69 +11,18 @@ t_command	*parse(t_t *token)
 		return (NULL);
 	if (!cmd_list->argv)
 		cmd_list->argv = NULL;
-	//print_commands(cmd_list);
 	return (cmd_list);
 }
 
-t_command *parse_input_to_commands(char *input, bool *free_input, t_env *env)
+t_command	*parse_input_to_commands(char *input, bool *free_input, t_env *env)
 {
-	t_t *token;
-	t_command *cmd;
+	t_t			*token;
+	t_command	*cmd;
 
 	token = tokens(input, free_input, env);
 	if (!token)
 		return (NULL);
 	cmd = parse(token);
-   	free_token_list(token);
+	free_token_list(token);
 	return (cmd);
-}
-
-void	print_commands(t_command *cmd)
-{
-	int	i;
-	int	index = 1;
-	t_redir	*r;
-
-	while (cmd)
-	{
-		printf("🔹 Comando #%d:\n", index++);
-
-		// Argomenti
-		printf("  argv: ");
-		if (cmd->argv)
-		{
-			i = 0;
-			while (cmd->argv[i])
-			{
-				printf("\"%s\" ", cmd->argv[i]);
-				i++;
-			}
-		}
-		else
-			printf("(vuoto)");
-		printf("\n");
-
-		// Redirezioni
-		if (cmd->redirs)
-		{
-			printf("  redirs:\n");
-			r = cmd->redirs;
-			while (r)
-			{
-				if (r->type == REDIR_IN)
-					printf("    <  \"%s\"\n", r->filename);
-				else if (r->type == REDIR_OUT)
-					printf("    >  \"%s\"\n", r->filename);
-				else if (r->type == REDIR_APPEND)
-					printf("    >> \"%s\"\n", r->filename);
-				else if (r->type == REDIR_HEREDOC)
-					printf("    << \"%s\"\n", r->filename);
-				r = r->next;
-			}
-		}
-		else
-			printf("  redirs: (nessuna)\n");
-		printf("  ───────────────\n");
-		cmd = cmd->next;
-	}
 }
