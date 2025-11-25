@@ -5,6 +5,13 @@ valgrind --leak-check=full --show-leak-kinds=all --suppressions=readline.supp --
 
 
 
+	PROBLEMI? ?
+
+se copiincolli dal tester un comando, ad esempio pwd, selezionando oltre i confini (selezionando un qualcosa che non è né un \n né un tab, non so cosa sia), e lo esegui su minishell, ha invalid reads e conditional jumps. In teoria il programma non dovrebbe mai leak-are ('mai' credo sia impossibile però, c'è sempre un modo che puoi torvare per).. pero' come fanno a testare una cosa del genere? e soprattutto come la risolveremmo?
+
+
+
+
 
 	Get crazy:
 
@@ -74,58 +81,3 @@ user@Andrea:~/Desktop/42cursus/minishell/_563DAQUI$ $?
 2: command not found
 user@Andrea:~/Desktop/42cursus/minishell/_563DAQUI$ 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-( PROBLEMI ORIGINALI per METEST : )
-
-
-
-
-< main.c cat
-
-(
-cat < main.c |	(| aperto)
-' aperto
-" aperto
-)
-$?
-
-||
-$?
-
-minishell$ echo "ffffff'sssss"ssss"rrrr'nnnnnn"
-
-cat << eee
-
-
----
-
-
-asalucci@c2r6p4:~/0_0_minishell$ << ciao cat > prova
-> $HOME
-> "$HOME"
-> '$HOME'
-> "'$HOM'E"
-> ciao
-asalucci@c2r6p4:~/0_0_minishell$ << "ciao" cat > prova
-> $HOME
-> "$HOME"
-> '$HOME'
-> ciao
-
-
-
-minishell$ export ciao="echo"
-minishell$ $ciao ciao2
