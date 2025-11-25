@@ -2,20 +2,6 @@ valgrind --leak-check=full --show-leak-kinds=all --suppressions=readline.supp --
 
 
 
-PROBLEMI IRRISOLTI:
-
-
-extern | extern        .
-extern | builtin       Leaks
-builtin | extern       .
-builtin | builtin      Leaks ; .
-extern | invalid       Leaks
-invalid | extern       .
-invalid | invalid      Leaks
-invalid | builtin      Leaks ; .
-builtin | invalid      Leaks ; .
-
-
 
 
 

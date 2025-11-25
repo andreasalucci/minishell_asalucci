@@ -124,7 +124,7 @@ void		redir_out(t_command *cmd, t_t *token);
 void		add_pipe(t_command **head, t_command *new_node);
 void		free_command_list(t_command *cmd);
 void		free_token_list(t_t *token);
-void		free_command(t_command **cmd);
+void		free_command(t_command *cmd);
 bool		check_errorNclose(t_command **head, t_command *current,
 				bool error);
 void		check_pipes(t_t *t, t_t **token_list);
@@ -146,7 +146,7 @@ void		temp_token(t_t *t, char *str);
 bool		check_redirs(char pos);
 void		free_command_args(t_command *cmd);
 void		free_arrays_array(char **paths);
-void		free_command_l(t_command **cmd_list);
+void		free_command_l(t_command *cmd_list);
 void		free_env_list(t_env *head);
 bool		handle_lonely_dollar(t_t *t, t_t **token_list);
 void		handle_exit_status_case(t_t *t, t_t **token_list);

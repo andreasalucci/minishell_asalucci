@@ -23,7 +23,7 @@ bool	check_errornclose(t_command **head, t_command *current, bool error)
 	{
 		free_command_list(*head);
 		if (current)
-			free_command(&current);
+			free_command(current);
 	}
 	return (error);
 }

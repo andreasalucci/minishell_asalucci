@@ -10,8 +10,7 @@ void	process_commands(t_command *cmds, t_env **env, bool *hdc_interrupted)
 			|| first_arg_is_dotslash(cmds->argv[0])
 			|| first_arg_is_all_dots(cmds->argv[0]))
 		{
-			free_command_l(&cmds);
-			//oppure	free_env_cmdlnull_envp(NULL, &cmds, true, NULL);
+			free_command_l(cmds);
 			return ;
 		}
 		if (ft_strcmp(cmds->argv[0], "exit") == 0)
@@ -21,13 +20,13 @@ void	process_commands(t_command *cmds, t_env **env, bool *hdc_interrupted)
 		}
 	}
 	if (!has_pipe_or_redir(cmds))
-	{
+	{	
 		exec_single_command(cmds, env);
-		free_command_l(&cmds);
+		//if (cmds)
+			free_env_cmdlnull_envp(NULL, &cmds, true, NULL);
 	}
 	else
 		exec_command_list(cmds, *env, hdc_interrupted);
-	//printf("process_commands	before:   ---   %p   %p\n", &cmds, cmds);
-	//free_command_l(&cmds);
-	//printf("process_commands	after:   ---   %p   %p\n\n\n\n", &cmds, cmds);
+	// if (cmds)
+	// 	free_env_cmdlnull_envp(NULL, &cmds, true, NULL);
 }
