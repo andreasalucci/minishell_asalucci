@@ -1,24 +1,5 @@
 #include "../minishell.h"
 
-int	is_valid_identifier(const char *str)
-{
-	int	i;
-
-	i = 0;
-	if (!str || (!ft_isalpha(str[0]) && str[0] != '_'))
-		return (0);
-	while (str[i] && str[i] != '=')
-	{
-		if (!(ft_isalnum(str[i]) || str[i] == '_' || (str[i] == '+' && str[i
-						+ 1] == '=')))
-		{
-			return (0);
-		}
-		i++;
-	}
-	return (1);
-}
-
 int	unset_env(t_env **env, char *key)
 {
 	t_env	*prev;

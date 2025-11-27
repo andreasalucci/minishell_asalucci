@@ -59,16 +59,6 @@ int	update_env(t_env **env, const char *key, const char *value)
 	return (0);
 }
 
-void	update_env_var(t_env **env, const char *key, const char *value)
-{
-	if (!env || !key)
-		return ;
-	if (env_exists(*env, key))
-		update_env(env, key, value);
-	else
-		add_env(env, (char *)key, (char *)value, 1);
-}
-
 int	env_exists(t_env *env, const char *key)
 {
 	while (env)
@@ -78,4 +68,14 @@ int	env_exists(t_env *env, const char *key)
 		env = env->next;
 	}
 	return (0);
+}
+
+void	update_env_var(t_env **env, const char *key, const char *value)
+{
+	if (!env || !key)
+		return ;
+	if (env_exists(*env, key))
+		update_env(env, key, value);
+	else
+		add_env(env, (char *)key, (char *)value, 1);
 }
