@@ -3,7 +3,7 @@
 int	too_many(char *oldpwd)
 {
 	free(oldpwd);
-	ft_putstr_fd(" too many arguments\n", 2);
+	ft_putstr_fd("minishell: cd: too many arguments\n", 2);
 	g_exit_status = 1;
 	return (1);
 }

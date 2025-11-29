@@ -92,7 +92,7 @@ void	exec_command_list(t_command *cmd_list, t_env *env,
 	while (cmd)
 	{
 		if (is_cmd_redir_in_2(cmd, p_fd.prev_fd, env, hdc_interrupted))
-			return ;
+			return (free_command_l(cmd_list));
 		p_fd.pipe_fd[0] = -1;
 		p_fd.pipe_fd[1] = -1;
 		if (pipe_error(&p_fd, cmd))

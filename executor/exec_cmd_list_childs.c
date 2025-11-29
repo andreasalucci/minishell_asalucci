@@ -25,6 +25,12 @@ void	handle_child_cmd_path(t_command *cmd, t_env *env)
 	char	**argv_filtered;
 
 	argv_filtered = NULL;
+	if (cmd->argv && is_builtin(cmd))
+	{
+		exec_builtin(cmd, &env);
+		free_env_cmdlnull_envp(env, &cmd, true, NULL);
+		exit(g_exit_status);
+	}
 	if (cmd->argv)
 		cmd_path = get_command_path(cmd->argv[0], env);
 	else
@@ -35,13 +41,6 @@ void	handle_child_cmd_path(t_command *cmd, t_env *env)
 			command_not_found(cmd, env);
 		else
 			no_command_heredoc(cmd, env);
-	}
-	if (is_builtin(cmd))
-	{
-		free(cmd_path);
-		exec_builtin(cmd, &env);
-		free_env_cmdlnull_envp(env, &cmd, true, NULL);
-		exit(g_exit_status);
 	}
 	else
 		handle_child_cmd_path_exec_non_builtin(cmd, env, cmd_path,
