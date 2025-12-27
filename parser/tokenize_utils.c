@@ -36,13 +36,15 @@ void	two_less_more(t_t *t, t_t **token_list)
 	char	*begin_str;
 
 	begin_str = NULL;
-	if (t->input[t->anchor_pos] != ' ' && t->input[t->anchor_pos] != '<'
-		&& t->input[t->anchor_pos] != '>')
+	while (t->input[t->anchor_pos] == ' ')
+		t->anchor_pos++;
+	if (t->input[t->anchor_pos] != '<' && t->input[t->anchor_pos] != '>')
 	{
 		begin_str = malloc((t->pos - t->anchor_pos) + 1);
 		ft_strlcpy(begin_str, t->input + t->anchor_pos,
 			t->pos - t->anchor_pos + 1);
 		add_custom_token(begin_str, TOKEN_WORD, token_list);
+		free(begin_str);
 		t->anchor_pos = t->pos;
 	}
 	t->pos += 2;

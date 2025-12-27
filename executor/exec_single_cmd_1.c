@@ -32,6 +32,7 @@ void	exec_single_non_builtin(t_command *cmds, t_env **env)
 {
 	char	*cmd_path;
 	char	**envp;
+	char	*error_m;
 
 	envp = convert_env_list_to_array(*env);
 	cmd_path = get_command_path(cmds->argv[0], *env);
@@ -45,8 +46,9 @@ void	exec_single_non_builtin(t_command *cmds, t_env **env)
 	}
 	else
 	{
-		ft_putstr_fd(cmds->argv[0], 2);
-		ft_putstr_fd(": command not found\n", 2);
+		error_m = ft_strjoin(cmds->argv[0], ": command not found\n");
+		ft_putstr_fd(error_m, 2);
+		free(error_m);
 		g_exit_status = 127;
 	}
 	free_arrays_array(envp);

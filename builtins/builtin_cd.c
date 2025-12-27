@@ -15,8 +15,9 @@ int	builtin_cd(char **args, t_env **env)
 	char	cwd[4096];
 
 	oldpwd = getcwd(NULL, 0);
-	if (args[2])
-		return (too_many(oldpwd));
+	if (args[1])
+		if (args[2])
+			return (too_many(oldpwd));
 	if (!args[1])
 		target = get_env_value(*env, "HOME");
 	else

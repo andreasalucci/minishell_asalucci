@@ -2,9 +2,16 @@
 
 void	command_not_found(t_command *cmd, t_env *env)
 {
+	char	*error_m;
+
 	if (cmd->argv)
-		ft_putstr_fd(cmd->argv[0], 2);
-	ft_putstr_fd(": command not found\n", 2);
+	{
+		error_m = ft_strjoin(cmd->argv[0], ": command not found\n");
+		ft_putstr_fd(error_m, 2);
+		free(error_m);
+	}
+	else
+		ft_putstr_fd(": command not found\n", 2);
 	g_exit_status = 127;
 	free_env_cmdlnull_envp(env, &cmd, true, NULL);
 	exit(g_exit_status);
@@ -67,7 +74,7 @@ char	**convert_env_list_to_array(t_env *env)
 	}
 	envp = malloc((count + 1) * sizeof(char *));
 	tmp = env;
-	while (tmp)
+	while (tmp && tmp->key && tmp->value)
 	{
 		envp[i] = ft_strjoin_3(tmp->key, "=", tmp->value);
 		i++;

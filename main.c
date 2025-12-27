@@ -34,6 +34,7 @@ int	main_loop(t_env **env, bool *hdc_interrupted)
 	input = NULL;
 	free_input = 0;
 	prompt = "\001\033[1;36m\002minishell\001\033[0m\002$ ";
+	*hdc_interrupted = false;
 	while (1)
 	{
 		input = readline(prompt);
@@ -42,6 +43,7 @@ int	main_loop(t_env **env, bool *hdc_interrupted)
 		if (input_is_open(input))
 		{
 			process_input_history(input);
+			free(input);
 			continue ;
 		}
 		if (handle_input_interruption(hdc_interrupted, input))
@@ -49,9 +51,11 @@ int	main_loop(t_env **env, bool *hdc_interrupted)
 		if (handle_eof(input))
 			break ;
 		process_loop(&input, env, &free_input, hdc_interrupted);
+		*hdc_interrupted = false;
 	}
+	//cleanup_all_temp_files();
 	rl_clear_history();
-	return (unlink(".heredoc_tmp"), 0);
+	return (0);
 }
 
 int	c_mode(char **argv, t_env **env, bool *hdc_interrupted)
@@ -87,10 +91,11 @@ int	main(int argc, char **argv, char **envp)
 
 	env = copy_env(envp);
 	init_shlvl(&env);
-	hdc_interrupted = false;
-	setup_shell_signals();
 	if (argc >= 3 && !ft_strncmp(argv[1], "-c", 3))
 		return (c_mode(argv, &env, &hdc_interrupted));
+	set_sigint_main();
+	signal(SIGQUIT, SIG_IGN);
+	hdc_interrupted = false;
 	main_loop(&env, &hdc_interrupted);
 	free_env(env);
 	return (0);

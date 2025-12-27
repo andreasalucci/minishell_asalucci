@@ -125,9 +125,8 @@ void			f_just_four(t_node **a, t_node **b, int plus);
 void			f_just_five(t_node **a, t_node **b);
 
 int				f_in_the_limits(char *number);
-
 void			free_str_list(t_str_node *head);
-
 int				str_is_numeric(const char *str);
+char			*ft_strcat(char *dest, const char *src);
 
 #endif

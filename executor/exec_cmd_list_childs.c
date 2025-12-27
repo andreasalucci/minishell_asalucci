@@ -37,10 +37,10 @@ void	handle_child_cmd_path(t_command *cmd, t_env *env)
 		cmd_path = NULL;
 	if (!cmd_path)
 	{
-		if (!cmd->in_hdc)
-			command_not_found(cmd, env);
-		else
+		if (!cmd->argv && cmd->in_hdc)
 			no_command_heredoc(cmd, env);
+		else//bastavaguardareilfile
+			command_not_found(cmd, env);
 	}
 	else
 		handle_child_cmd_path_exec_non_builtin(cmd, env, cmd_path,
@@ -51,6 +51,7 @@ void	handle_child_process(t_command *cmd, t_p_fd p_fd, t_env *env)
 {
 	signal(SIGINT, SIG_DFL);
 	signal(SIGQUIT, SIG_DFL);
+	signal(SIGPIPE, SIG_IGN);
 	if (p_fd.prev_fd != -1)
 	{
 		dup2(p_fd.prev_fd, STDIN_FILENO);

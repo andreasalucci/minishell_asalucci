@@ -27,15 +27,16 @@ bool	first_arg_is_dotslash(char *arg)
 bool	first_arg_is_all_dots(char *arg)
 {
 	size_t	i;
+	char	*error_m;
 
 	i = 0;
 	while (arg[i] == '.')
 		i++;
 	if (arg[0] == '.' && arg[i] == '\0')
 	{
-		write(2, "minishell: ", 11);
-		write(2, arg, ft_strlen(arg));
-		ft_putstr_fd(": command not found\n", 2);
+		error_m = ft_strjoin_3("minishell: ", arg, ": command not found\n");
+		ft_putstr_fd(error_m, 2);
+		free(error_m);
 		g_exit_status = 127;
 		return (true);
 	}

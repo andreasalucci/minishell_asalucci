@@ -25,7 +25,7 @@ void	check_var(t_t *t)
 	int	count;
 
 	count = t->pos;
-	while (t->input[count] && t->input[count] != '"')
+	if (t->input[count] && t->input[count] != '"')
 	{
 		if (t->input[count] == '$' && t->input[count + 1] == '?')
 			expand_exit_status(t);

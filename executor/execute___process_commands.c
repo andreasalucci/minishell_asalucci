@@ -25,5 +25,8 @@ void	process_commands(t_command *cmds, t_env **env, bool *hdc_interrupted)
 		free_env_cmdlnull_envp(NULL, &cmds, true, NULL);
 	}
 	else
-		exec_command_list(cmds, *env, hdc_interrupted);
+	{
+		exec_command_list(&cmds, *env, hdc_interrupted);
+		//free_env_cmdlnull_envp(NULL, &cmds, true, NULL);
+	}
 }

@@ -23,31 +23,6 @@ void	wait_for_children(pid_t last_pid)
 		perror("waitpid");
 }
 
-int	is_cmd_redir_in_2(t_command *cmd, int prev_fd, t_env *env,
-		bool *hdc_interrupted)
-{
-	t_redir	*r;
-
-	r = cmd->redirs;
-	while (r)
-	{
-		if (r->type == REDIR_HEREDOC)
-		{
-			cmd->in_hdc = true;
-			create_heredoc_open(r->filename, cmd, env, hdc_interrupted);
-			if (*hdc_interrupted)
-			{
-				*hdc_interrupted = false;
-				if (prev_fd != -1)
-					close(prev_fd);
-				return (1);
-			}
-		}
-		r = r->next;
-	}
-	return (0);
-}
-
 void	child_and_parent_process(pid_t pid, t_command **cmd, t_p_fd *p_fd,
 		t_env *env)
 {
@@ -78,30 +53,137 @@ void	child_and_parent_process(pid_t pid, t_command **cmd, t_p_fd *p_fd,
 	}
 }
 
-void	exec_command_list(t_command *cmd_list, t_env *env,
+
+
+
+int	process_all_heredocs(t_command *cmd_list, t_env *env,
 		bool *hdc_interrupted)
 {
-	t_p_fd		p_fd;
-	pid_t		pid;
-	pid_t		last_pid;
 	t_command	*cmd;
+	t_redir		*r;
+	
+	set_sigint_heredoc();
 
-	p_fd.prev_fd = -1;
-	last_pid = -1;
 	cmd = cmd_list;
 	while (cmd)
 	{
-		if (is_cmd_redir_in_2(cmd, p_fd.prev_fd, env, hdc_interrupted))
-			return (free_command_l(cmd_list));
-		p_fd.pipe_fd[0] = -1;
-		p_fd.pipe_fd[1] = -1;
-		if (pipe_error(&p_fd, cmd))
-			return ;
-		pid = fork();
-		if (fork_error(pid, &p_fd))
-			return ;
-		last_pid = pid;
-		child_and_parent_process(pid, &cmd, &p_fd, env);
+		r = cmd->redirs;
+		while (r)
+		{
+			if (r->type == REDIR_HEREDOC)
+			{
+				cmd_list->in_hdc = true;
+				if (process_heredoc(r->filename, cmd, env, hdc_interrupted))
+				{
+					if (*hdc_interrupted)
+					{
+						cleanup_heredoc_files(cmd_list);
+						g_exit_status = 130;
+						return (130);
+					}
+					cleanup_heredoc_files(cmd_list);
+					return (-1);
+				}
+			}
+			r = r->next;
+		}
+		cmd = cmd->next;
 	}
-	wait_for_children(last_pid);
+	return (0);
 }
+
+void	cleanup_heredoc_files(t_command *cmd_list)
+{
+	t_command	*cmd;
+	t_redir		*r;
+	
+	cmd = cmd_list;
+	while (cmd)
+	{
+		r = cmd->redirs;
+		while (r)
+		{
+			if (r->filename && ft_strnstr(r->filename, "minish_hd_", 
+				ft_strlen(r->filename)) != NULL)
+				unlink(r->filename);
+			r = r->next;
+		}
+		cmd = cmd->next;
+	}
+}
+
+void exec_command_list(t_command **cmd_list_ptr, t_env *env, bool *hdc_interrupted)
+{
+    t_p_fd      p_fd;
+    pid_t       pid;
+    pid_t       last_pid;
+    t_command   *cmd;
+    t_command   *head;
+
+    if (!cmd_list_ptr || !*cmd_list_ptr)
+        return;
+
+    head = *cmd_list_ptr;
+
+    /* PRIMA: Processa tutti gli heredoc SENZA FORK */
+    if (process_all_heredocs(head, env, hdc_interrupted))
+    {
+        cleanup_heredoc_files(head);
+        free_command_l(head);
+        *cmd_list_ptr = NULL;
+		set_sigint_main();///////////
+        return;
+    }
+	if (*hdc_interrupted)
+	{
+        cleanup_heredoc_files(head);
+        free_command_l(head);
+        *cmd_list_ptr = NULL;
+		return ;
+	}
+			// set_sigint_main();//COMMENTO CTRLCMOD
+
+    /* POI: Esegui comandi normalmente */
+    p_fd.prev_fd = -1;
+    last_pid = -1;
+    cmd = head;
+
+	set_sigint_executing();
+    while (cmd)
+    {
+        p_fd.pipe_fd[0] = -1;
+        p_fd.pipe_fd[1] = -1;
+
+        if (pipe_error(&p_fd, cmd))
+        {
+            cleanup_heredoc_files(head);
+            free_command_l(head);
+            *cmd_list_ptr = NULL;
+            return;
+        }
+
+        pid = fork();
+        if (fork_error(pid, &p_fd))
+        {
+            cleanup_heredoc_files(head);
+            free_command_l(head);
+            *cmd_list_ptr = NULL;
+            return;
+        }
+
+        last_pid = pid;
+        child_and_parent_process(pid, &cmd, &p_fd, env);
+    }
+
+    wait_for_children(last_pid);
+
+									set_sigint_main();//CTRLCMOD
+
+    //cleanup_heredoc_files(head);
+    //free_command_l(head);
+    *cmd_list_ptr = NULL;
+	//head->in_hdc = false;
+}
+
+
+
