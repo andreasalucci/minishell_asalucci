@@ -27,6 +27,7 @@ void	handle_child_cmd_path(t_command *cmd, t_env *env)
 	argv_filtered = NULL;
 	if (cmd->argv && is_builtin(cmd))
 	{
+		signal(SIGPIPE, SIG_IGN);
 		exec_builtin(cmd, &env);
 		free_env_cmdlnull_envp(env, &cmd, true, NULL);
 		exit(g_exit_status);
