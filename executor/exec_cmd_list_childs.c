@@ -51,7 +51,7 @@ void	handle_child_process(t_command *cmd, t_p_fd p_fd, t_env *env)
 {
 	signal(SIGINT, SIG_DFL);
 	signal(SIGQUIT, SIG_DFL);
-	signal(SIGPIPE, SIG_IGN);
+	//signal(SIGPIPE, SIG_IGN);
 	if (p_fd.prev_fd != -1)
 	{
 		dup2(p_fd.prev_fd, STDIN_FILENO);
