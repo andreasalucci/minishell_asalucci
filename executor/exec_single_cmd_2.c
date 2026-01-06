@@ -12,6 +12,8 @@ void	if_permission_denied(t_command *cmds, char *cmd_path, char **envp,
 
 void	exec_and_exit(t_command *cmds, char *cmd_path, char **envp, t_env *env)
 {
+	signal(SIGQUIT, SIG_DFL);
+	signal(SIGINT, SIG_DFL);
 	execve(cmd_path, cmds->argv, envp);
 	perror(cmd_path);
 	free(cmd_path);
@@ -21,13 +23,20 @@ void	exec_and_exit(t_command *cmds, char *cmd_path, char **envp, t_env *env)
 
 void	parent_or_error(pid_t *pid, int *status)
 {
+	int signal;
+
 	if (*pid > 0)
 	{
 		waitpid(*pid, status, 0);
 		if (WIFEXITED(*status))
 			g_exit_status = WEXITSTATUS(*status);
 		else if (WIFSIGNALED(*status))
-			g_exit_status = 128 + WTERMSIG(*status);
+		{
+			signal = WTERMSIG(*status);
+			g_exit_status = 128 + signal;
+			if (signal == SIGQUIT && isatty(STDOUT_FILENO))
+				ft_putstr_fd("Quit (core dumped)\n", STDERR_FILENO);
+		}
 	}
 	else
 		perror("fork");

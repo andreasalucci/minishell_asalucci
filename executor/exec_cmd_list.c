@@ -13,7 +13,14 @@ void	wait_for_children(pid_t last_pid)
 			if (WIFEXITED(status))
 				g_exit_status = WEXITSTATUS(status);
 			else if (WIFSIGNALED(status))
-				g_exit_status = 128 + WTERMSIG(status);
+			{
+				int sig = WTERMSIG(status);
+				g_exit_status = 128 + sig;
+				
+				// Stampa il messaggio appropriato per SIGQUIT
+				if (sig == SIGQUIT && isatty(STDOUT_FILENO))
+					ft_putstr_fd("Quit (core dumped)\n", STDERR_FILENO);
+			}
 			else
 				g_exit_status = 1;
 		}

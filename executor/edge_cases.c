@@ -17,8 +17,8 @@ bool	first_arg_is_dotslash(char *arg)
 	if (ft_strcmp(arg, "./") == 0)
 	{
 		write(2, "minishell: ", 11);
-		ft_putstr_fd("./: filename argument required\n", 2);
-		g_exit_status = 2;
+		ft_putstr_fd("./: Is a directory\n", 2);
+		g_exit_status = 126;
 		return (true);
 	}
 	return (false);

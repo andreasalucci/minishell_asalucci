@@ -19,7 +19,16 @@ int	builtin_cd(char **args, t_env **env)
 		if (args[2])
 			return (too_many(oldpwd));
 	if (!args[1])
+	{
 		target = get_env_value(*env, "HOME");
+		if (!target)
+		{
+			ft_putstr_fd("minishell: cd: HOME not set\n", STDERR_FILENO);
+			free(oldpwd);
+			g_exit_status = 1;
+			return (1);
+		}
+	}
 	else
 		target = args[1];
 	if (!target || chdir(target) != 0)
