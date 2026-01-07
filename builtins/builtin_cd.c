@@ -18,7 +18,41 @@ int	builtin_cd(char **args, t_env **env)
 	if (args[1])
 		if (args[2])
 			return (too_many(oldpwd));
-	if (!args[1])
+
+	// if (!args[1])
+	// 	printf("non esiste\n");
+	// if (args[1])
+	// 	printf("<%s>\n", args[1]);
+	// if (args[1] && args[1][0] == '\0')
+	// 	printf("e' un null character\n");
+	// if (args[1])
+	// 	printf("args[1] ritorna true e <%ld> e' la lunghezza\n", strlen(args[1]));
+	// printf("args[1] ritorna false e <%ld> e' la lunghezza\n", strlen(args[1]));
+
+	if (args[1] && args[1][0] == '\0')
+	{
+		target = get_env_value(*env, "HOME");
+		if (!target)
+		{
+			ft_putstr_fd("minishell: cd: HOME not set\n", STDERR_FILENO);
+			free(oldpwd);
+			g_exit_status = 1;
+			return (1);
+		}
+	}
+	else if (args[1] && ft_strcmp(args[1], "-") == 0)
+	{
+		target = get_env_value(*env, "OLDPWD");
+		if (!target)
+		{
+			ft_putstr_fd("minishell: cd: OLDPWD not set\n", STDERR_FILENO);
+			free(oldpwd);
+			g_exit_status = 1;
+			return (1);
+		}
+		printf("%s\n",target);
+	}
+	else if (!args[1])
 	{
 		target = get_env_value(*env, "HOME");
 		if (!target)
