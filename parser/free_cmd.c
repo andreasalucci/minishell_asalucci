@@ -1,4 +1,4 @@
-#include "minishell.h"
+#include "../minishell.h"
 
 void	free_command_redirs(t_command **cmd)
 {
@@ -10,8 +10,6 @@ void	free_command_redirs(t_command **cmd)
 	{
 		tmp = r->next;
 		free(r->filename);
-		//if (r->hd_filename) // hd_filename
-		//	free(r->hd_filename);
 		free(r);
 		r = tmp;
 	}

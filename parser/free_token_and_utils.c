@@ -1,6 +1,4 @@
-#include "minishell.h"
-
-#include "minishell.h"
+#include "../minishell.h"
 
 int	alloc_new_token(t_t **new_token, int len)
 {

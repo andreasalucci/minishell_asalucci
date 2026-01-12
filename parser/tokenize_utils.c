@@ -66,7 +66,10 @@ void	metacharacters(t_t *t, t_t **token_list)
 				&& t->input[t->pos +1] == '>' && t->input[t->pos +2] != '>'))
 			two_less_more(t, token_list);
 		else
+		{
 			triple_meta(t, token_list);
+			//return ;
+		}
 		if ((t->input[t->pos] == '<' || t->input[t->pos] == '>')
 			&& t->input[t->pos -1] != ' ')
 			return ;

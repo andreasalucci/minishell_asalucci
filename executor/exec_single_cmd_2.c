@@ -23,7 +23,7 @@ void	exec_and_exit(t_command *cmds, char *cmd_path, char **envp, t_env *env)
 
 void	parent_or_error(pid_t *pid, int *status)
 {
-	int signal;
+	int	signal;
 
 	if (*pid > 0)
 	{

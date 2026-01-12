@@ -1,7 +1,7 @@
 #include "../minishell.h"
 
 void	handle_child_cmd_path_exec_non_builtin(t_command *cmd, t_env *env,
-		char *cmd_path, char **argv_filtered)
+									char *cmd_path, char **argv_filtered)
 {
 	struct stat	statbuf;
 
@@ -40,7 +40,7 @@ void	handle_child_cmd_path(t_command *cmd, t_env *env)
 	{
 		if (!cmd->argv && cmd->in_hdc)
 			no_command_heredoc(cmd, env);
-		else//bastavaguardareilfile
+		else
 			command_not_found(cmd, env);
 	}
 	else
@@ -52,7 +52,6 @@ void	handle_child_process(t_command *cmd, t_p_fd p_fd, t_env *env)
 {
 	signal(SIGINT, SIG_DFL);
 	signal(SIGQUIT, SIG_DFL);
-	//signal(SIGPIPE, SIG_IGN);
 	if (p_fd.prev_fd != -1)
 	{
 		dup2(p_fd.prev_fd, STDIN_FILENO);
@@ -66,4 +65,63 @@ void	handle_child_process(t_command *cmd, t_p_fd p_fd, t_env *env)
 	}
 	apply_redirections(cmd, env);
 	handle_child_cmd_path(cmd, env);
+}
+
+void	child_and_parent_process(pid_t pid, t_command **cmd, t_p_fd *p_fd,
+									t_env *env)
+{
+	t_command	*tmp;
+
+	if (pid == 0)
+	{
+		signal(SIGINT, SIG_DFL);
+		signal(SIGQUIT, SIG_DFL);
+		handle_child_process(*cmd, *p_fd, env);
+		free_env_cmdlnull_envp(env, cmd, true, NULL);
+		exit(1);
+	}
+	else
+	{
+		if ((*p_fd).prev_fd != -1)
+			close((*p_fd).prev_fd);
+		if ((*p_fd).pipe_fd[1] != -1)
+		{
+			close((*p_fd).pipe_fd[1]);
+			(*p_fd).prev_fd = (*p_fd).pipe_fd[0];
+		}
+		else if ((*p_fd).pipe_fd[0] != -1)
+			close((*p_fd).pipe_fd[0]);
+		tmp = (*cmd)->next;
+		free_command(*cmd);
+		*cmd = tmp;
+	}
+}
+
+void	wait_for_children(pid_t last_pid)
+{
+	int		status;
+	pid_t	pid;
+	int		sig;
+
+	pid = wait(&status);
+	while (pid > 0)
+	{
+		if (pid == last_pid)
+		{
+			if (WIFEXITED(status))
+				g_exit_status = WEXITSTATUS(status);
+			else if (WIFSIGNALED(status))
+			{
+				sig = WTERMSIG(status);
+				g_exit_status = 128 + sig;
+				if (sig == SIGQUIT && isatty(STDOUT_FILENO))
+					ft_putstr_fd("Quit (core dumped)\n", STDERR_FILENO);
+			}
+			else
+				g_exit_status = 1;
+		}
+		pid = wait(&status);
+	}
+	if (pid == -1 && errno != ECHILD)
+		perror("waitpid");
 }

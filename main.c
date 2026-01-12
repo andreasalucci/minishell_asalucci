@@ -2,12 +2,6 @@
 
 int		g_exit_status = 0;
 
-void	process_input_history(char *input)
-{
-	if (*input)
-		add_history(input);
-}
-
 void	process_loop(char **input, t_env **env, bool *free_input,
 		bool *hdc_interrupted)
 {
@@ -25,16 +19,22 @@ void	process_loop(char **input, t_env **env, bool *free_input,
 	}
 }
 
+void	main_loop_initializaton(char **input, bool *free_input,
+						char **prompt, bool *hdc_interrupted)
+{
+	*input = NULL;
+	*free_input = 0;
+	*prompt = "\001\033[1;36m\002minishell\001\033[0m\002$ ";
+	*hdc_interrupted = false;
+}
+
 int	main_loop(t_env **env, bool *hdc_interrupted)
 {
 	char	*input;
 	bool	free_input;
 	char	*prompt;
 
-	input = NULL;
-	free_input = 0;
-	prompt = "\001\033[1;36m\002minishell\001\033[0m\002$ ";
-	*hdc_interrupted = false;
+	main_loop_initializaton(&input, &free_input, &prompt, hdc_interrupted);
 	while (1)
 	{
 		input = readline(prompt);
@@ -53,7 +53,6 @@ int	main_loop(t_env **env, bool *hdc_interrupted)
 		process_loop(&input, env, &free_input, hdc_interrupted);
 		*hdc_interrupted = false;
 	}
-	//cleanup_all_temp_files();
 	rl_clear_history();
 	return (0);
 }
@@ -98,5 +97,5 @@ int	main(int argc, char **argv, char **envp)
 	hdc_interrupted = false;
 	main_loop(&env, &hdc_interrupted);
 	free_env(env);
-	return (0);
+	return (g_exit_status);
 }

@@ -17,6 +17,12 @@ t_command	*init_command(void)
 	return (cmd);
 }
 
+void	process_input_history(char *input)
+{
+	if (*input)
+		add_history(input);
+}
+
 char	*ft_strjoin_free(char *s1, char *s2)
 {
 	char	*joined;

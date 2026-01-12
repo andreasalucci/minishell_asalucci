@@ -1,6 +1,6 @@
 #include "../minishell.h"
 
-int	is_option_n(const char *str)
+int	is_option_n(char *str)
 {
 	int	i;
 
@@ -17,21 +17,32 @@ int	is_option_n(const char *str)
 	return (1);
 }
 
-void	init_builtin_echo_vars(int *i, int *newline, int *first)
+void	build_echo_arg(t_command *cmd, int i, char **result)
 {
-	*i = 1;
-	*newline = 1;
-	*first = 1;
+	int	first;
+
+	first = 1;
+	while (cmd->argv[i])
+	{
+		if (!cmd->arg_is_redir[i])
+		{
+			if (!first)
+				*result = ft_strjoin_free(*result, " ");
+			*result = ft_strjoin_free(*result, cmd->argv[i]);
+			first = 0;
+		}
+		i++;
+	}
 }
 
 int	builtin_echo(t_command *cmd)
 {
 	int		i;
 	int		newline;
-	int		first;
 	char	*result;
 
-	init_builtin_echo_vars(&i, &newline, &first);
+	i = 1;
+	newline = 1;
 	while (cmd->argv[i] && is_option_n(cmd->argv[i]))
 	{
 		newline = 0;
@@ -39,17 +50,7 @@ int	builtin_echo(t_command *cmd)
 	}
 	result = (char *)malloc(sizeof(char));
 	result[0] = '\0';
-	while (cmd->argv[i])
-	{
-		if (!cmd->arg_is_redir[i])
-		{
-			if (!first)
-				result = ft_strjoin_free(result, " ");
-			result = ft_strjoin_free(result, cmd->argv[i]);
-			first = 0;
-		}
-		i++;
-	}
+	build_echo_arg(cmd, i, &result);
 	if (newline)
 		result = ft_strjoin_free(result, "\n");
 	ft_putstr_fd(result, 1);

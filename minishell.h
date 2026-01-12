@@ -71,7 +71,6 @@ typedef struct s_redir
 {
 	t_redir_type		type;
 	char				*filename;
-	//char				*hd_filename;
 	struct s_redir		*next;
 }						t_redir;
 
@@ -101,6 +100,22 @@ typedef struct s_env
 	int					exportable;
 	struct s_env		*next;
 }						t_env;
+
+typedef struct s_heredoc
+{
+	int		fd;
+	char	*line;
+	char	*clean_delim;
+	int		expand;
+	char	*tmp_file;
+}	t_heredoc;
+
+typedef struct s_hdc_context
+{
+	t_env	*env;
+	bool	*interrupted;
+	int		*counter;
+}	t_hdc_context;
 
 void		print_commands(t_command *cmd); // per i test, cancellare alla fine
 t_t			*tokens(char *input, bool *free_input, t_env *env);
@@ -199,18 +214,15 @@ void		update_env_var(t_env **env, const char *key,
 int			env_exists(t_env *env, const char *key);
 void		insert_sorted(t_env **sorted, t_env *new_node);
 int			builtin_pwd(void);
-int			is_option_n(const char *str);
+int			is_option_n(char *str);
 int			builtin_echo(t_command *cmd);
 void		apply_redirections(t_command *cmd, t_env *env);
 void		apply_redir_out1(t_redir *r, t_env *env,
 				t_command *cmd);
 void		apply_redir_out2(t_redir *r, t_command *cmd,
 				t_env *env);
-// void		apply_redir_heredoc(t_command *cmd, t_env *env);
 void		create_heredoc_effective(const char *delimiter, t_command *cmd,
 				t_env *env, t_command *cmd_);
-int		create_heredoc_open(const char *delimiter, t_command *cmd, t_env *env,
-				bool *hdc_interrupted, t_command *cmd_);
 void		free_env(t_env *env);
 char		*mini_getline(const char *prompt);
 void		handle_child_process(t_command *cmd, t_p_fd p_fd,
@@ -247,8 +259,6 @@ int			handle_input_interruption(bool *hdc_interrupted,
 int			handle_eof(char *input);
 t_env		*copy_env(char **envp);
 void		setup_shell_signals(void);
-int			is_cmd_redir_in_2(t_command *cmd, int prev_fd, t_env *env,
-				bool *hdc_interrupted, t_command *cmd_);
 void		filter_args(t_command *cmd, char ***argv_filtered,
 				t_env *env);
 void		command_not_found(t_command *cmd, t_env *env);
@@ -289,11 +299,21 @@ void		apply_redir_in(t_redir *r, t_env *env, t_command *cmd);
 void	sigint_heredoc_handler(int sig);
 void	sigint_main(int signum);
 void	sigint_heredoc(int signum);
-int	process_heredoc(const char *delimiter, t_command *cmd, 
-				t_env *env, bool *hdc_interrupted);
+int		process_heredoc(const char *delimiter, t_command *cmd, 
+				t_hdc_context ctx);
 void	set_sigint_main(void);
 void	set_sigint_heredoc(void);
 void	sigint_executing(int signum);
 void	set_sigint_executing(void);
+bool	has_heredoc_redir(t_redir *r);
+int		process_cmd_heredocs(t_command *cmd, t_hdc_context *ctx);
+void	process_input_history(char *input);
+void	child_and_parent_process(pid_t pid, t_command **cmd, t_p_fd *p_fd,
+									t_env *env);
+int	process_all_heredocs(t_command *cmd_list, t_env *env,
+							bool *hdc_interrupted);
+char	*read_hdc_line(bool *hdc_interrupted);
+void	if_expand(t_heredoc *hdc, t_hdc_context *ctx, char	**line);
+char	*expand_heredoc_line(char *line, t_env *env);
 
 #endif
