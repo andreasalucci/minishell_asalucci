@@ -1,6 +1,6 @@
 #include "../minishell.h"
 
-void	redir_append(t_command *cmd, t_t *token)
+bool	redir_append(t_command *cmd, t_t *token)
 {
 	if (token->next && token->next->type == TOKEN_WORD)
 	{
@@ -13,10 +13,12 @@ void	redir_append(t_command *cmd, t_t *token)
 		printf("minishell: syntax error near unexpected token\n");
 		token->error = true;
 		g_exit_status = 2;
+		return (false);
 	}
+	return (true);
 }
 
-void	redir_heredoc(t_command *cmd, t_t *token)
+bool	redir_heredoc(t_command *cmd, t_t *token)
 {
 	if (token->next && token->next->type == TOKEN_WORD)
 	{
@@ -29,15 +31,40 @@ void	redir_heredoc(t_command *cmd, t_t *token)
 		printf("minishell: syntax error near unexpected token\n");
 		token->error = true;
 		g_exit_status = 2;
+		return (false);
 	}
+	return (true);
 }
 
+void	new_input_2(t_t *t, char *var_word, size_t count, size_t dollar)
+{
+	char	*before_var;
+	char	*afer_var;
+	char	*with_var;
+	char	*new_input;
+
+	before_var = malloc(dollar + 1);
+	afer_var = malloc((ft_strlen(t->input) + 1) - dollar);
+	ft_strlcpy(before_var, t->input, dollar +1);
+	with_var = ft_strjoin(before_var, var_word);
+	ft_strlcpy(afer_var, t->input + count, ft_strlen(t->input) + 1 - count);
+	new_input = ft_strjoin(with_var, afer_var);
+	free(before_var);
+	free(afer_var);
+	free(with_var);
+	free(var_word);
+	free(t->input);
+	t->input = NULL;
+	t->input = new_input;
+	t->start = new_input;
+}
 void	finalize_env_var(t_t *t, t_t **token_list, char *var, char *var_temp)
 {
 	char	*var_word;
 
 	if (!var)
 	{
+		//printf("entro aqui\n");
 		free(var_temp);
 		t->anchor_pos = t->pos;
 		if (t->tmp_token)
@@ -49,15 +76,9 @@ void	finalize_env_var(t_t *t, t_t **token_list, char *var, char *var_temp)
 		return ;
 	}
 	var_word = ft_strdup(var);
-	if (t->tmp_token)
-		last_str(t, var_word, token_list);
-	else
-	{
-		add_custom_token(var_word, TOKEN_VAR, token_list);
-		free(var_word);
-	}
+	new_input_2(t, var_word, t->pos, t->anchor_pos);
 	free(var_temp);
-	t->anchor_pos = t->pos;
+	t->pos = t->anchor_pos;
 }
 
 void	handle_env_var(t_t *t, t_t **token_list, t_env *env)
@@ -76,12 +97,16 @@ void	handle_env_var(t_t *t, t_t **token_list, t_env *env)
 	if (!var_temp)
 		return ;
 	ft_strlcpy(var_temp, t->input + t->anchor_pos + 1, len + 1);
+	//printf("var_temp:: %s\n", var_temp);
 	var = get_env_value(env, var_temp);
+	//ft_printf("var:: %s\n", var);
 	finalize_env_var(t, token_list, var, var_temp);
+	
 }
 
 void	is_var(t_t *t, t_t **token_list, t_env *env)
 {
+
 	if (t->input[t->pos] == '$' && t->input[t->pos + 1] == '?')
 	{
 		handle_exit_status_case(t, token_list);

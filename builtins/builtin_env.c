@@ -13,4 +13,5 @@ void	builtin_env(t_env *env)
 		}
 		env = env->next;
 	}
+	g_exit_status = 0;
 }

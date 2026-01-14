@@ -37,6 +37,7 @@ void	handle_quotes_and_vars(t_t *t, t_t **token_list,
 				return ;
 		}
 		metacharacters(t, token_list);
+
 	}
 }
 

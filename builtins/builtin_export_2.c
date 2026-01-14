@@ -31,4 +31,5 @@ void	update_or_add_env(t_key_value *data, t_env **env)
 		update_env(env, data->key, data->value);
 	else
 		add_env(env, data->key, data->value, 1);
+	g_exit_status = 0;
 }

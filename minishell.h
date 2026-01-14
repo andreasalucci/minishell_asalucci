@@ -16,15 +16,15 @@
 
 # define MAX_INPUT 1024
 
-extern int				g_exit_status;
+extern volatile sig_atomic_t	g_exit_status;
 
 typedef struct s_p_fd
 {
-	int					prev_fd;
-	int					pipe_fd[2];
-}						t_p_fd;
+	int	prev_fd;
+	int	pipe_fd[2];
+}		t_p_fd;
 
-typedef enum token_type
+typedef enum s_token_type
 {
 	METACHAR,
 	TOKEN_DEFAULT,
@@ -37,7 +37,7 @@ typedef enum token_type
 	TOKEN_DOUBLE_REDIR_IN,
 	TOKEN_DOUBLE_REDIR_OUT,
 	TOKEN_VAR,
-}						t_token_type;
+}	t_token_type;
 
 typedef struct s_token
 {
@@ -65,7 +65,7 @@ typedef enum e_redir_type
 	REDIR_OUT,
 	REDIR_APPEND,
 	REDIR_HEREDOC
-}						t_redir_type;
+}	t_redir_type;
 
 typedef struct s_redir
 {
@@ -108,14 +108,14 @@ typedef struct s_heredoc
 	char	*clean_delim;
 	int		expand;
 	char	*tmp_file;
-}	t_heredoc;
+}			t_heredoc;
 
 typedef struct s_hdc_context
 {
 	t_env	*env;
 	bool	*interrupted;
 	int		*counter;
-}	t_hdc_context;
+}			t_hdc_context;
 
 void		print_commands(t_command *cmd); // per i test, cancellare alla fine
 t_t			*tokens(char *input, bool *free_input, t_env *env);
@@ -123,7 +123,6 @@ void		quotes(t_t *t);
 void		metacharacters(t_t *t, t_t **token_list);
 void		open_quotes(t_t *t, t_t **token_list, bool *free_input);
 void		add_token(t_t *t, t_t **token_list);
-void		initStruct(t_t *t);
 void		add_token_2(t_t *new_token, t_t **token_list,
 				int redir_control, t_t *t);
 int			alloc_new_token(t_t **new_token, int len);
@@ -131,18 +130,16 @@ void		triple_meta(t_t *t, t_t **token_list);
 t_t			*set_metachar_type(t_t **token_list);
 t_command	*parse(t_t *token);
 t_command	*parse_commands(t_t *token);
-void		parse_commands_2(t_command **current, t_command **head,
+bool		parse_commands_2(t_command **current, t_command **head,
 				t_t *token);
 void		add_argument(t_command *cmd, char *arg,
 				bool from_redir);
-void		redir_in(t_command *cmd, t_t *token);
-void		redir_out(t_command *cmd, t_t *token);
+bool		redir_in(t_command *cmd, t_t *token);
+bool		redir_out(t_command *cmd, t_t *token);
 void		add_pipe(t_command **head, t_command *new_node);
 void		free_command_list(t_command *cmd);
 void		free_token_list(t_t *token);
 void		free_command(t_command *cmd);
-bool		check_errorNclose(t_command **head, t_command *current,
-				bool error);
 void		check_pipes(t_t *t, t_t **token_list);
 void		check_pipes_2(t_t *t, t_t **token_list, size_t start,
 				char *word);
@@ -168,15 +165,15 @@ bool		handle_lonely_dollar(t_t *t, t_t **token_list);
 void		handle_exit_status_case(t_t *t, t_t **token_list);
 void		add_redir(t_command *cmd, int type,
 				const char *filename);
-void		handle_redir_token(t_command **current,
+bool		handle_redir_token(t_command **current,
 				t_command **head, t_t **token);
-void		handle_pipe_token(t_command **current, t_command **head,
+bool		handle_pipe_token(t_command **current, t_command **head,
 				t_t *token);
-void		handle_word_or_var(t_command *current, t_t *token,
+bool		handle_word_or_var(t_command *current, t_t *token,
 				t_t *prev);
 void		handle_word_or_var_token(t_command **current,
 				t_t *token);
-void		handle_pipe_or_redir(t_command **current,
+bool		handle_pipe_or_redir(t_command **current,
 				t_command **head, t_t *token);
 bool		is_redir_token(int type);
 void		handle_single_quote(t_t *t, t_t **token_list,
@@ -221,13 +218,9 @@ void		apply_redir_out1(t_redir *r, t_env *env,
 				t_command *cmd);
 void		apply_redir_out2(t_redir *r, t_command *cmd,
 				t_env *env);
-void		create_heredoc_effective(const char *delimiter, t_command *cmd,
-				t_env *env, t_command *cmd_);
 void		free_env(t_env *env);
-char		*mini_getline(const char *prompt);
 void		handle_child_process(t_command *cmd, t_p_fd p_fd,
 				t_env *env);
-void		fork_process(pid_t *pid);
 void		wait_for_children(pid_t last_pid);
 void		exec_command_list(t_command **cmd_list_ptr, t_env *env,
 				bool *hdc_interrupted);
@@ -242,8 +235,8 @@ void		init_key_value(t_key_value *data, char *arg,
 void		handle_append_case(t_key_value *data, t_env **env);
 void		update_or_add_env(t_key_value *data, t_env **env);
 void		cleanup_key_value(t_key_value *data);
-void		redir_append(t_command *cmd, t_t *token);
-void		redir_heredoc(t_command *cmd, t_t *token);
+bool		redir_append(t_command *cmd, t_t *token);
+bool		redir_heredoc(t_command *cmd, t_t *token);
 void		init_shlvl(t_env **env);
 t_command	*init_command(void);
 void		free_env_cmdlnull_envp(t_env *env, t_command **cmd_list,
@@ -258,7 +251,6 @@ int			handle_input_interruption(bool *hdc_interrupted,
 				char *input);
 int			handle_eof(char *input);
 t_env		*copy_env(char **envp);
-void		setup_shell_signals(void);
 void		filter_args(t_command *cmd, char ***argv_filtered,
 				t_env *env);
 void		command_not_found(t_command *cmd, t_env *env);
@@ -294,26 +286,26 @@ bool		its_dot_or_dotslash(char *cmd);
 bool		pipe_error(t_p_fd *p_fd, t_command *cmd);
 bool		fork_error(pid_t pid, t_p_fd *p_fd);
 void		no_command_heredoc(t_command *cmd, t_env *env);
-void	cleanup_heredoc_files(t_command *cmd_list);
+void		cleanup_heredoc_files(t_command *cmd_list);
 void		apply_redir_in(t_redir *r, t_env *env, t_command *cmd);
-void	sigint_heredoc_handler(int sig);
-void	sigint_main(int signum);
-void	sigint_heredoc(int signum);
-int		process_heredoc(const char *delimiter, t_command *cmd, 
+void		sigint_heredoc_handler(int sig);
+void		sigint_main(int signum);
+void		sigint_heredoc(int signum);
+int			process_heredoc(const char *delimiter, t_command *cmd,
 				t_hdc_context ctx);
-void	set_sigint_main(void);
-void	set_sigint_heredoc(void);
-void	sigint_executing(int signum);
-void	set_sigint_executing(void);
-bool	has_heredoc_redir(t_redir *r);
-int		process_cmd_heredocs(t_command *cmd, t_hdc_context *ctx);
-void	process_input_history(char *input);
-void	child_and_parent_process(pid_t pid, t_command **cmd, t_p_fd *p_fd,
-									t_env *env);
-int	process_all_heredocs(t_command *cmd_list, t_env *env,
-							bool *hdc_interrupted);
-char	*read_hdc_line(bool *hdc_interrupted);
-void	if_expand(t_heredoc *hdc, t_hdc_context *ctx, char	**line);
-char	*expand_heredoc_line(char *line, t_env *env);
+void		set_sigint_main(void);
+void		set_sigint_heredoc(void);
+void		sigint_executing(int signum);
+void		set_sigint_executing(void);
+bool		has_heredoc_redir(t_redir *r);
+int			process_cmd_heredocs(t_command *cmd, t_hdc_context *ctx);
+void		process_input_history(char *input);
+void		child_and_parent_process(pid_t pid, t_command **cmd, t_p_fd *p_fd,
+				t_env *env);
+int			process_all_heredocs(t_command *cmd_list, t_env *env,
+				bool *hdc_interrupted);
+char		*read_hdc_line(bool *hdc_interrupted);
+void		if_expand(t_heredoc *hdc, t_hdc_context *ctx, char	**line);
+char		*expand_heredoc_line(char *line, t_env *env);
 
 #endif

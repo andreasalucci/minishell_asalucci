@@ -54,6 +54,7 @@ void	two_less_more(t_t *t, t_t **token_list)
 
 void	metacharacters(t_t *t, t_t **token_list)
 {
+	//printf("t->pos:: %ld\n", t->pos);
 	if (t->input[t->pos])
 	{
 		if (t->input[t->pos] == ' ' || t->input[t->pos] == '|')
@@ -66,16 +67,14 @@ void	metacharacters(t_t *t, t_t **token_list)
 				&& t->input[t->pos +1] == '>' && t->input[t->pos +2] != '>'))
 			two_less_more(t, token_list);
 		else
-		{
 			triple_meta(t, token_list);
-			//return ;
-		}
 		if ((t->input[t->pos] == '<' || t->input[t->pos] == '>')
 			&& t->input[t->pos -1] != ' ')
 			return ;
-		if (t->input[t->pos] != '"' && t->input[t->pos] != '\'')
+		if (t->input[t->pos] != '"' && t->input[t->pos] != '\'' && t->input[t->pos] != '$')
 			t->pos++;
 	}
+	//printf("t->pos:: %ld\n", t->pos);
 }
 
 void	open_quotes(t_t *t, t_t **token_list, bool *free_input)

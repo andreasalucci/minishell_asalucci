@@ -1,11 +1,32 @@
 #include "../minishell.h"
 
+void	new_input_3(t_t *t, char *end_var)
+{
+	char	*begin_var;
+	char	*after_var;
+	char	*with_var;
+	char	*new_input;
+
+	begin_var = malloc(t->anchor_pos +1);
+	after_var = malloc((strlen(t->input) - t->pos) + 1);
+	ft_strlcpy(begin_var, t->input, t->anchor_pos +1);
+	ft_strlcpy(after_var, t->input + (t->pos +1), strlen(t->input) - t->pos);
+	with_var = ft_strjoin(begin_var, end_var);
+	new_input = ft_strjoin(with_var, after_var);
+	free(with_var);
+	free(after_var);
+	free(begin_var);
+	free(t->input);
+	t->input = NULL;
+	t->input = new_input;
+	t->start = new_input;
+}
 void	handle_var_result(t_t *t, t_t **token_list,
 			char *prefix, char *var)
 {
 	char	*end_var;
 	char	*var_token;
-
+	//char	*new_input;
 	var_token = getenv(var);
 	if (!var_token)
 	{
@@ -19,15 +40,19 @@ void	handle_var_result(t_t *t, t_t **token_list,
 		return ;
 	}
 	end_var = ft_strjoin(prefix, var_token);
-	add_custom_token(end_var, TOKEN_VAR, token_list);
+	//printf("end_var:: '%.*s'\n", (int)t->anchor_pos, t->input);
+	new_input_3(t, end_var);
+	//add_custom_token(end_var, TOKEN_VAR, token_list);
+	
 	free(end_var);
 	free(prefix);
 	free(var);
-	t->anchor_pos = t->pos;
+	//t->anchor_pos = t->pos;
 }
 
 void	is_var_2(t_t *t, t_t **token_list)
 {
+	//printf("is_var_2 t->input:: %s\n", t->input);
 	size_t	dolar;
 	size_t	len;
 	char	*prefix;
@@ -52,6 +77,7 @@ void	is_var_2(t_t *t, t_t **token_list)
 	}
 	ft_strlcpy(var, t->input + dolar, len + 2);
 	handle_var_result(t, token_list, prefix, var);
+
 }
 
 void	handle_double_quote(t_t *t, t_t **token_list, bool *free_input)

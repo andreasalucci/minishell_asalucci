@@ -3,7 +3,10 @@
 char	*ret_read_hdc_line(int bytes, int i, char *buffer)
 {
 	if (bytes <= 0 && i == 0)
+	{
+		write(STDOUT_FILENO, "\n", 1);
 		return (NULL);
+	}
 	return (ft_strdup(buffer));
 }
 

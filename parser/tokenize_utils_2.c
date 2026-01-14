@@ -65,6 +65,7 @@ void	handle_exit_status_suffix(t_t *t, t_t **token_list, char *exit_status)
 		t->pos++;
 	suffix = ft_substr(t->input, start, t->pos - start);
 	joined = ft_strjoin(exit_status, suffix);
+	//printf("suffix:: %s, joined:: %s\n", suffix, joined);
 	add_custom_token(joined, TOKEN_WORD, token_list);
 	free(suffix);
 	free(joined);
@@ -73,8 +74,10 @@ void	handle_exit_status_suffix(t_t *t, t_t **token_list, char *exit_status)
 void	handle_exit_status_case(t_t *t, t_t **token_list)
 {
 	char	*exit_status;
-
+	//printf("entro aqui\n");
+	//cambiar todo para crear un nuevo input y solucinar abc$?def
 	exit_status = ft_itoa(g_exit_status);
+	//printf("exit_status:: %s\n", exit_status);
 	t->pos += 2;
 	if (ft_isalnum(t->input[t->pos]) || t->input[t->pos] == '_')
 		handle_exit_status_suffix(t, token_list, exit_status);
@@ -98,7 +101,7 @@ bool	handle_lonely_dollar(t_t *t, t_t **token_list)
 		if (t->tmp_token)
 		{
 			tmp_str = malloc(2);
-			if (!tmp_str)
+			if (!tmp_str) 
 				return (true);
 			tmp_str[0] = '$';
 			tmp_str[1] = '\0';

@@ -25,5 +25,6 @@ int	mark_as_exportable(t_env **env, char *key)
 		}
 		curr = curr->next;
 	}
+	g_exit_status = 0;
 	return (add_env(env, key, NULL, 1));
 }
