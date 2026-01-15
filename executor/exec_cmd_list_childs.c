@@ -1,7 +1,7 @@
 #include "../minishell.h"
 
-void	handle_child_cmd_path_exec_non_builtin(t_command *cmd, t_env *env,
-									char *cmd_path, char **argv_filtered)
+void	execute_child_cmd_path(t_command *cmd, t_env *env,
+					char *cmd_path, char **argv_filtered)
 {
 	struct stat	statbuf;
 
@@ -44,7 +44,7 @@ void	handle_child_cmd_path(t_command *cmd, t_env *env)
 			command_not_found(cmd, env);
 	}
 	else
-		handle_child_cmd_path_exec_non_builtin(cmd, env, cmd_path,
+		execute_child_cmd_path(cmd, env, cmd_path,
 			argv_filtered);
 }
 

@@ -20,7 +20,7 @@ int	exec_and_wait(t_command *cmds, char *cmd_path, char **envp, t_env *env)
 			cmd_error_is_a_dir(cmd_path, NULL);
 		}
 		if_permission_denied(cmds, cmd_path, envp, env);
-		exec_and_exit(cmds, cmd_path, envp, env);
+		execute_and_exit(cmds, cmd_path, envp, env);
 	}
 	else
 		parent_or_error(&pid, &status);

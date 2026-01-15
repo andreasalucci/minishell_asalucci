@@ -3,7 +3,7 @@
 volatile sig_atomic_t	g_exit_status = 0;
 
 void	process_loop(char **input, t_env **env, bool *free_input,
-		bool *hdc_interrupted)
+						bool *hdc_interrupted)
 {
 	t_command	*cmds;
 
