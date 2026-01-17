@@ -57,6 +57,7 @@ typedef struct s_token
 	bool				to_remove;
 	char				*tmp_token;
 	bool				free_input;
+	bool				num_var;
 }						t_t;
 
 typedef enum e_redir_type
@@ -83,6 +84,7 @@ typedef struct s_command
 	t_redir				*redirs;
 	struct s_command	*next;
 	bool				in_hdc;
+	bool				contrasting_redirs;
 }						t_command;
 
 typedef struct s_key_value
@@ -130,12 +132,12 @@ void		triple_meta(t_t *t, t_t **token_list);
 t_t			*set_metachar_type(t_t **token_list);
 t_command	*parse(t_t *token);
 t_command	*parse_commands(t_t *token);
-bool		parse_commands_2(t_command **current, t_command **head,
+void		parse_commands_2(t_command **current, t_command **head,
 				t_t *token);
 void		add_argument(t_command *cmd, char *arg,
 				bool from_redir);
-bool		redir_in(t_command *cmd, t_t *token);
-bool		redir_out(t_command *cmd, t_t *token);
+void		redir_in(t_command *cmd, t_t *token);
+void		redir_out(t_command *cmd, t_t *token);
 void		add_pipe(t_command **head, t_command *new_node);
 void		free_command_list(t_command *cmd);
 void		free_token_list(t_t *token);
@@ -165,15 +167,15 @@ bool		handle_lonely_dollar(t_t *t, t_t **token_list);
 void		handle_exit_status_case(t_t *t, t_t **token_list);
 void		add_redir(t_command *cmd, int type,
 				const char *filename);
-bool		handle_redir_token(t_command **current,
+void		handle_redir_token(t_command **current,
 				t_command **head, t_t **token);
-bool		handle_pipe_token(t_command **current, t_command **head,
+void		handle_pipe_token(t_command **current, t_command **head,
 				t_t *token);
-bool		handle_word_or_var(t_command *current, t_t *token,
+void		handle_word_or_var(t_command *current, t_t *token,
 				t_t *prev);
 void		handle_word_or_var_token(t_command **current,
 				t_t *token);
-bool		handle_pipe_or_redir(t_command **current,
+void		handle_pipe_or_redir(t_command **current,
 				t_command **head, t_t *token);
 bool		is_redir_token(int type);
 void		handle_single_quote(t_t *t, t_t **token_list,
@@ -235,8 +237,8 @@ void		init_key_value(t_key_value *data, char *arg,
 void		handle_append_case(t_key_value *data, t_env **env);
 void		update_or_add_env(t_key_value *data, t_env **env);
 void		cleanup_key_value(t_key_value *data);
-bool		redir_append(t_command *cmd, t_t *token);
-bool		redir_heredoc(t_command *cmd, t_t *token);
+void		redir_append(t_command *cmd, t_t *token);
+void		redir_heredoc(t_command *cmd, t_t *token);
 void		init_shlvl(t_env **env);
 t_command	*init_command(void);
 void		free_env_cmdlnull_envp(t_env *env, t_command **cmd_list,

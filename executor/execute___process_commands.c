@@ -30,8 +30,20 @@ bool	command_particular_cases(t_command *cmds, t_env **env)
 
 void	process_commands(t_command *cmds, t_env **env, bool *hdc_interrupted)
 {
+	t_command *c;
+
 	if (command_particular_cases(cmds, env))
 		return ;
+	c = cmds;
+	while (c)
+	{
+		if (c->contrasting_redirs)
+		{
+			cmds->contrasting_redirs = false;
+			return (free_command_l(cmds));// (free_env(*env), free_arrarr(envp));
+		}
+		c = c->next;
+	}
 	if (!has_pipe_or_redir(cmds))
 	{
 		exec_single_command(cmds, env);

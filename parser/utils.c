@@ -64,47 +64,29 @@ void	new_input(t_t *t, char *exp_var, int count, int dollar)
 	t->start = new_input;
 }
 
-int handle_pipe_case(t_command **current, t_command **head,
-	t_t *token)
-{
-	if (*current && (!(*current)->argv || !(*current)->argv[0]))
-	{
-		printf("minishell: syntax error near unexpected token '|'\n");
-		token->error = true;
-		g_exit_status = 2;
-		return (true);/////
-	}
-	add_pipe(head, *current);
-	*current = NULL;
-	return (true);
-}
-
-bool	handle_pipe_or_redir(t_command **current, t_command **head,
+void	handle_pipe_or_redir(t_command **current, t_command **head,
 	t_t *token)
 {
 	if (token->type == TOKEN_REDIR_OUT)
-	{
-		if (!redir_out(*current, token))
-			return (false);
-	}
+		redir_out(*current, token);
 	else if (token->type == TOKEN_DOUBLE_REDIR_OUT)
-	{
-		if (!redir_append(*current, token))
-			return (false);
-	}
+		redir_append(*current, token);
 	else if (token->type == TOKEN_REDIR_IN)
-	{
-		if (!redir_in(*current, token))
-			return (false);
-	}
+		redir_in(*current, token);
 	else if (token->type == TOKEN_DOUBLE_REDIR_IN)
-	{
-		if (!redir_heredoc(*current, token))
-			return (false);
-	}
+		redir_heredoc(*current, token);
 	else if (token->type == TOKEN_PIPE)
-		return (handle_pipe_case(current, head, token));
-	return (true);
+	{
+		if (*current && (!(*current)->argv || !(*current)->argv[0]))
+		{
+			printf("minishell: syntax error near unexpected token '|'\n");
+			token->error = true;
+			g_exit_status = 2;
+			return ;
+		}
+		add_pipe(head, *current);
+		*current = NULL;
+	}
 }
 
 void	handle_word_or_var_token(t_command **current, t_t *token)

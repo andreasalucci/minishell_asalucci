@@ -8,6 +8,7 @@ bool	expand_exit_status(t_t *t)
 	char	*temp;
 	char	*pos;
 
+	//printf("UUU\n");
 	pos = ft_strnstr(t->input + t->anchor_pos, "$?", ft_strlen(t->input
 				+ t->anchor_pos));
 	if (pos)

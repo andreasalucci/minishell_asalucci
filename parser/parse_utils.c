@@ -8,19 +8,15 @@ bool	is_redir_token(int type)
 		|| type == TOKEN_DOUBLE_REDIR_OUT);
 }
 
-bool	handle_token(t_command **current, t_command **head, t_t **token,
+void	handle_token(t_command **current, t_command **head, t_t **token,
 	t_t *prev)
 {
 	if (is_redir_token((*token)->type))
-	{
-		if (!handle_redir_token(current, head, token))
-			return (false);
-	}
+		handle_redir_token(current, head, token);
 	else if ((*token)->type == TOKEN_PIPE)
 		handle_pipe_token(current, head, *token);
 	else if ((*token)->type == TOKEN_WORD || (*token)->type == TOKEN_VAR)
 		handle_word_or_var(*current, *token, prev);
-	return (true);
 }
 
 t_command	*parse_commands(t_t *token)
@@ -38,9 +34,7 @@ t_command	*parse_commands(t_t *token)
 		prev = token;
 		if (!current)
 			current = init_command();
-		// handle_token(&current, &head, &token, prev);
-		if (!handle_token(&current, &head, &token, prev))
-			return (NULL);
+		handle_token(&current, &head, &token, prev);
 		token = token->next;
 	}
 	if (current)
@@ -48,16 +42,12 @@ t_command	*parse_commands(t_t *token)
 	return (head);
 }
 
-bool	parse_commands_2(t_command **current, t_command **head, t_t *token)
+void	parse_commands_2(t_command **current, t_command **head, t_t *token)
 {
 	if (token->type == TOKEN_WORD || token->type == TOKEN_VAR)
 		handle_word_or_var_token(current, token);
 	else
-	{
-		if (!handle_pipe_or_redir(current, head, token))
-			return (false);
-	}
-	return (true);
+		handle_pipe_or_redir(current, head, token);
 }
 
 void	add_redir(t_command *cmd, int type, const char *filename)

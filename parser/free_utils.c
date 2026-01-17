@@ -23,7 +23,7 @@ void	add_argument_alloc(t_command *cmd, char ***new_argv,
 	}
 }
 
-bool	redir_in(t_command *cmd, t_t *token)
+void	redir_in(t_command *cmd, t_t *token)
 {
 	if (token->next && token->next->type == TOKEN_WORD)
 	{
@@ -34,15 +34,14 @@ bool	redir_in(t_command *cmd, t_t *token)
 	}
 	else
 	{
-		printf("minishell: syntax error near unexpected token\n");
+		printf("minishell: syntax error near unexpected token `<'\n");
 		token->error = true;
+		cmd->contrasting_redirs = true;
 		g_exit_status = 2;
-		return (false);
 	}
-	return (true);
 }
 
-bool	redir_out(t_command *cmd, t_t *token)
+void	redir_out(t_command *cmd, t_t *token)
 {
 	if (token->next && token->next->type == TOKEN_WORD)
 	{
@@ -52,10 +51,9 @@ bool	redir_out(t_command *cmd, t_t *token)
 	}
 	else
 	{
-		printf("minishell: syntax error near unexpected token\n");
+		printf("minishell: syntax error near unexpected token `>'\n");
 		token->error = true;
+		cmd->contrasting_redirs = true;
 		g_exit_status = 2;
-		return (false);
 	}
-	return (true);
 }

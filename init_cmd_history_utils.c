@@ -14,6 +14,7 @@ t_command	*init_command(void)
 	cmd->redirs = NULL;
 	cmd->next = NULL;
 	cmd->in_hdc = false;
+	cmd->contrasting_redirs = false;
 	return (cmd);
 }
 

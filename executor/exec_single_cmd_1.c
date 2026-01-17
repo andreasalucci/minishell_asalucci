@@ -34,22 +34,30 @@ void	exec_single_non_builtin(t_command *cmds, t_env **env)
 	char	**envp;
 	char	*error_m;
 
+	// if (cmds->contrasting_redirs)
+	// {
+	// 	cmds->contrasting_redirs = false;
+	// 	return ;// (free_env(*env), free_arrays_array(envp));
+	// }
+	cmd_path = NULL;
 	envp = convert_env_list_to_array(*env);
-	cmd_path = get_command_path(cmds->argv[0], *env);
+	if (cmds->argv)
+		cmd_path = get_command_path(cmds->argv[0], *env);
 	if (cmd_path)
 	{
 		if (exec_and_wait(cmds, cmd_path, envp, *env))
-		{
-			free_env(*env);
-			return ;
-		}
+			return (free_env(*env));//, free_arrays_array(envp));
 	}
 	else
 	{
-		error_m = ft_strjoin(cmds->argv[0], ": command not found\n");
-		ft_putstr_fd(error_m, 2);
-		free(error_m);
-		g_exit_status = 127;
+		if (cmds->argv)
+		{
+			error_m = ft_strjoin(cmds->argv[0], ": command not found\n");
+			ft_putstr_fd(error_m, 2);
+			free(error_m);
+			g_exit_status = 127;
+		}
+		//G_EXIT
 	}
 	free_arrays_array(envp);
 }

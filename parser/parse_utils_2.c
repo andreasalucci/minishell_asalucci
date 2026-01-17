@@ -28,21 +28,17 @@ bool	check_errornclose(t_command **head, t_command *current, bool error)
 	return (error);
 }
 
-bool	handle_redir_token(t_command **current, t_command **head,
+void	handle_redir_token(t_command **current, t_command **head,
 	t_t **token)
 {
-	if (!parse_commands_2(current, head, *token))
-		return (false);
+	parse_commands_2(current, head, *token);
 	if ((*token)->next)
 		*token = (*token)->next;
-	return (true);
 }
 
-bool	handle_pipe_token(t_command **current, t_command **head, t_t *token)
+void	handle_pipe_token(t_command **current, t_command **head, t_t *token)
 {
-	if (!parse_commands_2(current, head, token))
-		return (false);
-	return (true);
+	parse_commands_2(current, head, token);
 }
 
 void	handle_word_or_var(t_command *current, t_t *token, t_t *prev)

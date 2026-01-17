@@ -40,17 +40,21 @@ bool	quotes_closed(char *input)
 bool	input_is_open(char *input)
 {
 	char	*pp;
+	char	*pb;
 
 	if (!quotes_closed(input))
 	{
-		ft_putstr_fd("minishell: Syntax error: unclosed quotes\n", 2);
+		ft_putstr_fd("minishell: syntax error: unclosed quotes\n", 2);
 		g_exit_status = 2;
 		return (true);
 	}
 	pp = ft_strchr(input, '|');
-	if (pp && only_spaces_after_pipe(pp))
+	pb = NULL;
+	if (pp && input != pp)
+		pb = pp - 1;
+	if (pp && only_spaces_after_pipe(pp) && (!pb || (pb && *pb != '<' && *pb != '>')))
 	{
-		ft_putstr_fd("minishell: Syntax error: unspecified pipe\n", 2);
+		ft_putstr_fd("minishell: syntax error: unspecified pipe\n", 2);
 		g_exit_status = 2;
 		return (true);
 	}

@@ -1,6 +1,6 @@
 #include "../minishell.h"
 
-bool	redir_append(t_command *cmd, t_t *token)
+void	redir_append(t_command *cmd, t_t *token)
 {
 	if (token->next && token->next->type == TOKEN_WORD)
 	{
@@ -10,15 +10,14 @@ bool	redir_append(t_command *cmd, t_t *token)
 	}
 	else
 	{
-		printf("minishell: syntax error near unexpected token\n");
+		printf("minishell: syntax error near unexpected token `>>'\n");
 		token->error = true;
+		cmd->contrasting_redirs = true;
 		g_exit_status = 2;
-		return (false);
 	}
-	return (true);
 }
 
-bool	redir_heredoc(t_command *cmd, t_t *token)
+void	redir_heredoc(t_command *cmd, t_t *token)
 {
 	if (token->next && token->next->type == TOKEN_WORD)
 	{
@@ -28,12 +27,11 @@ bool	redir_heredoc(t_command *cmd, t_t *token)
 	}
 	else
 	{
-		printf("minishell: syntax error near unexpected token\n");
+		printf("minishell: syntax error near unexpected token `<<'\n");
 		token->error = true;
+		cmd->contrasting_redirs= true;
 		g_exit_status = 2;
-		return (false);
 	}
-	return (true);
 }
 
 void	new_input_2(t_t *t, char *var_word, size_t count, size_t dollar)
@@ -58,6 +56,7 @@ void	new_input_2(t_t *t, char *var_word, size_t count, size_t dollar)
 	t->input = new_input;
 	t->start = new_input;
 }
+
 void	finalize_env_var(t_t *t, t_t **token_list, char *var, char *var_temp)
 {
 	char	*var_word;

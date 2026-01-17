@@ -10,7 +10,8 @@ void	if_permission_denied(t_command *cmds, char *cmd_path, char **envp,
 	}
 }
 
-void	execute_and_exit(t_command *cmds, char *cmd_path, char **envp, t_env *env)
+void	execute_and_exit(t_command *cmds, char *cmd_path,
+							char **envp, t_env *env)
 {
 	signal(SIGQUIT, SIG_DFL);
 	signal(SIGINT, SIG_DFL);

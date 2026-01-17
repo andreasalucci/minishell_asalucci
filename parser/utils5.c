@@ -27,12 +27,14 @@ void	prepare_quotes(t_t *t, t_t **token_list, bool *free_input)
 int	skip_spaces_and_check_redir(t_t *t, int *redir_control)
 {
 	*redir_control = 0;
-	while (t->input[t->pos] && t->input[t->anchor_pos] == ' ' && t->anchor_pos < t->pos)
+	while (t->input[t->pos] && t->input[t->anchor_pos] == ' '
+			&& t->anchor_pos < t->pos)
 		t->anchor_pos++;
 	if (t->input[t->pos] && t->anchor_pos == t->pos
 		&& (t->input[t->pos] == '<' || t->input[t->pos] == '>'))
 	{
-		if (t->input[t->pos +1] && (t->input[t->pos + 1] == '<' || t->input[t->pos + 1] == '>'))
+		if (t->input[t->pos +1] && (t->input[t->pos + 1] == '<'
+				|| t->input[t->pos + 1] == '>'))
 			return (0);
 		if (t->input[t->pos]) // añadido el t->input[t->pos +1]
 			t->pos++;

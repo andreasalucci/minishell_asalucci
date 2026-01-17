@@ -16,6 +16,7 @@ void	init_struct(t_t *t)
 	t->continue_var = false;
 	t->tmp_token = NULL;
 	t->free_input = 0;
+	t->num_var = false;
 }
 
 void	handle_quotes_and_vars(t_t *t, t_t **token_list,
@@ -43,7 +44,8 @@ void	handle_quotes_and_vars(t_t *t, t_t **token_list,
 
 int	handle_token_end(t_t *t, t_t **token_list)
 {
-	if (!t->input[t->pos] && t->pos != t->anchor_pos)
+	if (t->pos <= ft_strlen(t->input) && !t->input[t->pos]
+			&& t->pos != t->anchor_pos)
 		add_token(t, token_list);
 	if (t->single_quote || t->double_quote || t->error)
 		return (0);
@@ -72,11 +74,12 @@ t_t	*tokens(char *input, bool *free_input, t_env *env)
 	token_list = NULL;
 	t.input = input;
 	t.start = input;
-	while (t.input[t.pos] && !t.error)
+	while (t.pos <= ft_strlen(t.input) && t.input[t.pos] && !t.error)
 	{
 		quotes(&t);
 		handle_quotes_and_vars(&t, &token_list, free_input, env);
-		if (!t.input[t.pos] && t.pos != t.anchor_pos)
+		if (t.pos <= ft_strlen(t.input) && !t.input[t.pos]
+				&& t.pos != t.anchor_pos)
 			add_token(&t, &token_list);
 	}
 	if (!handle_token_end(&t, &token_list))

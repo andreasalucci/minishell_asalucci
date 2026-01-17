@@ -21,18 +21,40 @@ void	new_input_3(t_t *t, char *end_var)
 	t->input = new_input;
 	t->start = new_input;
 }
+
+char*	ft_after_var(t_t *t, char *var)
+{
+	size_t	len;
+	char	*after_var;
+
+	len = strlen(var) + t->anchor_pos +1;
+	after_var = malloc((t->pos - len) +1);
+	ft_strlcpy(after_var, t->input + len, (t->pos - len) +1);
+	return (after_var);
+}
 void	handle_var_result(t_t *t, t_t **token_list,
 			char *prefix, char *var)
 {
 	char	*end_var;
 	char	*var_token;
-	//char	*new_input;
+	char	*after_var;
+
+	after_var = NULL;
+	end_var = NULL;
 	var_token = getenv(var);
 	if (!var_token)
 	{
-		end_var = ft_strjoin(prefix, var);
-		add_custom_token(end_var, TOKEN_WORD, token_list);
-		free(end_var);
+		if (t->num_var == true)
+			after_var = ft_after_var(t, var);
+		t->num_var = false;
+		if (after_var)
+		{
+			end_var = ft_strjoin(prefix, after_var);
+			add_custom_token(end_var, TOKEN_WORD, token_list);
+			free(after_var);
+		}
+		else
+			add_custom_token(prefix, TOKEN_WORD, token_list);
 		free(prefix);
 		free(var);
 		t->pos++;
@@ -40,19 +62,12 @@ void	handle_var_result(t_t *t, t_t **token_list,
 		return ;
 	}
 	end_var = ft_strjoin(prefix, var_token);
-	//printf("end_var:: '%.*s'\n", (int)t->anchor_pos, t->input);
 	new_input_3(t, end_var);
-	//add_custom_token(end_var, TOKEN_VAR, token_list);
-	
-	free(end_var);
-	free(prefix);
-	free(var);
-	//t->anchor_pos = t->pos;
 }
 
 void	is_var_2(t_t *t, t_t **token_list)
 {
-	//printf("is_var_2 t->input:: %s\n", t->input);
+	
 	size_t	dolar;
 	size_t	len;
 	char	*prefix;
@@ -63,6 +78,8 @@ void	is_var_2(t_t *t, t_t **token_list)
 	if (!prefix)
 		return ;
 	ft_strlcpy(prefix, t->input + t->anchor_pos, (t->pos - t->anchor_pos) + 1);
+	if (t->input[t->pos + 1] >= '0' && t->input[t->pos + 1] <= '9')
+		t->num_var = true;
 	while (t->input[t->pos + 1] && (ft_isalnum(t->input[t->pos + 1])
 			|| t->input[t->pos + 1] == '_'))
 		t->pos++;

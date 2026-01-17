@@ -71,7 +71,8 @@ void	metacharacters(t_t *t, t_t **token_list)
 		if ((t->input[t->pos] == '<' || t->input[t->pos] == '>')
 			&& t->input[t->pos -1] != ' ')
 			return ;
-		if (t->input[t->pos] != '"' && t->input[t->pos] != '\'' && t->input[t->pos] != '$')
+		if (t->input[t->pos] != '"' && t->input[t->pos] != '\''
+				&& t->input[t->pos] != '$')
 			t->pos++;
 	}
 	//printf("t->pos:: %ld\n", t->pos);
