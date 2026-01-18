@@ -12,11 +12,6 @@ bool	is_builtin(t_command *cmd)
 
 void	exec_builtin(t_command *cmds, t_env **env)
 {
-	// if (cmds->contrasting_redirs)
-	// {
-	// 	cmds->contrasting_redirs = false;
-	// 	return ;// (free_env(*env), free_arrays_array(envp));
-	// }
 	if (ft_strcmp(cmds->argv[0], "cd") == 0)
 		builtin_cd(cmds->argv, env);
 	else if (ft_strcmp(cmds->argv[0], "export") == 0)

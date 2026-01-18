@@ -19,7 +19,7 @@ void	handle_variable_expansion(t_t *t, size_t count)
 	if (!exp_var)
 	{
 		free(var);
-		return;
+		return ;
 	}
 	free(var);
 	new_input(t, exp_var, count, dollar);
@@ -33,7 +33,11 @@ void	check_var(t_t *t)
 	while (count <= ft_strlen(t->input) && t->input[count] != '"')
 	{
 		if (t->input[count] == '$' && t->input[count + 1] == '?')
+		{
+			t->pos = count;
 			expand_exit_status(t);
+			count = t->pos;
+		}
 		else if (t->input[count] == '$' && t->input[count + 1] == '"')
 			return ;
 		else if (t->input[count] == '$' && t->input[count + 1] != ' ')

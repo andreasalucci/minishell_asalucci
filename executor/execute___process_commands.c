@@ -28,9 +28,10 @@ bool	command_particular_cases(t_command *cmds, t_env **env)
 	return (false);
 }
 
-void	process_commands(t_command *cmds, t_env **env, bool *hdc_interrupted)
+void	process_commands(t_command *cmds, t_env **env,
+							bool *hdc_interrupted)
 {
-	t_command *c;
+	t_command	*c;
 
 	if (command_particular_cases(cmds, env))
 		return ;
@@ -40,7 +41,7 @@ void	process_commands(t_command *cmds, t_env **env, bool *hdc_interrupted)
 		if (c->contrasting_redirs)
 		{
 			cmds->contrasting_redirs = false;
-			return (free_command_l(cmds));// (free_env(*env), free_arrarr(envp));
+			return (free_command_l(cmds));
 		}
 		c = c->next;
 	}

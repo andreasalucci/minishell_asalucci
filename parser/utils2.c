@@ -29,7 +29,7 @@ void	redir_heredoc(t_command *cmd, t_t *token)
 	{
 		printf("minishell: syntax error near unexpected token `<<'\n");
 		token->error = true;
-		cmd->contrasting_redirs= true;
+		cmd->contrasting_redirs = true;
 		g_exit_status = 2;
 	}
 }
@@ -63,7 +63,6 @@ void	finalize_env_var(t_t *t, t_t **token_list, char *var, char *var_temp)
 
 	if (!var)
 	{
-		//printf("entro aqui\n");
 		free(var_temp);
 		t->anchor_pos = t->pos;
 		if (t->tmp_token)
@@ -96,23 +95,19 @@ void	handle_env_var(t_t *t, t_t **token_list, t_env *env)
 	if (!var_temp)
 		return ;
 	ft_strlcpy(var_temp, t->input + t->anchor_pos + 1, len + 1);
-	//printf("var_temp:: %s\n", var_temp);
 	var = get_env_value(env, var_temp);
-	//ft_printf("var:: %s\n", var);
 	finalize_env_var(t, token_list, var, var_temp);
-	
 }
 
 void	is_var(t_t *t, t_t **token_list, t_env *env)
 {
-
+	if (t->single_quote)
+		return ;
 	if (t->input[t->pos] == '$' && t->input[t->pos + 1] == '?')
 	{
-		handle_exit_status_case(t, token_list);
-		return ;
+		if (expand_exit_status(t))
+			return ;
 	}
-	if (expand_exit_status(t))
-		return ;
 	if (t->input[t->anchor_pos] == ' ')
 		t->anchor_pos++;
 	if (t->input[t->anchor_pos] == '$')

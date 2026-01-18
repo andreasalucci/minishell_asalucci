@@ -9,12 +9,13 @@ void	command_not_found(t_command *cmd, t_env *env)
 		error_m = ft_strjoin(cmd->argv[0], ": command not found\n");
 		ft_putstr_fd(error_m, 2);
 		free(error_m);
+		g_exit_status = 127;///
 	}
-	else
-		ft_putstr_fd(": command not found\n", 2);
-	g_exit_status = 127;
+	//else
+	//	ft_putstr_fd(": command not foundBBB\n", 2);
+	g_exit_status = 0;
 	free_env_cmdlnull_envp(env, &cmd, true, NULL);
-	exit(g_exit_status);
+	exit(g_exit_status);//
 }
 
 bool	its_dot_or_dotslash(char *cmd)

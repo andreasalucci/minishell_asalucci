@@ -22,16 +22,31 @@ void	new_input_3(t_t *t, char *end_var)
 	t->start = new_input;
 }
 
-char*	ft_after_var(t_t *t, char *var)
+char	*ft_after_var(t_t *t, char *var)
 {
 	size_t	len;
 	char	*after_var;
 
-	len = strlen(var) + t->anchor_pos +1;
-	after_var = malloc((t->pos - len) +1);
-	ft_strlcpy(after_var, t->input + len, (t->pos - len) +1);
+	len = strlen(var) + t->anchor_pos + 1;
+	after_var = malloc((t->pos - len) + 1);
+	ft_strlcpy(after_var, t->input + len, (t->pos - len) + 1);
 	return (after_var);
 }
+
+void	if_after_var(char **after_var, char **end_var, char **prefix,
+						t_t **token_list)
+{
+	if (*after_var)
+	{
+		*end_var = ft_strjoin(*prefix, *after_var);
+		add_custom_token(*end_var, TOKEN_WORD, token_list);
+		free(*after_var);
+		free(*end_var);
+	}
+	else
+		add_custom_token(*prefix, TOKEN_WORD, token_list);
+}
+
 void	handle_var_result(t_t *t, t_t **token_list,
 			char *prefix, char *var)
 {
@@ -47,14 +62,7 @@ void	handle_var_result(t_t *t, t_t **token_list,
 		if (t->num_var == true)
 			after_var = ft_after_var(t, var);
 		t->num_var = false;
-		if (after_var)
-		{
-			end_var = ft_strjoin(prefix, after_var);
-			add_custom_token(end_var, TOKEN_WORD, token_list);
-			free(after_var);
-		}
-		else
-			add_custom_token(prefix, TOKEN_WORD, token_list);
+		if_after_var(&after_var, &end_var, &prefix, token_list);
 		free(prefix);
 		free(var);
 		t->pos++;
@@ -63,17 +71,31 @@ void	handle_var_result(t_t *t, t_t **token_list,
 	}
 	end_var = ft_strjoin(prefix, var_token);
 	new_input_3(t, end_var);
+	free(end_var);
+	free(prefix);
+	free(var);
+}
+
+bool	expand_if_exit_status(t_t *t)
+{
+	if (t->input[t->pos] == '$' && t->input[t->pos + 1] == '?')
+	{
+		expand_exit_status(t);
+		return (true);
+	}
+	return (false);
 }
 
 void	is_var_2(t_t *t, t_t **token_list)
 {
-	
 	size_t	dolar;
 	size_t	len;
 	char	*prefix;
 	char	*var;
 
 	dolar = t->pos;
+	if (expand_if_exit_status(t)) /////**
+		return ;
 	prefix = malloc(t->pos - t->anchor_pos + 1);
 	if (!prefix)
 		return ;
@@ -88,13 +110,9 @@ void	is_var_2(t_t *t, t_t **token_list)
 	len = t->pos - dolar;
 	var = malloc(len + 2);
 	if (!var)
-	{
-		free(prefix);
-		return ;
-	}
+		return (free(prefix));
 	ft_strlcpy(var, t->input + dolar, len + 2);
 	handle_var_result(t, token_list, prefix, var);
-
 }
 
 void	handle_double_quote(t_t *t, t_t **token_list, bool *free_input)

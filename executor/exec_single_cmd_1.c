@@ -34,11 +34,6 @@ void	exec_single_non_builtin(t_command *cmds, t_env **env)
 	char	**envp;
 	char	*error_m;
 
-	// if (cmds->contrasting_redirs)
-	// {
-	// 	cmds->contrasting_redirs = false;
-	// 	return ;// (free_env(*env), free_arrays_array(envp));
-	// }
 	cmd_path = NULL;
 	envp = convert_env_list_to_array(*env);
 	if (cmds->argv)

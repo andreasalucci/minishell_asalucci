@@ -18,6 +18,7 @@ void	prepare_quotes(t_t *t, t_t **token_list, bool *free_input)
 		ft_strlcpy(begin_quote, t->input, t->quote + 1);
 		free(t->input);
 		t->input = ft_strdup(begin_quote);
+		t->start = t->input;
 		free(begin_quote);
 		*free_input = 1;
 	}
@@ -28,7 +29,7 @@ int	skip_spaces_and_check_redir(t_t *t, int *redir_control)
 {
 	*redir_control = 0;
 	while (t->input[t->pos] && t->input[t->anchor_pos] == ' '
-			&& t->anchor_pos < t->pos)
+		&& t->anchor_pos < t->pos)
 		t->anchor_pos++;
 	if (t->input[t->pos] && t->anchor_pos == t->pos
 		&& (t->input[t->pos] == '<' || t->input[t->pos] == '>'))
@@ -36,7 +37,7 @@ int	skip_spaces_and_check_redir(t_t *t, int *redir_control)
 		if (t->input[t->pos +1] && (t->input[t->pos + 1] == '<'
 				|| t->input[t->pos + 1] == '>'))
 			return (0);
-		if (t->input[t->pos]) // añadido el t->input[t->pos +1]
+		if (t->input[t->pos])
 			t->pos++;
 		*redir_control = 1;
 	}

@@ -53,7 +53,7 @@ bool	input_is_open(char *input)
 	if (pp && input != pp)
 		pb = pp - 1;
 	if (pp && pp != input && only_spaces_after_pipe(pp)
-			&& (!pb || (pb && *pb != '<' && *pb != '>')))
+		&& (!pb || (pb && *pb != '<' && *pb != '>')))
 	{
 		ft_putstr_fd("minishell: syntax error: unspecified pipe\n", 2);
 		g_exit_status = 2;

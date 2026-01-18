@@ -60,7 +60,6 @@ void	add_redir(t_command *cmd, int type, const char *filename)
 		return ;
 	new->type = type;
 	new->filename = (char *)filename;
-	//new->hd_filename = NULL;
 	new->next = NULL;
 	if (!cmd->redirs)
 		cmd->redirs = new;

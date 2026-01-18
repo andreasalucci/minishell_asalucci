@@ -34,18 +34,17 @@ void	handle_quotes_and_vars(t_t *t, t_t **token_list,
 		if (t->input[t->pos] == '$')
 		{
 			is_var(t, token_list, env);
-			if (t->input[t->pos] == '\'')
+			if (t->pos <= ft_strlen(t->input) && t->input[t->pos] == '\'')
 				return ;
 		}
 		metacharacters(t, token_list);
-
 	}
 }
 
 int	handle_token_end(t_t *t, t_t **token_list)
 {
 	if (t->pos <= ft_strlen(t->input) && !t->input[t->pos]
-			&& t->pos != t->anchor_pos)
+		&& t->pos != t->anchor_pos)
 		add_token(t, token_list);
 	if (t->single_quote || t->double_quote || t->error)
 		return (0);
@@ -79,7 +78,7 @@ t_t	*tokens(char *input, bool *free_input, t_env *env)
 		quotes(&t);
 		handle_quotes_and_vars(&t, &token_list, free_input, env);
 		if (t.pos <= ft_strlen(t.input) && !t.input[t.pos]
-				&& t.pos != t.anchor_pos)
+			&& t.pos != t.anchor_pos)
 			add_token(&t, &token_list);
 	}
 	if (!handle_token_end(&t, &token_list))
